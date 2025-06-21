@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Forumikaa</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .card h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        .stat {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .admin-actions {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .admin-actions h3 {
+            margin: 0 0 1rem 0;
+            color: #333;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .welcome-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .welcome-message h2 {
+            margin: 0 0 0.5rem 0;
+            font-size: 2rem;
+            font-weight: 300;
+        }
+        .welcome-message p {
+            margin: 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Forumikaa Admin Dashboard</h1>
+        <div class="user-info">
+            <span>Welcome, <span th:text="${#authentication.name}">Admin</span></span>
+            <form th:action="@{/logout}" method="post" style="display: inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="logout-btn" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); padding: 0.5rem 1rem; border-radius: 5px; text-decoration: none; transition: background-color 0.3s ease; cursor: pointer;">Logout</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-message">
+            <h2>Welcome to Admin Panel</h2>
+            <p>Manage your forum efficiently with powerful admin tools</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Total Users</h3>
+                <div class="stat">1,234</div>
+                <div class="stat-label">Registered members</div>
+            </div>
+            
+            <div class="card">
+                <h3>Total Posts</h3>
+                <div class="stat">5,678</div>
+                <div class="stat-label">Published posts</div>
+            </div>
+            
+            <div class="card">
+                <h3>Total Comments</h3>
+                <div class="stat">12,345</div>
+                <div class="stat-label">User comments</div>
+            </div>
+            
+            <div class="card">
+                <h3>Active Categories</h3>
+                <div class="stat">15</div>
+                <div class="stat-label">Forum categories</div>
+            </div>
+        </div>
+
+        <div class="admin-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="/admin/users" class="btn btn-primary">Manage Users</a>
+                <a href="/admin/posts" class="btn btn-primary">Manage Posts</a>
+                <a href="/admin/categories" class="btn btn-secondary">Manage Categories</a>
+                <a href="/admin/reports" class="btn btn-danger">View Reports</a>
+                <a href="/admin/settings" class="btn btn-secondary">System Settings</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

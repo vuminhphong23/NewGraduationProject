@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forumikaa - Welcome</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        .welcome-section {
+            background: white;
+            border-radius: 10px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .welcome-section h2 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+        .welcome-section p {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .user-name {
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Forumikaa</h1>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/posts">Posts</a>
+            <a href="/categories">Categories</a>
+            <div class="user-info" th:if="${#authentication.authenticated}">
+                <span class="user-name" th:text="${#authentication.name}">User</span>
+                <a href="/admin" th:if="${#authorization.expression('hasRole(''ADMIN'')')}">Admin</a>
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" style="background: none; border: none; color: white; cursor: pointer; padding: 0.5rem 1rem; border-radius: 5px; transition: background-color 0.3s ease;">Logout</button>
+                </form>
+            </div>
+            <a href="/login" th:unless="${#authentication.authenticated}">Login</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="welcome-section">
+            <h2>Welcome to Forumikaa</h2>
+            <p>Join our vibrant community where ideas come to life. Share your thoughts, ask questions, and connect with like-minded people from around the world.</p>
+            <a href="/posts" class="btn">Explore Posts</a>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Share Ideas</h3>
+                <p>Create posts about topics you're passionate about and share your knowledge with the community.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Join Discussions</h3>
+                <p>Participate in meaningful conversations by commenting on posts and engaging with other members.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Stay Connected</h3>
+                <p>Follow your favorite topics and stay updated with the latest discussions in your areas of interest.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
