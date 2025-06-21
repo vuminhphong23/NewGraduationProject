@@ -34,6 +34,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toList());
 
+        // Kiểm tra nếu là OAuth2 user (có password đặc biệt)
+        boolean isOAuth2User = "OAUTH2_USER".equals(user.getPassword());
+        
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),

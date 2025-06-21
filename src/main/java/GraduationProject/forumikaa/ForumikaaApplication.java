@@ -26,13 +26,14 @@ public class ForumikaaApplication {
 			Role userRole = roleDao.findByName("ROLE_USER").orElseGet(() -> roleDao.save(new Role("ROLE_USER")));
 			Role adminRole = roleDao.findByName("ROLE_ADMIN").orElseGet(() -> roleDao.save(new Role("ROLE_ADMIN")));
 
-
 			// Create a test user
 			if (userDao.findByUsername("user").isEmpty()) {
 				User user = new User();
 				user.setUsername("user");
-				user.setPassword(passwordEncoder.encode("password"));
+				user.setPassword(passwordEncoder.encode("user123"));
 				user.setEmail("user@example.com");
+				user.setFirstName("Regular");
+				user.setLastName("User");
 				user.setRoles(Set.of(userRole));
 				userDao.save(user);
 			}
@@ -41,8 +42,10 @@ public class ForumikaaApplication {
 			if (userDao.findByUsername("admin").isEmpty()) {
 				User admin = new User();
 				admin.setUsername("admin");
-				admin.setPassword(passwordEncoder.encode("admin"));
+				admin.setPassword(passwordEncoder.encode("admin123"));
 				admin.setEmail("admin@example.com");
+				admin.setFirstName("Admin");
+				admin.setLastName("User");
 				admin.setRoles(Set.of(adminRole));
 				userDao.save(admin);
 			}
