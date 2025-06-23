@@ -1,0 +1,121 @@
+/* login.css */
+.left-section {
+    position: relative;
+    background-image: linear-gradient(to bottom, rgba(5,42,133,0.05) 0%, rgba(5,42,133,0.25) 40%, rgba(10,36,99,0.7) 100%),
+                      url('https://cdn-media.sforum.vn/storage/app/media/ngocmy/truong-dai-hoc-phenikaa/truong-dai-hoc-phenikaa-thumbnail.jpg');
+    background-size: cover;
+    background-position: center top;
+    color: white;
+    height: 100vh;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.left-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(to right, rgba(10,36,99,0.45) 0%, rgba(10,36,99,0.0) 15%, rgba(10,36,99,0.0) 85%, rgba(10,36,99,0.45) 100%);
+}
+.left-section > * {
+    position: relative;
+    z-index: 2;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 4rem;
+}
+.logo i {
+    color: #ff6b00;
+    font-size: 1.75rem;
+}
+.logo span {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: white;
+}
+.welcome-content {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+.feature-icon {
+    width: 45px;
+    height: 45px;
+    background: #ff6b00;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+}
+.right-section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+.login-form {
+    background: white;
+    padding: 3rem;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 550px;
+}
+.form-control:focus {
+    border-color: #1a237e;
+    box-shadow: 0 0 0 0.2rem rgba(26, 35, 126, 0.25);
+}
+.btn-primary {
+    background-color: #1a237e;
+    border-color: #1a237e;
+    padding: 0.75rem;
+}
+.btn-primary:hover {
+    background-color: #0d1757;
+    border-color: #0d1757;
+}
+.forgot-link {
+    color: #1a237e;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.forgot-link:hover {
+    text-decoration: underline;
+}
+.guidelines {
+    color: #6c757d;
+}
+.guidelines a {
+    color: #ff6b00;
+    text-decoration: none;
+}
+.guidelines a:hover {
+    text-decoration: underline;
+}
+.feature-list {
+    list-style: none;
+    padding: 0;
+}
+.feature-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+}
+.input-group{
+   height: 48px;
+}
+body.slide-in-left {
+    transform: translateX(0);
+    transition: transform 0.7s cubic-bezier(0.77,0,0.18,1);
+}
+body.pre-slide-in-left {
+    transform: translateX(-100vw);
+}
