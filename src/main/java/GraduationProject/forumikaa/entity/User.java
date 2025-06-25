@@ -4,8 +4,10 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,6 +52,19 @@ public class User {
 
     @Column(columnDefinition = "DATE")
     private LocalDate birthDate;
+
+    @Column(nullable = false)
+    private boolean enabled = true;
+
+    @Lob
+    private String profileInfo;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserProfile userProfile;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
