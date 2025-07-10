@@ -5,6 +5,8 @@ import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dto.UserDto;
 import GraduationProject.forumikaa.entity.Role;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.service.RoleService;
+import GraduationProject.forumikaa.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,12 +22,27 @@ import java.util.Set;
 
 @Controller
 public class BaseController {
-    @Autowired(required = false)
-    private UserDao userDao;
-    @Autowired(required = false)
-    private RoleDao roleDao;
-    @Autowired(required = false)
+
+    private UserService userService;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    private RoleService roleService;
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @GetMapping("/")
     public String home() {
@@ -54,11 +71,11 @@ public class BaseController {
             result.rejectValue("confirmPassword", "error.userDto", "Passwords do not match");
             return "register";
         }
-        if (userDao != null && userDao.existsByUsername(userDto.getUsername())) {
+        if (userService != null && userService.findByUsername(userDto.getUsername().trim()).isPresent()) {
             result.rejectValue("username", "error.userDto", "Username already exists");
             return "register";
         }
-        if (userDao != null && userDao.existsByEmail(userDto.getEmail())) {
+        if (userService != null && userService.findByEmail(userDto.getEmail().trim()).isPresent()) {
             result.rejectValue("email", "error.userDto", "Email already exists");
             return "register";
         }
@@ -69,13 +86,13 @@ public class BaseController {
             user.setPassword(passwordEncoder != null ? passwordEncoder.encode(userDto.getPassword()) : userDto.getPassword());
             user.setFirstName(userDto.getFirstName());
             user.setLastName(userDto.getLastName());
-            if (roleDao != null) {
-                Role userRole = roleDao.findByName("ROLE_USER")
+            if (roleService != null) {
+                Role userRole = roleService.findByName("ROLE_USER")
                         .orElseThrow(() -> new RuntimeException("Default role not found"));
                 user.setRoles(Set.of(userRole));
             }
-            if (userDao != null) {
-                userDao.save(user);
+            if (userService != null) {
+                userService.save(user);
             }
             redirectAttributes.addFlashAttribute("successMessage", "Registration successful! Please login.");
             return "redirect:/login";

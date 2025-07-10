@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.config;
+package GraduationProject.forumikaa.handler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

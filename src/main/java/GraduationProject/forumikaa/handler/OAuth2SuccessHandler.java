@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.config;
+package GraduationProject.forumikaa.handler;
 
 import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
@@ -18,17 +18,24 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Set;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Autowired
     private UserDao userDao;
 
     @Autowired
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
     private RoleDao roleDao;
+
+    @Autowired
+    public void setRoleDao(RoleDao roleDao) {
+        this.roleDao = roleDao;
+    }
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;

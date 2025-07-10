@@ -2,7 +2,6 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
-import GraduationProject.forumikaa.dto.AdminUserDto;
 import GraduationProject.forumikaa.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -57,6 +56,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return userDao.findByUsername(username);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userDao.findByEmail(email);
+    }
+
+    @Override
     public void updateUserEnabledStatus(Long userId, boolean enabled) {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
@@ -75,29 +84,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void save(AdminUserDto userDto) {
-        User user;
-        if (userDto.getId() != null) {
-            user = userDao.findById(userDto.getId())
+    public void save(User user) {
+        if (user.getId() != null) {
+            User existingUser = userDao.findById(user.getId())
                     .orElseThrow(() -> new RuntimeException("User not found"));
+            existingUser.setUsername(user.getUsername());
+            existingUser.setEmail(user.getEmail());
+            existingUser.setFirstName(user.getFirstName());
+            existingUser.setLastName(user.getLastName());
+            existingUser.setEnabled(user.isEnabled());
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            if (user.getRoles() != null) {
+                existingUser.setRoles(user.getRoles());
+            }
+            userDao.save(existingUser);
         } else {
-            user = new User();
+            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            userDao.save(user);
         }
-
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-        user.setFirstName(userDto.getFirstName());
-        user.setLastName(userDto.getLastName());
-        user.setEnabled(userDto.isEnabled());
-        
-        if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        }
-
-        if (userDto.getRoles() != null) {
-            user.setRoles(userDto.getRoles());
-        }
-        
-        userDao.save(user);
     }
 } 

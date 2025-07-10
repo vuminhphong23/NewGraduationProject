@@ -1,5 +1,7 @@
 package GraduationProject.forumikaa.config;
 
+import GraduationProject.forumikaa.handler.CustomAuthenticationSuccessHandler;
+import GraduationProject.forumikaa.handler.OAuth2SuccessHandler;
 import GraduationProject.forumikaa.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
