@@ -81,7 +81,7 @@ public class AdminController {
 
     @GetMapping("/admin/users/add")
     public String addUserForm(Model model) {
-        model.addAttribute("userDto", new User());
+        model.addAttribute("user", new User());
         model.addAttribute("allRoles", roleService.findAll());
         return "user-form";
     }
@@ -89,7 +89,7 @@ public class AdminController {
     @GetMapping("/admin/users/edit/{id}")
     public String editUserForm(@PathVariable Long id, Model model) {
         User user = userService.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
-        model.addAttribute("userDto", user);
+        model.addAttribute("user", user);
         model.addAttribute("allRoles", roleService.findAll());
         return "user-form";
     }
