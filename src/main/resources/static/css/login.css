@@ -112,10 +112,9 @@
 .input-group{
    height: 48px;
 }
-body.slide-in-left {
-    transform: translateX(0);
-    transition: transform 0.7s cubic-bezier(0.77,0,0.18,1);
-}
-body.pre-slide-in-left {
-    transform: translateX(-100vw);
+
+.animated-fadein {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0s, transform 0.6s;
 }
