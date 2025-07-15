@@ -225,7 +225,7 @@
             <div class="card mb-4 text-center p-3 border-0 ">
                 <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle mx-auto mb-2" width="64" height="64">
                 <div>
-                    <div class="fw-semibold">Minh Nguyễn</div>
+                    <div class="fw-semibold" th:text="${userName}">Tên người dùng</div>
                     <div class="text-muted small">Công nghệ thông tin</div>
                 </div>
             </div>
@@ -287,7 +287,7 @@
             <div class="card mb-4 border-0 pb-2">
                 <div class="card-body d-flex align-items-center gap-3 pb-1">
                     <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle" width="44" height="44">
-                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" placeholder="Bạn đang nghĩ gì, Minh?">
+                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn đang nghĩ gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?">
                 </div>
                 <hr style="color: #c3d2e0; margin: 1rem">
                 <div class="card-footer bg-white border-0 d-flex justify-content-between px-3 pt-0">

@@ -10,6 +10,8 @@ import GraduationProject.forumikaa.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -45,7 +47,21 @@ public class BaseController {
     }
 
     @GetMapping("/")
-    public String home() {
+    public String home(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = "Khách";
+        if (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser")) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof GraduationProject.forumikaa.entity.User) {
+                User user = (User) principal;
+                userName = user.getFirstName() + (user.getLastName() != null ? (" " + user.getLastName()) : "");
+            } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+                userName = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            } else if (principal instanceof String) {
+                userName = (String) principal;
+            }
+        }
+        model.addAttribute("userName", userName);
         return "index";
     }
 
