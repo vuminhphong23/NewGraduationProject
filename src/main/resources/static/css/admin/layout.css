@@ -1,0 +1,146 @@
+/* CSS dùng chung cho layout admin (sidebar, header, dashboard, ...)
+   Đặt file này vào tất cả các trang admin để đảm bảo fragment luôn đúng style */
+
+body { background: #f6f8fb; }
+
+.sidebar {
+    background: #0d1a44;
+    min-height: 100vh;
+    color: #fff;
+}
+.sidebar .nav-link {
+    color: #b0c4de;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 1rem;
+}
+.sidebar .nav-link.active, .sidebar .nav-link:hover {
+    background: #1f2e5a;
+    color: #fff;
+}
+.sidebar .nav-link .bi, .sidebar .nav-link .fa {
+    margin-right: 10px;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+.sidebar .admin-profile {
+    border-top: 1px solid #1f2e5a;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.sidebar .admin-profile img {
+    width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+}
+
+.logo i {
+    color: #ff6b00;
+    font-size: 1.75rem;
+}
+.logo span {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: white;
+}
+
+.header-bar {
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.header-bar .search-box {
+    width: 300px;
+}
+.header-bar .admin-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.header-bar .admin-info img {
+    width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+}
+.stat-card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    background: #fff;
+    padding: 1.5rem 1.25rem;
+    min-height: 120px;
+}
+.stat-card .stat-label {
+    color: #888;
+    font-size: 0.95rem;
+}
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+.stat-card .stat-change {
+    font-size: 0.95rem;
+}
+.stat-card .stat-change.positive { color: #00875a; }
+.stat-card .stat-change.negative { color: #dc3545; }
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+.card-custom {
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 1.25rem 1rem;
+    margin-bottom: 1.5rem;
+}
+.activity-list, .report-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.activity-list li, .report-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.activity-list .avatar, .report-list .avatar {
+    width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+}
+.badge-status {
+    font-size: 0.85rem;
+    border-radius: 8px;
+    padding: 0.25em 0.75em;
+}
+.badge-status.spam { background: #ffeaea; color: #dc3545; }
+.badge-status.waiting { background: #fff6e0; color: #ff9800; }
+.badge-status.done { background: #e6f7f2; color: #00875a; }
+.badge-status.inprogress { background: #e3f0ff; color: #1976d2; }
+.table-support th, .table-support td {
+    vertical-align: middle;
+}
+.table-support .btn {
+    font-size: 0.95rem;
+    padding: 0.25rem 0.75rem;
+}
+.chart-placeholder {
+    width: 100%;
+    height: 180px;
+    background: repeating-linear-gradient(135deg, #f6f8fb, #f6f8fb 10px, #e5e7eb 10px, #e5e7eb 20px);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-size: 1.1rem;
+} 
