@@ -52,6 +52,10 @@ body { background: #f6f8fb; }
     color: white;
 }
 
+.logo .logo-orange {
+    color: #ff6b00;
+}
+
 .header-bar {
     background: #fff;
     border-bottom: 1px solid #e5e7eb;

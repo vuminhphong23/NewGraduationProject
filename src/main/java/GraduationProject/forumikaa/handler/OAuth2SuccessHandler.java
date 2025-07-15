@@ -37,8 +37,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         this.roleDao = roleDao;
     }
 
-    @Autowired
+
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    public void setCustomUserDetailsService(CustomUserDetailsService customUserDetailsService) {
+        this.customUserDetailsService = customUserDetailsService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -48,17 +53,13 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         User user = processOAuth2User(oauth2User);
 
-        // After creating/finding the user, create a new Authentication token
-        // with our UserDetails, so that authentication.getName() returns our DB username.
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getUsername());
 
         UsernamePasswordAuthenticationToken newAuthentication = new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());
 
-        // Update the security context with the new authentication token
         SecurityContextHolder.getContext().setAuthentication(newAuthentication);
 
-        // Redirect user to the default target URL
         setDefaultTargetUrl("/");
         super.onAuthenticationSuccess(request, response, newAuthentication);
     }
@@ -80,7 +81,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User newUser = new User();
         newUser.setEmail(email);
 
-        // Create a unique username to avoid conflicts
         String baseUsername = email.split("@")[0];
         String finalUsername = baseUsername;
         int counter = 1;
