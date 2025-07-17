@@ -5,11 +5,13 @@ import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.RoleService;
 import GraduationProject.forumikaa.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,29 +56,19 @@ public class AdminController {
         model.addAttribute("status", status);
         return "user-management";
     }
-    
+
     @PostMapping("/admin/users/{id}/toggle-status")
     public String toggleUserStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            User user = userService.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-            
-            userService.updateUserEnabledStatus(id, !user.isEnabled());
-            redirectAttributes.addFlashAttribute("successMessage", "User status updated successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error updating user status: " + e.getMessage());
-        }
+        userService.updateUserEnabledStatus(id, !userService.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id " + id)).isEnabled());
+        redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái thành công.");
         return "redirect:/admin/users";
     }
 
     @PostMapping("/admin/users/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            userService.deleteUser(id);
-            redirectAttributes.addFlashAttribute("successMessage", "User deleted successfully.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting user.");
-        }
+        userService.deleteUser(id);
+        redirectAttributes.addFlashAttribute("successMessage", "Xóa thành công.");
         return "redirect:/admin/users";
     }
 
@@ -89,20 +81,19 @@ public class AdminController {
 
     @GetMapping("/admin/users/edit/{id}")
     public String editUserForm(@PathVariable Long id, Model model) {
-        User user = userService.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + id));
+        User user = userService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id " + id));
         model.addAttribute("user", user);
         model.addAttribute("allRoles", roleService.findAll());
         return "user-form";
     }
 
     @PostMapping("/admin/users/save")
-    public String saveUser(@ModelAttribute("userDto") User user, RedirectAttributes redirectAttributes) {
-        try {
-            userService.save(user);
-            redirectAttributes.addFlashAttribute("successMessage", "User saved successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error saving user: " + e.getMessage());
+    public String saveUser(@ModelAttribute("userDto") @Valid User user, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        if(bindingResult.hasErrors()){
+            return "user-form";
         }
+        userService.save(user);
+        redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công.");
         return "redirect:/admin/users";
     }
 } 

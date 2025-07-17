@@ -7,39 +7,57 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
+
 
 @Service
 public class PasswordResetService {
 
-    @Autowired
     private UserDao userDao;
 
     @Autowired
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
     private EmailService emailService;
 
     @Autowired
+    public void setEmailService(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
     private PasswordEncoder passwordEncoder;
 
-    // Lưu trữ OTP tạm thời (trong production nên dùng Redis)
+    @Autowired
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    // Lưu trữ OTP
     private final Map<String, OtpData> otpStorage = new HashMap<>();
+
+    private static final int OTP_EXPIRY_MINUTES = 10;
 
     public boolean sendOtp(String email) {
         Optional<User> userOpt = userDao.findByEmail(email);
         if (userOpt.isEmpty()) {
-            return false; // Email không tồn tại
+            return false;
         }
 
         String otp = generateOtp();
-        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES);
 
-        // Lưu OTP
         otpStorage.put(email, new OtpData(otp, expiryTime));
 
+        return sendOtpEmail(email, otp);
+    }
+
+    private boolean sendOtpEmail(String email, String otp) {
         try {
             emailService.sendOtpEmail(email, otp);
             return true;
@@ -60,11 +78,7 @@ public class PasswordResetService {
             return false;
         }
 
-        if (!otpData.otp.equals(otp)) {
-            return false;
-        }
-
-        return true;
+        return otpData.otp.equals(otp);
     }
 
     public boolean resetPassword(String email, String otp, String newPassword) {
@@ -87,10 +101,10 @@ public class PasswordResetService {
     }
 
     private String generateOtp() {
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         StringBuilder otp = new StringBuilder();
         for (int i = 0; i < 6; i++) {
-            otp.append(random.nextInt(10));
+            otp.append(random.nextInt(10)); // Tạo OTP gồm 6 chữ số
         }
         return otp.toString();
     }
@@ -105,4 +119,4 @@ public class PasswordResetService {
             this.expiryTime = expiryTime;
         }
     }
-} 
+}

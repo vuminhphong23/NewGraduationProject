@@ -15,107 +15,65 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class ForgotPasswordController {
 
-    @Autowired
     private PasswordResetService passwordResetService;
 
+    @Autowired
+    public void setPasswordResetService(PasswordResetService passwordResetService) {
+        this.passwordResetService = passwordResetService;
+    }
+
     @GetMapping("/forgot-password")
-    public String showForgotPasswordForm(Model model) {
-        model.addAttribute("email", "");
+    public String showForgotPasswordForm() {
         return "forgot-password";
     }
 
     @PostMapping("/forgot-password")
-    public String sendOtp(@RequestParam("email") String email, 
-                         RedirectAttributes redirectAttributes) {
-        
-        if (email == null || email.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Please enter your email address.");
-            return "redirect:/forgot-password";
-        }
+    public String requestOtp(@RequestParam("email") String email,
+                             RedirectAttributes redirectAttributes) {
+        boolean success = passwordResetService.sendOtp(email);
 
-        boolean success = passwordResetService.sendOtp(email.trim());
-        
         if (success) {
-            redirectAttributes.addFlashAttribute("successMessage", 
-                "OTP has been sent to your email address. Please check your inbox.");
-            redirectAttributes.addFlashAttribute("email", email.trim());
+            redirectAttributes.addFlashAttribute("successMessage", "OTP đã được gửi đến email của bạn.");
+            redirectAttributes.addFlashAttribute("email", email);
             return "redirect:/reset-password";
         } else {
-            redirectAttributes.addFlashAttribute("errorMessage", 
-                "Email not found or failed to send OTP. Please try again.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Email không tồn tại. Hãy thử lại!");
             return "redirect:/forgot-password";
         }
     }
 
     @GetMapping("/reset-password")
-    public String showResetPasswordForm(Model model) {
-        String email = (String) model.getAttribute("email");
-        if (email == null) {
-            return "redirect:/forgot-password";
-        }
-        model.addAttribute("email", email);
-        model.addAttribute("otp", "");
-        model.addAttribute("newPassword", "");
-        model.addAttribute("confirmPassword", "");
+    public String showResetPasswordForm() {
         return "reset-password";
     }
 
     @PostMapping("/reset-password")
     public String resetPassword(@RequestParam("email") String email,
-                               @RequestParam("otp") String otp,
-                               @RequestParam("newPassword") String newPassword,
-                               @RequestParam("confirmPassword") String confirmPassword,
-                               RedirectAttributes redirectAttributes) {
-        
-        // A helper lambda to handle redirecting with errors
-        // This avoids repeating the same lines of code.
-        Runnable_with_String addErrorAndRedirect = (errorMessage) -> {
-            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
-            redirectAttributes.addFlashAttribute("email", email); // Always pass email back
-        };
+                                @RequestParam("otp") String otp,
+                                @RequestParam("newPassword") String newPassword,
+                                @RequestParam("confirmPassword") String confirmPassword,
+                                RedirectAttributes redirectAttributes) {
 
-        // Validation
-        if (email == null || email.trim().isEmpty()) {
-            addErrorAndRedirect.run("An unexpected error occurred. Please try again from the beginning.");
-            return "redirect:/forgot-password";
-        }
+        redirectAttributes.addFlashAttribute("email", email);
 
-        if (otp == null || otp.trim().isEmpty()) {
-            addErrorAndRedirect.run("OTP is required.");
-            return "redirect:/reset-password";
-        }
-
-        if (newPassword == null || newPassword.trim().isEmpty()) {
-            addErrorAndRedirect.run("New password is required.");
+        if (!newPassword.equals(confirmPassword)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Mật khẩu mới và xác nhận mật khẩu không khớp.");
             return "redirect:/reset-password";
         }
 
         if (newPassword.length() < 6) {
-            addErrorAndRedirect.run("Password must be at least 6 characters long.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Mật khẩu phải có ít nhất 6 ký tự.");
             return "redirect:/reset-password";
         }
 
-        if (!newPassword.equals(confirmPassword)) {
-            addErrorAndRedirect.run("Passwords do not match.");
-            return "redirect:/reset-password";
-        }
+        boolean success = passwordResetService.resetPassword(email, otp, newPassword);
 
-        // Reset password
-        boolean success = passwordResetService.resetPassword(email.trim(), otp.trim(), newPassword);
-        
         if (success) {
-            redirectAttributes.addFlashAttribute("successMessage", 
-                "Password has been reset successfully. Please login with your new password.");
+            redirectAttributes.addFlashAttribute("successMessage", "Mật khẩu đã được đặt lại thành công. Hãy đăng nhập.");
             return "redirect:/login";
         } else {
-            addErrorAndRedirect.run("Invalid OTP or OTP has expired. Please try again.");
+            redirectAttributes.addFlashAttribute("errorMessage", "OTP đã hết hạn hoặc không chính xác. Hãy thử lại!");
             return "redirect:/reset-password";
         }
-    }
-
-    // A simple functional interface for our helper lambda
-    @FunctionalInterface
-    interface Runnable_with_String {
-        void run(String str);
     }
 } 

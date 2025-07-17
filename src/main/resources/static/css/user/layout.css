@@ -1,0 +1,181 @@
+/* HEADER */
+.header {
+    background: linear-gradient(90deg, #142850 0%, #27496d 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 2.2rem;
+    height: 70px;
+    box-shadow: 0 4px 18px rgba(20,40,80,0.10);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-right: 2.2rem;
+    user-select: none;
+}
+.logo i {
+    color: #ff6b00;
+    font-size: 2.1rem;
+}
+.logo span {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #fff;
+}
+.logo .logo-orange {
+    color: #ff6b00;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+.search-bar {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    position: relative;
+    margin-right: 2.2rem;
+}
+.search-bar input {
+    width: 100%;
+    padding: 0.7rem 1.2rem 0.7rem 2.5rem;
+    border-radius: 30px;
+    border: 1.5px solid #e0e6ed;
+    outline: none;
+    font-size: 1.08rem;
+    background: #f8fafc;
+    color: #222;
+    transition: border 0.18s, box-shadow 0.18s;
+    box-shadow: 0 2px 8px rgba(20,40,80,0.04);
+}
+.search-bar input:focus {
+    border: 1.5px solid #ff6b00;
+    box-shadow: 0 2px 12px rgba(255,107,0,0.10);
+}
+.search-bar .fa-search {
+    position: absolute;
+    left: 1.1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bfc8e6;
+    font-size: 1.15rem;
+}
+.header-menu {
+    display: flex;
+    align-items: center;
+    gap: 2.2rem;
+    margin-left: auto;
+    position: relative;
+}
+.header-menu .dropdown {
+    position: relative;
+}
+.header-menu .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 120%;
+    background: #fff;
+    min-width: 140px;
+    box-shadow: 0 4px 16px rgba(20,40,80,0.13);
+    border-radius: 10px;
+    z-index: 100;
+    padding: 0.5rem 0;
+    transition: opacity 0.18s;
+}
+.header-menu .dropdown:hover .dropdown-content,
+.header-menu .dropdown:focus-within .dropdown-content {
+    display: block;
+}
+.header-menu .dropdown-content a, .header-menu .dropdown-content form button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: #222;
+    text-align: left;
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    border-radius: 6px;
+}
+.header-menu .dropdown-content a:hover, .header-menu .dropdown-content form button:hover {
+    background: #f6f7fb;
+    color: #ff6b00;
+}
+.header-menu a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.08rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s, box-shadow 0.18s;
+    position: relative;
+}
+.header-menu a:hover, .header-menu a:focus {
+    color: #ff6b00;
+    background: rgba(255,107,0,0.08);
+}
+.header-menu i {
+    font-size: 1.15rem;
+    color: inherit;
+}
+.header-menu .menu-text {
+    opacity: 0;
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.18s, max-width 0.18s, margin-left 0.18s;
+    font-size: 1.08rem;
+    font-weight: 700;
+}
+.header-menu a:hover .menu-text,
+.header-menu a:focus .menu-text {
+    opacity: 1;
+    max-width: 200px;
+    margin-left: 0.5rem;
+}
+
+body {
+    background: #f6f7fb;
+}
+
+.card {
+    box-shadow: 0 2px 8px rgba(35,50,107,0.08) !important;
+    border: none; !important;
+}
+.card-header {
+    color: #0F2E6F;
+}
+.list-group-item {
+    padding-left: 1.5rem ;
+    border: none !important;
+}
+a, .btn-link, .sidebar-link, .sidebar-link-block, .card a {
+    text-decoration: none !important;
+}
+.btn, .btn-light, .btn-link {
+    background: #fff;
+    color: inherit;
+    border: none !important;
+    box-shadow: none !important;
+    transition: color 0.15s, background 0.15s;
+}
+.btn-light:hover, .btn-link:hover, .sidebar-link:hover, .sidebar-link-block:hover, .card a:hover {
+    background: #f6f7fb !important;
+    color: #ff6b00 !important;
+    text-decoration: none !important;
+}

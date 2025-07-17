@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Đăng ký</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/css/register.css">
@@ -15,12 +15,14 @@
             <div class="col-lg-7 p-0">
                 <div class="right-section">
                     <div class="login-form">
-                        <h2 class="text-center mb-4 fw-bold">Register</h2>
+                        <h2 class="text-center mb-4 fw-bold">Đăng ký</h2>
                         <form th:action="@{/register}" th:object="${userDto}" method="post">
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                    <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="Enter username" autofocus required>
+                                    <span class="input-group-text"><i class="fas fa-user"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" th:field="*{username}" placeholder="Tài khoản" autofocus required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('username')}">
                                     <span class="text-danger small" th:errors="*{username}"></span>
@@ -28,8 +30,10 @@
                             </div>
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                                    <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="Enter first name" required>
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="text" class="form-control" id="firstName" th:field="*{firstName}" placeholder="Họ" required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('firstName')}">
                                     <span class="text-danger small" th:errors="*{firstName}"></span>
@@ -37,8 +41,10 @@
                             </div>
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
-                                    <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="Enter last name" required>
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="text" class="form-control" id="lastName" th:field="*{lastName}" placeholder="Tên" required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('lastName')}">
                                     <span class="text-danger small" th:errors="*{lastName}"></span>
@@ -46,8 +52,10 @@
                             </div>
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="Enter email" required>
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="Email" required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('email')}">
                                     <span class="text-danger small" th:errors="*{email}"></span>
@@ -55,8 +63,10 @@
                             </div>
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="passwordReg" th:field="*{password}" placeholder="Enter password" required>
+                                    <span class="input-group-text"><i class="fas fa-lock"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="password" class="form-control" id="passwordReg" th:field="*{password}" placeholder="Mật khẩu" required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('password')}">
                                     <span class="text-danger small" th:errors="*{password}"></span>
@@ -64,8 +74,10 @@
                             </div>
                             <div class="mb-4">
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="confirmPasswordReg" th:field="*{confirmPassword}" placeholder="Confirm password" required>
+                                    <span class="input-group-text"><i class="fas fa-lock"></i>
+                                        <span class="text-danger">*</span>
+                                    </span>
+                                    <input type="password" class="form-control" id="confirmPasswordReg" th:field="*{confirmPassword}" placeholder="Xác nhận mật khẩu" required>
                                 </div>
                                 <div th:if="${#fields.hasErrors('confirmPassword')}">
                                     <span class="text-danger small" th:errors="*{confirmPassword}"></span>
@@ -73,17 +85,17 @@
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary w-100 mb-4 fs-5 rounded-3">
-                                    <i class="fas fa-user-plus me-2"></i>Register
+                                    <i class="fas fa-user-plus me-2"></i>Đăng ký
                                 </button>
                             </div>
                             <div class="d-grid mb-3">
                                 <a href="/oauth2/authorization/google" class="btn btn-google btn-lg d-flex align-items-center justify-content-center gap-2 shadow-sm" style="background: #fff; border: 1.5px solid #ea4335; color: #ea4335; font-weight: 500; transition: background 0.2s, color 0.2s;">
                                     <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="width: 1.5rem; height: 1.5rem; background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.07); margin-right: 0.5rem;">
-                                    Continue with Google
+                                    Đăng ký bằng Google
                                 </a>
                             </div>
                             <div class="text-center mt-3">
-                                <span>Already have an account? <a href="/login">Login</a></span>
+                                <span>Bạn đã có tài khoản? <a href="/login">Đăng nhập</a></span>
                             </div>
                         </form>
                     </div>
@@ -97,26 +109,26 @@
                         <span>Forumikaa</span>
                     </div>
                     <div class="welcome-content">
-                        <h1 class="display-4 fw-bold mb-4">Join Forumikaa</h1>
-                        <p class="lead mb-5">Create your account and connect with your university community</p>
+                        <h1 class="display-4 fw-bold mb-4">Tham gia Forumikaa</h1>
+                        <p class="lead mb-5">Tạo tài khoản và kết nối với cộng đồng của bạn</p>
                         <ul class="feature-list">
                             <li>
                                 <div class="feature-icon">
                                     <i class="fas fa-share-alt"></i>
                                 </div>
-                                <span>Share academic resources</span>
+                                <span>Chia sẻ tài nguyên học tập</span>
                             </li>
                             <li>
                                 <div class="feature-icon">
                                     <i class="fas fa-users"></i>
                                 </div>
-                                <span>Discuss course topics</span>
+                                <span>Thảo luận các chủ đề</span>
                             </li>
                             <li>
                                 <div class="feature-icon">
                                     <i class="fas fa-calendar-check"></i>
                                 </div>
-                                <span>Stay updated on campus events</span>
+                                <span>Cập nhật các sự kiện</span>
                             </li>
                         </ul>
                     </div>

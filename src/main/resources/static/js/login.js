@@ -16,14 +16,6 @@ if (toggle) {
     });
 }
 
-// Slide-in effect for login page
-if (document.body.classList.contains('login-page') || document.querySelector('.login-form h2')?.textContent?.toLowerCase().includes('login')) {
-    document.body.classList.add('pre-slide-in-left');
-    setTimeout(function() {
-        document.body.classList.add('slide-in-left');
-        document.body.classList.remove('pre-slide-in-left');
-    }, 10);
-}
 
 document.addEventListener("DOMContentLoaded", function() {
     // Chọn tất cả các phần tử muốn hiệu ứng (trừ alert)

@@ -22,6 +22,9 @@ public class UserProfile {
     @Column(length = 500)
     private String avatar;
 
+    @Column(length = 500)
+    private String cover;
+
     @Lob
     private String bio;
 

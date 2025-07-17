@@ -7,217 +7,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: #f6f7fb;
-        }
-        /* HEADER */
-        .header {
-            background: linear-gradient(90deg, #142850 0%, #27496d 100%);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            padding: 0 2.2rem;
-            height: 70px;
-            box-shadow: 0 4px 18px rgba(20,40,80,0.10);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-            margin-right: 2.2rem;
-            user-select: none;
-        }
-        .logo i {
-            color: #ff6b00;
-            font-size: 2.1rem;
-        }
-        .logo span {
-            font-size: 1.7rem;
-            font-weight: 700;
-            color: #fff;
-        }
-        .logo .logo-orange {
-            color: #ff6b00;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-        }
-        .search-bar {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            position: relative;
-            margin-right: 2.2rem;
-        }
-        .search-bar input {
-            width: 100%;
-            padding: 0.7rem 1.2rem 0.7rem 2.5rem;
-            border-radius: 30px;
-            border: 1.5px solid #e0e6ed;
-            outline: none;
-            font-size: 1.08rem;
-            background: #f8fafc;
-            color: #222;
-            transition: border 0.18s, box-shadow 0.18s;
-            box-shadow: 0 2px 8px rgba(20,40,80,0.04);
-        }
-        .search-bar input:focus {
-            border: 1.5px solid #ff6b00;
-            box-shadow: 0 2px 12px rgba(255,107,0,0.10);
-        }
-        .search-bar .fa-search {
-            position: absolute;
-            left: 1.1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #bfc8e6;
-            font-size: 1.15rem;
-        }
-        .header-menu {
-            display: flex;
-            align-items: center;
-            gap: 2.2rem;
-            margin-left: auto;
-            position: relative;
-        }
-        .header-menu .dropdown {
-            position: relative;
-        }
-        .header-menu .dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 120%;
-            background: #fff;
-            min-width: 140px;
-            box-shadow: 0 4px 16px rgba(20,40,80,0.13);
-            border-radius: 10px;
-            z-index: 100;
-            padding: 0.5rem 0;
-            transition: opacity 0.18s;
-        }
-        .header-menu .dropdown:hover .dropdown-content,
-        .header-menu .dropdown:focus-within .dropdown-content {
-            display: block;
-        }
-        .header-menu .dropdown-content a, .header-menu .dropdown-content form button {
-            display: block;
-            width: 100%;
-            background: none;
-            border: none;
-            color: #222;
-            text-align: left;
-            padding: 0.7rem 1.2rem;
-            font-size: 1rem;
-            font-family: inherit;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            border-radius: 6px;
-        }
-        .header-menu .dropdown-content a:hover, .header-menu .dropdown-content form button:hover {
-            background: #f6f7fb;
-            color: #ff6b00;
-        }
-        .header-menu a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.08rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.3rem 0.7rem;
-            border-radius: 8px;
-            transition: color 0.18s, background 0.18s, box-shadow 0.18s;
-            position: relative;
-        }
-        .header-menu a:hover, .header-menu a:focus {
-            color: #ff6b00;
-            background: rgba(255,107,0,0.08);
-        }
-        .header-menu i {
-            font-size: 1.15rem;
-            color: inherit;
-        }
-        .header-menu .menu-text {
-            opacity: 0;
-            max-width: 0;
-            margin-left: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            transition: opacity 0.18s, max-width 0.18s, margin-left 0.18s;
-            font-size: 1.08rem;
-            font-weight: 700;
-        }
-        .header-menu a:hover .menu-text,
-        .header-menu a:focus .menu-text {
-            opacity: 1;
-            max-width: 200px;
-            margin-left: 0.5rem;
-        }
-
-        .card {
-            box-shadow: 0 2px 8px rgba(35,50,107,0.08) !important;
-        }
-        .card-header {
-            color: #0F2E6F;
-        }
-        .list-group-item {
-            padding-left: 1.5rem ;
-            border: none !important;
-        }
-        a, .btn-link, .sidebar-link, .sidebar-link-block, .card a {
-            text-decoration: none !important;
-        }
-        .btn, .btn-light, .btn-link {
-            background: #fff !important;
-            color: inherit;
-            border: none !important;
-            box-shadow: none !important;
-            transition: color 0.15s, background 0.15s;
-        }
-        .btn-light:hover, .btn-link:hover, .sidebar-link:hover, .sidebar-link-block:hover, .card a:hover {
-            background: #f6f7fb !important;
-            color: #ff6b00 !important;
-            text-decoration: none !important;
-        }
-
-    </style>
+    <link rel="stylesheet" href="/css/user/layout.css">
 </head>
 <body>
 <!-- HEADER -->
-<div class="row m-0 header">
-    <div class="col-2 logo">
-        <i class="fas fa-graduation-cap"></i>
-        <span>Forumi<span class="logo-orange">kaa</span></span>
-    </div>
-    <div class="col-7 search-bar px-0">
-        <i class="fa fa-search"></i>
-        <input type="text" placeholder="Tìm kiếm trên Forumikaa...">
-    </div>
-    <div class="col-3 header-menu d-flex justify-content-end">
-        <a href="#"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>
-        <a href="#"><i class="fa-solid fa-envelope"></i><span class="menu-text">Tin nhắn</span></a>
-        <a href="#"><i class="fa-solid fa-user"></i><span class="menu-text">Tài khoản</span></a>
-        <div class="dropdown">
-            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-gear"></i><span class="menu-text">Cài đặt</span></a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <form th:action="@{/logout}" method="post" style="margin:0;">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                        <button type="submit" class="dropdown-item">Đăng xuất</button>
-                    </form>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+<div th:replace="~{fragments/user/header :: header}"></div>
+
 <div class="container py-4">
     <div class="row">
         <!-- SIDEBAR LEFT -->
@@ -287,7 +82,7 @@
             <div class="card mb-4 border-0 pb-2">
                 <div class="card-body d-flex align-items-center gap-3 pb-1">
                     <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle" width="44" height="44">
-                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn đang nghĩ gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?">
+                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn đang nghĩ gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?" data-bs-toggle="modal" data-bs-target="#postModal" readonly style="cursor:pointer;">
                 </div>
                 <hr style="color: #c3d2e0; margin: 1rem">
                 <div class="card-footer bg-white border-0 d-flex justify-content-between px-3 pt-0">
@@ -509,6 +304,35 @@
                 <a href="#" class="btn btn-link text-primary w-100 mt-2">Xem tất cả sự kiện</a>
             </div>
         </aside>
+    </div>
+</div>
+<!-- Modal Đăng Bài Viết -->
+<div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold mx-auto" id="postModalLabel">Tạo bài viết</h5>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle me-2" width="44" height="44">
+                    <div>
+                        <div class="fw-semibold">Minh Nguyễn</div>
+                        <div class="small text-muted"><i class="fa fa-globe-asia me-1"></i> Công khai</div>
+                    </div>
+                </div>
+                <textarea class="form-control border-0 fs-6" rows="6" placeholder="Bạn đang nghĩ gì?" style="resize:none; background:transparent;"></textarea>
+                <div class="d-flex gap-2 mt-3 justify-content-between">
+                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-regular fa-image text-success"></i> Ảnh</button>
+                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-solid fa-video text-danger"></i> Video</button>
+                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-solid fa-user-plus text-primary"></i> Gắn thẻ</button>
+                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-regular fa-calendar text-warning"></i> Sự kiện</button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn w-100 rounded-pill fw-bold py-2 bg-primary text-white">Đăng</button>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

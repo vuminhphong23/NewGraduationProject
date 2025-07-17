@@ -1,0 +1,27 @@
+<!-- fragments/user/header.html -->
+<div class="row m-0 header" th:fragment="header">
+    <div class="col-2 logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Forumi<span class="logo-orange">kaa</span></span>
+    </div>
+    <div class="col-7 search-bar px-0">
+        <i class="fa fa-search"></i>
+        <input type="text" placeholder="Tìm kiếm trên Forumikaa...">
+    </div>
+    <div class="col-3 header-menu d-flex justify-content-end">
+        <a th:href="@{/}"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>
+        <a th:href="@{/message}"><i class="fa-solid fa-envelope"></i><span class="menu-text">Tin nhắn</span></a>
+        <a th:href="@{/profile/{username}(username =${#authentication.name})}"><i class="fa-solid fa-user"></i><span class="menu-text">Tài khoản</span></a>
+        <div class="dropdown">
+            <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-gear"></i><span class="menu-text">Cài đặt</span></a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <form th:action="@{/logout}" method="post" style="margin:0;">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <button type="submit" class="dropdown-item">Đăng xuất</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

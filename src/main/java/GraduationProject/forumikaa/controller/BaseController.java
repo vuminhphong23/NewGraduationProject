@@ -49,18 +49,12 @@ public class BaseController {
     @GetMapping("/")
     public String home(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userName = "Khách";
-        if (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser")) {
-            Object principal = authentication.getPrincipal();
-            if (principal instanceof GraduationProject.forumikaa.entity.User) {
-                User user = (User) principal;
-                userName = user.getFirstName() + (user.getLastName() != null ? (" " + user.getLastName()) : "");
-            } else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-                userName = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
-            } else if (principal instanceof String) {
-                userName = (String) principal;
-            }
-        }
+        //getPrincipal() sẽ trả về một đối tượng đại diện cho người dùng đã đăng nhập.
+        //Trong Spring Security, khi một người dùng chưa đăng nhập, đối tượng Authentication sẽ có principal là một chuỗi "anonymousUser".
+        String userName = (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser"))
+                ? authentication.getName()
+                : "Khách";
+
         model.addAttribute("userName", userName);
         return "index";
     }
@@ -76,6 +70,10 @@ public class BaseController {
         return "register";
     }
 
+    //model.addAttribute sẽ giữ dữ liệu trong request hiện tại, dữ liệu này sẽ bị mất khi chuyển hướng (redirect).
+    //
+    //addFlashAttribute giữ dữ liệu tạm thời chỉ trong một request tiếp theo sau khi redirect và sẽ tự động bị xóa
+    //sau khi request đó kết thúc. Điều này rất hữu ích khi bạn muốn hiển thị một thông báo sau khi chuyển hướng mà không phải giữ dữ liệu lâu dài trong session.
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("userDto") UserDto userDto,
                               BindingResult result,
@@ -99,17 +97,16 @@ public class BaseController {
             User user = new User();
             user.setUsername(userDto.getUsername());
             user.setEmail(userDto.getEmail());
-            user.setPassword(passwordEncoder != null ? passwordEncoder.encode(userDto.getPassword()) : userDto.getPassword());
+            user.setPassword(passwordEncoder.encode(userDto.getPassword()));
             user.setFirstName(userDto.getFirstName());
             user.setLastName(userDto.getLastName());
-            if (roleService != null) {
-                Role userRole = roleService.findByName("ROLE_USER")
-                        .orElseThrow(() -> new RuntimeException("Default role not found"));
-                user.setRoles(Set.of(userRole));
-            }
-            if (userService != null) {
-                userService.save(user);
-            }
+
+            Role userRole = roleService.findByName("ROLE_USER")
+                    .orElseThrow(() -> new RuntimeException("Default role not found"));
+            user.setRoles(Set.of(userRole));
+
+            userService.save(user);
+
             redirectAttributes.addFlashAttribute("successMessage", "Registration successful! Please login.");
             return "redirect:/login";
         } catch (Exception e) {

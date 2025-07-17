@@ -7,6 +7,7 @@ body { background: #f6f8fb; }
     background: #0d1a44;
     min-height: 100vh;
     color: #fff;
+    position: fixed;
 }
 .sidebar .nav-link {
     color: #b0c4de;
@@ -14,7 +15,12 @@ body { background: #f6f8fb; }
     margin-bottom: 5px;
     font-size: 1rem;
 }
+
 .sidebar .nav-link.active, .sidebar .nav-link:hover {
+    background: #1f2e5a;
+    color: #fff;
+}
+.active{
     background: #1f2e5a;
     color: #fff;
 }
@@ -32,7 +38,9 @@ body { background: #f6f8fb; }
 }
 .sidebar .admin-profile {
     border-top: 1px solid #1f2e5a;
-    margin-top: 2rem;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
     padding-top: 1rem;
     display: flex;
     align-items: center;
@@ -63,6 +71,7 @@ body { background: #f6f8fb; }
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: fixed;
 }
 .header-bar .search-box {
     width: 300px;
