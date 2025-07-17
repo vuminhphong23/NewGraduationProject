@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<User> findPaginated(String keyword, String status, Pageable pageable) {
+        //truy vấn động
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -106,5 +108,10 @@ public class UserServiceImpl implements UserService {
             }
             userDao.save(user);
         }
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userDao.findAll();
     }
 } 

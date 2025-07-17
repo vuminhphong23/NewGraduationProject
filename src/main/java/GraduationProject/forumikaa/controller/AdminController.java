@@ -40,7 +40,9 @@ public class AdminController {
     }
 
     @GetMapping("/admin")
-    public String adminPage() {
+    public String adminPage(Model model) {
+        long totalUsers = userService.findAll().size();
+        model.addAttribute("totalUsers", totalUsers);
         return "admin";
     }
 

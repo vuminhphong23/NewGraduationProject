@@ -18,12 +18,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         
-        String redirectUrl = "/"; // Default redirect URL for users
+        String redirectUrl = "/"; // URL mặc định
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         for (GrantedAuthority grantedAuthority : authorities) {
             if (grantedAuthority.getAuthority().equals("ROLE_ADMIN")) {
-                redirectUrl = "/admin"; // Redirect to admin dashboard for admins
+                redirectUrl = "/admin"; // Chuyển đến admin
                 break;
             }
         }

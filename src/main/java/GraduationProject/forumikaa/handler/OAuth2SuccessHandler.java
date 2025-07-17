@@ -67,10 +67,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private User processOAuth2User(OAuth2User oauth2User) {
         String email = oauth2User.getAttribute("email");
         return userDao.findByEmail(email)
-                .map(user -> {
-                    updateExistingUser(user, oauth2User);
-                    return user;
-                })
                 .orElseGet(() -> registerNewUser(oauth2User));
     }
 
@@ -89,15 +85,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         newUser.setUsername(finalUsername);
 
-        if (name != null && !name.isBlank()) {
-            String[] nameParts = name.split(" ", 2);
-            newUser.setFirstName(nameParts[0]);
-            newUser.setLastName(nameParts.length > 1 ? nameParts[1] : "");
-        } else {
-            newUser.setFirstName("User");
-            newUser.setLastName("");
-        }
-
         newUser.setPassword("OAUTH2_USER"); // This password won't be used for login
 
         Role userRole = roleDao.findByName("ROLE_USER")
@@ -107,19 +94,4 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         return userDao.save(newUser);
     }
 
-    private void updateExistingUser(User existingUser, OAuth2User oauth2User) {
-        String name = oauth2User.getAttribute("name");
-        if (name != null && !name.isBlank()) {
-            String[] nameParts = name.split(" ", 2);
-            String firstName = nameParts[0];
-            String lastName = nameParts.length > 1 ? nameParts[1] : "";
-
-            // Check if name needs updating to reduce unnecessary DB writes
-            if (!firstName.equals(existingUser.getFirstName()) || !lastName.equals(existingUser.getLastName())) {
-                existingUser.setFirstName(firstName);
-                existingUser.setLastName(lastName);
-                userDao.save(existingUser);
-            }
-        }
-    }
 } 
