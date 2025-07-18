@@ -95,6 +95,11 @@ public class UserServiceImpl implements UserService {
             existingUser.setFirstName(user.getFirstName());
             existingUser.setLastName(user.getLastName());
             existingUser.setEnabled(user.isEnabled());
+            existingUser.setGender(user.getGender());
+            existingUser.setPhone(user.getPhone());
+            existingUser.setAddress(user.getAddress());
+            existingUser.setBirthDate(user.getBirthDate());
+            existingUser.setProfileInfo(user.getProfileInfo());
             if (user.getPassword() != null && !user.getPassword().isEmpty()) {
                 existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
             }
@@ -113,5 +118,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAll() {
         return userDao.findAll();
+    }
+
+    @Override
+    public boolean existsByUsername(String username, Long userId) {
+        Optional<User> existingUser = userDao.findByUsername(username);
+        return existingUser.isPresent() && !existingUser.get().getId().equals(userId);
+    }
+
+    @Override
+    public boolean existsByEmail(String email, Long userId) {
+        Optional<User> existingUser = userDao.findByEmail(email);
+        return existingUser.isPresent() && !existingUser.get().getId().equals(userId);
+    }
+
+    @Override
+    public boolean existsPhone(String phone, Long userId) {
+        Optional<User> existingUser = userDao.findByPhone(phone);
+        return existingUser.isPresent() && !existingUser.get().getId().equals(userId);
+    }
+
+    @Override
+    public boolean checkPassword(String password) {
+        return password != null && password.length() >= 6;
     }
 } 

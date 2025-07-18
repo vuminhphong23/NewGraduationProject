@@ -16,4 +16,12 @@ public interface UserService {
     Optional<User> findById(Long userId);
     void save(User user);
     List<User> findAll();
+
+    boolean existsByUsername(String username, Long userId) ;
+
+    boolean existsByEmail(String email, Long userId);
+
+    boolean existsPhone(String phone, Long userId);
+    boolean checkPassword(String password);
+
 } 

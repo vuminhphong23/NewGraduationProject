@@ -7,39 +7,13 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { background: #f6f8fb; }
-        .sidebar { background: #0d1a44; min-height: 100vh; color: #fff; }
-        .sidebar .nav-link { color: #b0c4de; border-radius: 8px; margin-bottom: 5px; }
-        .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #1f2e5a; color: #fff; }
-        .sidebar .nav-link .bi { margin-right: 10px; }
-
-         .logo {
-             display: flex;
-             align-items: center;
-             gap: 0.5rem;
-             margin-bottom: 4rem;
-         }
-        .logo i {
-            color: #ff6b00;
-            font-size: 1.75rem;
-        }
-        .logo span {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .admin-profile { border-top: 1px solid #1f2e5a; }
-        .btn-save { background: #0d1a44; color: #fff; }
-        .btn-save:hover { background: #1f2e5a; }
-    </style>
+    <link rel="stylesheet" href="/css/admin/layout.css">
 </head>
 <body>
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+        <div th:replace="~{fragments/admin/sidebar :: sidebar}"></div>
 
         <!-- Main Content -->
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
@@ -64,18 +38,25 @@
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" th:field="*{email}" required>
                         </div>
+
                     </div>
+                    <span th:if="${#fields.hasErrors('username')}" class="text-danger small" th:errors="*{username}"></span>
+                    <span th:if="${#fields.hasErrors('email')}" class="text-danger small" th:errors="*{email}"></span>
+
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="firstName" class="form-label">Họ</label>
                             <input type="text" class="form-control" id="firstName" th:field="*{firstName}">
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="lastName" class="form-label">Tên</label>
                             <input type="text" class="form-control" id="lastName" th:field="*{lastName}">
                         </div>
                     </div>
+                    <span th:if="${#fields.hasErrors('firstName')}" class="text-danger small" th:errors="*{firstName}"></span>
+                    <span th:if="${#fields.hasErrors('lastName')}" class="text-danger small" th:errors="*{lastName}"></span>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -87,33 +68,43 @@
                                 <option value="KHAC">Khác</option>
                             </select>
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Số điện thoại</label>
                             <input type="text" class="form-control" id="phone" th:field="*{phone}">
                         </div>
                     </div>
+                    <span th:if="${#fields.hasErrors('gender')}" class="text-danger small" th:errors="*{gender}"></span>
+                    <span th:if="${#fields.hasErrors('phone')}" class="text-danger small" th:errors="*{phone}"></span>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="address" class="form-label">Địa chỉ</label>
                             <input type="text" class="form-control" id="address" th:field="*{address}">
                         </div>
+
                         <div class="col-md-6 mb-3">
                             <label for="birthDate" class="form-label">Ngày sinh</label>
                             <input type="date" class="form-control" id="birthDate" th:field="*{birthDate}">
                         </div>
                     </div>
+                    <span th:if="${#fields.hasErrors('address')}" class="text-danger small" th:errors="*{address}"></span>
+                    <span th:if="${#fields.hasErrors('birthDate')}" class="text-danger small" th:errors="*{birthDate}"></span>
 
                     <div class="mb-3">
                         <label for="profileInfo" class="form-label">Giới thiệu</label>
                         <textarea class="form-control" id="profileInfo" th:field="*{profileInfo}" rows="3"></textarea>
                     </div>
+                    <span th:if="${#fields.hasErrors('profileInfo')}" class="text-danger small" th:errors="*{profileInfo}"></span>
+
 
                     <div class="mb-3">
                         <label for="password" class="form-label">Mật khẩu</label>
                         <input type="password" class="form-control" id="password" th:field="*{password}"
                                th:placeholder="${user.id == null ? 'Bắt buộc' : 'Để trống nếu không muốn đổi'}">
                     </div>
+                    <span th:if="${#fields.hasErrors('password')}" class="text-danger small" th:errors="*{password}"></span>
+
 
                     <div class="mb-3">
                         <label class="form-label">Vai trò</label>
@@ -131,7 +122,7 @@
                         <label class="form-check-label" for="enabledSwitch">Hoạt động</label>
                     </div>
 
-                    <button type="submit" class="btn btn-save">Lưu thay đổi</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                 </form>
             </div>
         </main>

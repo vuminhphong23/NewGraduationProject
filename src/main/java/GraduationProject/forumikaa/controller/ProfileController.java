@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class ProfileController {
@@ -29,14 +27,14 @@ public class ProfileController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.findByUsername(authentication.getName()).orElseThrow(() -> new IllegalArgumentException("Invalid user"));
         model.addAttribute("user", user);
-        return "profile";
+        return "user/profile";
     }
 
     @GetMapping("/profile/edit/{username}")
     public String editProfilePage(@PathVariable String username, Model model) {
         User user = userService.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + username));
         model.addAttribute("user", user);
-        return "profile-edit";
+        return "user/profile-edit";
     }
 
     @PostMapping("/profile/update")
@@ -66,7 +64,7 @@ public class ProfileController {
 
         userService.save(existingUser);
         model.addAttribute("user", existingUser);
-        return "redirect: profile";
+        return "redirect:profile";
     }
 }
 

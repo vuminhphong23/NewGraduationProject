@@ -1,13 +1,9 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.service.PasswordResetService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -24,7 +20,7 @@ public class ForgotPasswordController {
 
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
-        return "forgot-password";
+        return "user/forgot-password";
     }
 
     @PostMapping("/forgot-password")
@@ -44,7 +40,7 @@ public class ForgotPasswordController {
 
     @GetMapping("/reset-password")
     public String showResetPasswordForm() {
-        return "reset-password";
+        return "user/reset-password";
     }
 
     @PostMapping("/reset-password")

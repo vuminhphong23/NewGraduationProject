@@ -1,7 +1,5 @@
 package GraduationProject.forumikaa.controller;
 
-import GraduationProject.forumikaa.dao.RoleDao;
-import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dto.UserDto;
 import GraduationProject.forumikaa.entity.Role;
 import GraduationProject.forumikaa.entity.User;
@@ -56,18 +54,18 @@ public class BaseController {
                 : "Khách";
 
         model.addAttribute("userName", userName);
-        return "index";
+        return "user/index";
     }
 
     @GetMapping("/login")
     public String login() {
-        return "login";
+        return "user/login";
     }
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("userDto", new UserDto());
-        return "register";
+        return "user/register";
     }
 
     //model.addAttribute sẽ giữ dữ liệu trong request hiện tại, dữ liệu này sẽ bị mất khi chuyển hướng (redirect).
@@ -79,19 +77,19 @@ public class BaseController {
                               BindingResult result,
                               RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            return "register";
+            return "user/register";
         }
         if (!userDto.getPassword().equals(userDto.getConfirmPassword())) {
             result.rejectValue("confirmPassword", "error.userDto", "Passwords do not match");
-            return "register";
+            return "user/register";
         }
-        if (userService != null && userService.findByUsername(userDto.getUsername().trim()).isPresent()) {
+        if (userService.findByUsername(userDto.getUsername().trim()).isPresent()) {
             result.rejectValue("username", "error.userDto", "Username already exists");
-            return "register";
+            return "user/register";
         }
-        if (userService != null && userService.findByEmail(userDto.getEmail().trim()).isPresent()) {
+        if (userService.findByEmail(userDto.getEmail().trim()).isPresent()) {
             result.rejectValue("email", "error.userDto", "Email already exists");
-            return "register";
+            return "user/register";
         }
         try {
             User user = new User();
@@ -111,7 +109,7 @@ public class BaseController {
             return "redirect:/login";
         } catch (Exception e) {
             result.rejectValue("", "error.userDto", "Registration failed. Please try again.");
-            return "register";
+            return "user/register";
         }
     }
 

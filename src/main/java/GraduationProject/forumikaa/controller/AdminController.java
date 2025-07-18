@@ -1,7 +1,5 @@
 package GraduationProject.forumikaa.controller;
 
-import GraduationProject.forumikaa.dao.UserDao;
-import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.RoleService;
 import GraduationProject.forumikaa.service.UserService;
@@ -18,8 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
 
 @Controller
 public class AdminController {
@@ -43,7 +39,7 @@ public class AdminController {
     public String adminPage(Model model) {
         long totalUsers = userService.findAll().size();
         model.addAttribute("totalUsers", totalUsers);
-        return "admin";
+        return "admin/admin";
     }
 
     @GetMapping("/admin/users")
@@ -56,7 +52,7 @@ public class AdminController {
         model.addAttribute("userPage", userPage);
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
-        return "user-management";
+        return "admin/user-management";
     }
 
     @PostMapping("/admin/users/{id}/toggle-status")
@@ -78,7 +74,7 @@ public class AdminController {
     public String addUserForm(Model model) {
         model.addAttribute("user", new User());
         model.addAttribute("allRoles", roleService.findAll());
-        return "user-form";
+        return "admin/user-form";
     }
 
     @GetMapping("/admin/users/edit/{id}")
@@ -86,13 +82,30 @@ public class AdminController {
         User user = userService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với id " + id));
         model.addAttribute("user", user);
         model.addAttribute("allRoles", roleService.findAll());
-        return "user-form";
+        return "admin/user-form";
     }
 
     @PostMapping("/admin/users/save")
-    public String saveUser(@ModelAttribute("userDto") @Valid User user, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+    public String saveUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        model.addAttribute("allRoles", roleService.findAll());
         if(bindingResult.hasErrors()){
-            return "user-form";
+            return "admin/user-form";
+        }
+        if(userService.existsByUsername(user.getUsername(), user.getId())){
+            bindingResult.rejectValue("username", "error.user", "Tài khoản đã tồn tại");
+            return "admin/user-form";
+        }
+        if(userService.existsByEmail(user.getEmail(), user.getId())){
+            bindingResult.rejectValue("email", "error.user", "Email đã tồn tại");
+            return "admin/user-form";
+        }
+        if(userService.existsPhone(user.getPhone(), user.getId())){
+            bindingResult.rejectValue("phone", "error.user", "Số điện thoại đã tồn tại");
+            return "admin/user-form";
+        }
+        if(userService.checkPassword(user.getPassword())){
+            bindingResult.rejectValue("password", "error.user", "Mật khẩu phải nhiều hơn 6 ký tự");
+            return "admin/user-form";
         }
         userService.save(user);
         redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công.");
