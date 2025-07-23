@@ -52,6 +52,11 @@
                             <option value="active" th:selected="${status == 'active'}">Hoạt động</option>
                             <option value="banned" th:selected="${status == 'banned'}">Bị cấm</option>
                         </select>
+                        <select name="roleName" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                            <option value="" th:selected="${ roleName== ''}">Tất cả quyền</option>
+                            <option value="ROLE_ADMIN" th:selected="${roleName == 'ROLE_ADMIN'}">Admin</option>
+                            <option value="ROLE_USER" th:selected="${roleName == 'ROLE_USER'}">User</option>
+                        </select>
                         <button type="submit" class="btn filter-btn"><i class="bi bi-funnel"></i> Lọc</button>
                         <a th:href="@{/admin/users/add}" class="btn btn-add-user"><i class="bi bi-plus-lg"></i> Thêm người dùng</a>
                     </div>

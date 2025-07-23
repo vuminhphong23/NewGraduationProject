@@ -38,13 +38,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         boolean isOAuth2User = "OAUTH2_USER".equals(user.getPassword());
         
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(), // enabled
-                true,             // accountNonExpired
-                true,             // credentialsNonExpired
-                true,             // accountNonLocked
-                authorities
+                user.getUsername(),        // tên đăng nhập
+                user.getPassword(),        // mật khẩu đã mã hoá
+                user.isEnabled(),          // tài khoản có đang hoạt động không
+                true,                      // tài khoản có hết hạn không
+                true,                      // thông tin đăng nhập có hết hạn không
+                true,                      // tài khoản có bị khoá không
+                authorities                // danh sách quyền (roles)
         );
     }
 } 

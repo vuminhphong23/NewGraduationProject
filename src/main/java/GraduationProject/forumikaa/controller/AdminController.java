@@ -47,11 +47,13 @@ public class AdminController {
                                      @RequestParam(defaultValue = "1") int page,
                                      @RequestParam(defaultValue = "10") int size,
                                      @RequestParam(required = false) String keyword,
+                                     @RequestParam(required = false, defaultValue = "") String roleName,
                                      @RequestParam(required = false, defaultValue = "") String status) {
-        Page<User> userPage = userService.findPaginated(keyword, status, PageRequest.of(page - 1, size));
+        Page<User> userPage = userService.findPaginated(keyword, status, roleName, PageRequest.of(page - 1, size));
         model.addAttribute("userPage", userPage);
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
+        model.addAttribute("roleName", roleName);
         return "admin/user-management";
     }
 

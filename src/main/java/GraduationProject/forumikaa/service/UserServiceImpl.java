@@ -3,6 +3,8 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.entity.User;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Page<User> findPaginated(String keyword, String status, Pageable pageable) {
+    public Page<User> findPaginated(String keyword, String status, String roleName, Pageable pageable) {
         //truy vấn động
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
 
@@ -51,6 +53,16 @@ public class UserServiceImpl implements UserService {
                     return cb.isFalse(root.get("enabled"));
                 }
                 return cb.conjunction();
+            });
+        }
+
+        if (roleName != null && !roleName.trim().isEmpty()) {
+            spec = spec.and((root, query, cb) -> {
+                Join<Object, Object> rolesJoin = root.join("roles", JoinType.LEFT);
+
+                return cb.equal(rolesJoin.get("name"), roleName);
+//                return cb.like(rolesJoin.get("name"), "%" + roleName + "%");
+
             });
         }
         

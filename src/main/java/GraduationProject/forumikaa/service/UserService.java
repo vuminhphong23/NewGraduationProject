@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    Page<User> findPaginated(String keyword, String status, Pageable pageable);
+    Page<User> findPaginated(String keyword, String status, String roleName, Pageable pageable);
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
     void updateUserEnabledStatus(Long userId, boolean enabled);
