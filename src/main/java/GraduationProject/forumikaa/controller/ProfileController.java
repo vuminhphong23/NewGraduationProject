@@ -1,7 +1,12 @@
 package GraduationProject.forumikaa.controller;
 
+import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.service.PostService;
+import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.service.UserService;
+import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,10 +17,15 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.util.List;
+
 @Controller
 public class ProfileController {
 
     private UserService userService;
+    @Autowired private PostService postService;
+    @Autowired private TopicService topicService;
+    @Autowired private SecurityUtil securityUtil;
 
     @Autowired
     public void setUserService(UserService userService) {
@@ -24,8 +34,25 @@ public class ProfileController {
 
     @GetMapping("/profile/{username}")
     public String profilePage(@PathVariable String username, Model model) {
-        User user = userService.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+
+        // Lấy các bài viết của người dùng này
+        List<PostDto> userPosts = postService.getUserPosts(user.getId());
+        List<Topic> topics = topicService.getAllTopics();
         model.addAttribute("user", user);
+        model.addAttribute("posts", userPosts);
+        model.addAttribute("topics", topics);
+        model.addAttribute("postCount", userPosts.size());
+
+        // Kiểm tra xem có phải profile của chính mình không
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            model.addAttribute("isOwnProfile", currentUserId.equals(user.getId()));
+        } catch (Exception e) {
+            model.addAttribute("isOwnProfile", false);
+        }
+
         return "user/profile";
     }
 
@@ -107,4 +134,3 @@ public class ProfileController {
     }
 
 }
-

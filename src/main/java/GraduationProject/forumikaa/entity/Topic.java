@@ -17,11 +17,8 @@ public class Topic {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, columnDefinition = "NVARCHAR(255)")
     private String name;
-
-    @Lob
-    private String description;
 
     @Column(name = "is_fixed")
     private boolean isFixed = true;

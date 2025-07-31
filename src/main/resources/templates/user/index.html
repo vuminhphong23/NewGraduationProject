@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forumikaa - Trang chủ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
+    <link rel="stylesheet" href="/css/post-modal.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 <body>
 <!-- HEADER -->
@@ -91,120 +93,87 @@
                     <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-calendar"></i>Sự kiện</button>
                 </div>
             </div>
-            <!-- Post 1 -->
-            <div class="card mb-4 border-0">
-                <div class="card-body pb-2">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
+            <!-- Posts Feed -->
+
+            <!-- Posts Feed -->
+            <div id="feed">
+                <!-- Nếu không có post -->
+                <div th:if="${posts == null or #lists.isEmpty(posts)}" class="text-center text-muted my-4">
+                    Chưa có bài viết nào. Hãy là người đầu tiên đăng bài nhé!
+                </div>
+
+                <!-- Danh sách bài viết -->
+                <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm">
+                    <!-- Header -->
+                    <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" class="rounded-circle" width="38" height="38">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg"
+                                 class="rounded-circle" width="40" height="40" alt="avatar">
                             <div>
-                                <div class="fw-semibold">Linh Trần</div>
-                                <div class="text-muted small">2 giờ trước</div>
+                                <div class="fw-semibold" th:text="${post.userName}">User name</div>
+                                <div class="text-muted small">
+                                    <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
+                                    •
+                                    <span th:switch="${post.privacy.name()}">
+                                        <i th:case="'PUBLIC'" class="fa fa-globe-asia"></i>
+                                        <i th:case="'FRIENDS'" class="fa fa-users"></i>
+                                        <i th:case="'PRIVATE'" class="fa fa-lock"></i>
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-ellipsis"></i></button>
+
+                        <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary" th:if="${post.topicName != null}"
+                      th:text="${post.topicName}">Chủ đề</span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" th:href="@{'/posts/' + ${post.id}}">Xem chi tiết</a></li>
+                                    <li><a class="dropdown-item" th:href="@{'/posts/edit/' + ${post.id}}">Chỉnh sửa</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" th:attr="data-id=${post.id}" onclick="deletePost(this)">Xoá</a></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-2">Vừa hoàn thành bài báo cáo về ứng dụng AI trong giáo dục! Rất háo hức được trình bày tại hội nghị sắp tới. Có ai đang nghiên cứu chủ đề tương tự không? #AI #GiáoDục #NghiênCứu</div>
-                </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <div class="d-flex justify-content-between text-muted small mb-2">
-                        <span>24 lượt thích</span>
-                        <span>8 bình luận</span>
+
+                    <!-- Body -->
+                    <div class="card-body pt-2">
+                        <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
+                            th:text="${post.title}">Tiêu đề bài viết</h5>
+
+                        <p class="card-text" style="white-space: pre-wrap;"
+                           th:text="${post.content}">Nội dung bài viết...</p>
                     </div>
-                    <hr style="color: #c3d2e0">
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-light text-warning flex-fill me-2"><i class="fa-regular fa-heart me-1"></i>Thích</button>
-                        <button class="btn btn-light text-secondary flex-fill me-2"><i class="fa-regular fa-comment me-1"></i>Bình luận</button>
-                        <button class="btn btn-light text-secondary flex-fill"><i class="fa-solid fa-share me-1"></i>Chia sẻ</button>
+
+                    <!-- Footer (like/comment/share placeholders) -->
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span th:text="${post.likeCount != null ? post.likeCount : 0} + ' lượt thích'">0 lượt thích</span>
+                            <span th:text="${post.commentCount != null ? post.commentCount : 0} + ' bình luận'">0 bình luận</span>
+                        </div>
+                        <hr class="my-2" style="color: #c3d2e0;">
+                        <div class="d-flex justify-content-around">
+                            <button class="btn btn-light d-flex align-items-center gap-2">
+                                <i class="fa-regular fa-thumbs-up"></i> Thích
+                            </button>
+                            <button class="btn btn-light d-flex align-items-center gap-2">
+                                <i class="fa-regular fa-comment"></i> Bình luận
+                            </button>
+                            <button class="btn btn-light d-flex align-items-center gap-2">
+                                <i class="fa-regular fa-share-from-square"></i> Chia sẻ
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <!-- Post 2 -->
-            <div class="card mb-4 border-0">
-                <div class="card-body pb-2">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" class="rounded-circle" width="38" height="38">
-                            <div>
-                                <div class="fw-semibold">Linh Trần</div>
-                                <div class="text-muted small">2 giờ trước</div>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-ellipsis"></i></button>
-                    </div>
-                    <div class="mb-2">Nhắc nhở: Đăng ký học kỳ mùa xuân bắt đầu từ thứ Hai tuần sau. Đừng quên kiểm tra cổng thông tin sinh viên để biết thời gian đăng ký của bạn!</div>
-                    <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=600&q=80" class="img-fluid rounded mb-2" alt="Graduation">
-                </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <div class="d-flex justify-content-between text-muted small mb-2">
-                        <span>156 lượt thích</span>
-                        <span>42 bình luận</span>
-                    </div>
-                    <hr style="color: #c3d2e0">
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-light text-warning flex-fill me-2"><i class="fa-regular fa-heart me-1"></i>Thích</button>
-                        <button class="btn btn-light text-secondary flex-fill me-2"><i class="fa-regular fa-comment me-1"></i>Bình luận</button>
-                        <button class="btn btn-light text-secondary flex-fill"><i class="fa-solid fa-share me-1"></i>Chia sẻ</button>
-                    </div>
-                </div>
-            </div>
-            <!-- Post 3 -->
-            <div class="card mb-4 border-0">
-                <div class="card-body pb-2">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" class="rounded-circle" width="38" height="38">
-                            <div>
-                                <div class="fw-semibold">Linh Trần</div>
-                                <div class="text-muted small">2 giờ trước</div>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-ellipsis"></i></button>
-                    </div>
-                    <div class="mb-2">Cuộc thi hackathon đã thành công rực rỡ! Chúc mừng tất cả các đội tham gia, đặc biệt là đội 'Code Wizards' với giải pháp điều hướng khuôn viên sáng tạo.</div>
-                    <img src="https://images.unsplash.com/photo-1503676382389-4809596d5290?auto=format&fit=crop&w=600&q=80" class="img-fluid rounded mb-2" alt="Hackathon">
-                </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <div class="d-flex justify-content-between text-muted small mb-2">
-                        <span>89 lượt thích</span>
-                        <span>15 bình luận</span>
-                    </div>
-                    <hr style="color: #c3d2e0">
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-light text-warning flex-fill me-2"><i class="fa-regular fa-heart me-1"></i>Thích</button>
-                        <button class="btn btn-light text-secondary flex-fill me-2"><i class="fa-regular fa-comment me-1"></i>Bình luận</button>
-                        <button class="btn btn-light text-secondary flex-fill"><i class="fa-solid fa-share me-1"></i>Chia sẻ</button>
-                    </div>
-                </div>
-            </div>
-            <!-- Post 4 -->
-            <div class="card mb-4 border-0">
-                <div class="card-body pb-2">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="avatar" class="rounded-circle" width="38" height="38">
-                            <div>
-                                <div class="fw-semibold">Linh Trần</div>
-                                <div class="text-muted small">2 giờ trước</div>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-link text-secondary"><i class="fa-solid fa-ellipsis"></i></button>
-                    </div>
-                    <div class="mb-2">Tìm bạn học cùng ôn thi Giải tích sắp tới. Ai muốn lập nhóm học thì nhắn mình nhé! Có thể học ở thư viện hoặc online.</div>
-                </div>
-                <div class="card-footer bg-white border-0 pt-0">
-                    <div class="d-flex justify-content-between text-muted small mb-2">
-                        <span>12 lượt thích</span>
-                        <span>23 bình luận</span>
-                    </div>
-                    <hr style="color: #c3d2e0">
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-light text-warning flex-fill me-2"><i class="fa-regular fa-heart me-1"></i>Thích</button>
-                        <button class="btn btn-light text-secondary flex-fill me-2"><i class="fa-regular fa-comment me-1"></i>Bình luận</button>
-                        <button class="btn btn-light text-secondary flex-fill"><i class="fa-solid fa-share me-1"></i>Chia sẻ</button>
-                    </div>
-                </div>
-            </div>
+
+
+
+
+
         </main>
         <!-- SIDEBAR RIGHT -->
         <aside class="col-lg-3 d-none d-lg-block">
@@ -249,6 +218,7 @@
                 </ul>
                 <a href="#" class="btn btn-link text-primary w-100 mt-2">Xem tất cả thông báo</a>
             </div>
+
             <div class="card mb-4 border-0">
                 <div class="card-header border-0 fw-bold fs-5 bg-white d-flex align-items-center justify-content-between pt-3">
                     <span>Chủ đề nổi bật</span>
@@ -308,33 +278,143 @@
 </div>
 <!-- Modal Đăng Bài Viết -->
 <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 shadow">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 shadow border-0">
             <div class="modal-header border-0 pb-0">
                 <h5 class="modal-title fw-bold mx-auto" id="postModalLabel">Tạo bài viết</h5>
             </div>
             <div class="modal-body">
+                <!-- User Info -->
                 <div class="d-flex align-items-center mb-3">
-                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle me-2" width="44" height="44">
-                    <div>
-                        <div class="fw-semibold">Minh Nguyễn</div>
-                        <div class="small text-muted"><i class="fa fa-globe-asia me-1"></i> Công khai</div>
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle me-3" width="48" height="48">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold fs-6" th:text="${userName}">Tên người dùng</div>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle d-flex align-items-center gap-2" type="button" id="privacyDropdown" data-bs-toggle="dropdown">
+                                <i class="fa fa-globe-asia text-primary"></i>
+                                <span id="privacyText">Công khai</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" data-privacy="PUBLIC">
+                                    <i class="fa fa-globe-asia text-primary"></i>
+                                    <div>
+                                        <div class="fw-semibold">Công khai</div>
+                                        <div class="small text-muted">Ai cũng có thể xem</div>
+                                    </div>
+                                </a></li>
+                                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" data-privacy="FRIENDS">
+                                    <i class="fa fa-users text-success"></i>
+                                    <div>
+                                        <div class="fw-semibold">Bạn bè</div>
+                                        <div class="small text-muted">Chỉ bạn bè có thể xem</div>
+                                    </div>
+                                </a></li>
+                                <li><a class="dropdown-item d-flex align-items-center gap-2" href="#" data-privacy="PRIVATE">
+                                    <i class="fa fa-lock text-warning"></i>
+                                    <div>
+                                        <div class="fw-semibold">Riêng tư</div>
+                                        <div class="small text-muted">Chỉ bạn có thể xem</div>
+                                    </div>
+                                </a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <textarea class="form-control border-0 fs-6" rows="6" placeholder="Bạn đang nghĩ gì?" style="resize:none; background:transparent;"></textarea>
-                <div class="d-flex gap-2 mt-3 justify-content-between">
-                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-regular fa-image text-success"></i> Ảnh</button>
-                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-solid fa-video text-danger"></i> Video</button>
-                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-solid fa-user-plus text-primary"></i> Gắn thẻ</button>
-                    <button class="btn btn-light d-flex align-items-center gap-1"><i class="fa-regular fa-calendar text-warning"></i> Sự kiện</button>
-                </div>
+
+                <!-- Post Form -->
+                <form id="postForm">
+                    <div class="mb-3">
+                        <input type="text" class="form-control border-0 fs-5 fw-semibold" id="postTitle" placeholder="Tiêu đề bài viết..." maxlength="100">
+                        <div class="text-muted small text-end mt-1">
+                            <span id="titleCount">0</span>/100
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <textarea class="form-control border-0 fs-6" id="postContent" rows="6" placeholder="Bạn đang nghĩ gì?" style="resize:none; background:transparent;" maxlength="2000"></textarea>
+                        <div class="text-muted small text-end mt-1">
+                            <span id="contentCount">0</span>/2000
+                        </div>
+                    </div>
+
+                    <!-- Topic Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Chủ đề</label>
+                        <select class="form-select" id="postTopic" required>
+                            <option value="">Chọn chủ đề...</option>
+                            <option th:each="t : ${topics}"
+                                    th:value="${t.id}"
+                                    th:text="${t.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Media Options -->
+                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                            <i class="fa-regular fa-image text-success"></i>
+                            <span>Ảnh</span>
+                        </button>
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-video text-danger"></i>
+                            <span>Video</span>
+                        </button>
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-primary"></i>
+                            <span>Gắn thẻ</span>
+                        </button>
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                            <i class="fa-regular fa-calendar text-warning"></i>
+                            <span>Sự kiện</span>
+                        </button>
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div id="postPreview" class="d-none">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6 class="fw-semibold mb-2">Xem trước</h6>
+                                <div id="previewContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn w-100 rounded-pill fw-bold py-2 bg-primary text-white">Đăng</button>
-            </div>
+            <button type="button" class="btn btn-primary rounded-pill px-4" id="publishBtn" >
+                <span class="spinner-border spinner-border-sm me-2 d-none" id="publishSpinner"></span>
+                <span id="publishText">Đăng</span>
+            </button>
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Success Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="successToast" class="toast" role="alert">
+        <div class="toast-header bg-success text-white">
+            <i class="fa fa-check-circle me-2"></i>
+            <strong class="me-auto">Thành công!</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            Bài viết đã được đăng thành công!
+        </div>
+    </div>
+</div>
+
+<!-- Error Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="errorToast" class="toast" role="alert">
+        <div class="toast-header bg-danger text-white">
+            <i class="fa fa-exclamation-circle me-2"></i>
+            <strong class="me-auto">Lỗi!</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="errorMessage">
+            Có lỗi xảy ra khi đăng bài viết.
+        </div>
+    </div>
+</div>
+<script src="/js/post-modal.js"></script>
 </body>
 </html>

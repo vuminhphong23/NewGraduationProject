@@ -39,4 +39,8 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private PostStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "privacy", length = 20, nullable = false)
+    private PostPrivacy privacy = PostPrivacy.PUBLIC; // Mặc định là public
 } 

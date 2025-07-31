@@ -81,13 +81,16 @@
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Giới thiệu</div>
                 <div class="text-muted small mb-2 px-4" th:text="${user.profileInfo ?: 'Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.'}">Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.</div>
                 <ul class="list-unstyled mb-0 px-4">
-                    <li class="mb-1 " th:if="${user.address}">
+                    <li class="mb-1" th:if="${user.address}">
                         <i class="fa-solid fa-location-dot me-2 text-primary"></i>
-                         <span th:text="${user.address}">Hà Nội, Việt Nam</span>
+                        <span th:text="${user.address}">Hà Nội, Việt Nam</span>
+                    </li>
+                    <li class="mb-1" th:unless="${user.address}">
+                        <i class="fa-solid fa-location-dot me-2 text-primary"></i> Hà Nội, Việt Nam
                     </li>
                     <li class="mb-1">
                         <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
-                        <span th:text="${#temporals.format(user.birthDate, 'dd/MM/yyyy')}">09/2021</span>
+                        Gia nhập <span th:text="${#dates.format(user.createdAt, 'MM/yyyy')}">09/2021</span>
                     </li>
                 </ul>
             </div>
@@ -201,9 +204,9 @@
                         <div>
                             <div class="fw-semibold" th:text="${post.userName}">User name</div>
                             <div class="text-muted small">
-                                <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
+                                <span th:text="${#dates.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
                                 •
-                                <span th:switch="${post.privacy.name()}">
+                                <span th:switch="${post.privacy}">
                                     <i th:case="'PUBLIC'" class="fa fa-globe-asia" title="Công khai"></i>
                                     <i th:case="'FRIENDS'" class="fa fa-users" title="Bạn bè"></i>
                                     <i th:case="'PRIVATE'" class="fa fa-lock" title="Riêng tư"></i>
@@ -407,5 +410,3 @@
 <script src="/js/post-modal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
-</html>

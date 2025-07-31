@@ -44,19 +44,6 @@ public class BaseController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/")
-    public String home(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        //getPrincipal() sẽ trả về một đối tượng đại diện cho người dùng đã đăng nhập.
-        //Trong Spring Security, khi một người dùng chưa đăng nhập, đối tượng Authentication sẽ có principal là một chuỗi "anonymousUser".
-        String userName = (authentication != null && authentication.isAuthenticated() && !authentication.getPrincipal().equals("anonymousUser"))
-                ? authentication.getName()
-                : "Khách";
-
-        model.addAttribute("userName", userName);
-        return "user/index";
-    }
-
     @GetMapping("/login")
     public String login() {
         return "user/login";
