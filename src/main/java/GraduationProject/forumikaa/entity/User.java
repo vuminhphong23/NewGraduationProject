@@ -43,7 +43,8 @@ public class User {
     @Column
     private String gender;
 
-    @Column(columnDefinition = "VARCHAR(15)", unique = true)
+    @Column(columnDefinition = "VARCHAR(10)", unique = true)
+    @Length(max = 10, message = "Sai định dạng số điện thoại")
     private String phone;
 
     @Column(columnDefinition = "NVARCHAR(255)")

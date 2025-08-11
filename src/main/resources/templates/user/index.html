@@ -131,8 +131,7 @@
                                     <i class="fa fa-ellipsis-h"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" th:href="@{'/posts/' + ${post.id}}">Xem chi tiết</a></li>
-                                    <li><a class="dropdown-item" th:href="@{'/posts/edit/' + ${post.id}}">Chỉnh sửa</a></li>
+                                    <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
                                     <li><a class="dropdown-item text-danger" href="#" th:attr="data-id=${post.id}" onclick="deletePost(this)">Xoá</a></li>
                                 </ul>
                             </div>

@@ -34,6 +34,13 @@ public class ProfileController {
 
     @GetMapping("/profile/{username}")
     public String profilePage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
 
@@ -58,6 +65,13 @@ public class ProfileController {
 
     @GetMapping("/profile/edit/{username}")
     public String editProfilePage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
         User user = userService.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("Invalid user Id:" + username));
         model.addAttribute("user", user);
         return "user/profile-edit";

@@ -30,7 +30,6 @@ public class PostController {
     @Autowired private PostService postService;
     @Autowired private SecurityUtil securityUtil;
 
-
     // 1. Tạo post mới
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostRequest request) {
@@ -132,24 +131,6 @@ public class PostController {
                 "FRIENDS", "Bạn bè",
                 "PRIVATE", "Riêng tư"
         ));
-    }
-
-    // Test endpoint để kiểm tra authentication
-    @GetMapping("/test-auth")
-    public ResponseEntity<Map<String, Object>> testAuth() {
-        try {
-            Long userId = getCurrentUserId();
-            return ResponseEntity.ok(Map.of(
-                "authenticated", true,
-                "userId", userId,
-                "message", "Authentication successful"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-                "authenticated", false,
-                "error", e.getMessage()
-            ));
-        }
     }
 
     // Utility

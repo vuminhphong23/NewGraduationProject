@@ -39,9 +39,9 @@ public class SecurityConfig {
                         .requestMatchers("/", "/home", "/login", "/register", "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/static/**", "/favicon.ico").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
-                        .requestMatchers("/profile/**").permitAll()
                         .requestMatchers("/api/topics").permitAll()  // Allow topics API for loading topics
                         .requestMatchers("/api/**").authenticated()
+                        .requestMatchers("/profile/**").authenticated()  // Yêu cầu đăng nhập để xem profile
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
