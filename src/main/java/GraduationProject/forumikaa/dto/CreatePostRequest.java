@@ -5,6 +5,7 @@ import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 public class CreatePostRequest {
@@ -14,8 +15,11 @@ public class CreatePostRequest {
     @NotBlank(message = "Nội dung không được để trống")
     private String content;
     
-    @NotNull(message = "Topic không được để trống")
+    // Keep topicId for backward compatibility (optional)
     private Long topicId;
+    
+    // Add topicNames for hashtag functionality
+    private List<String> topicNames;
     
     private PostPrivacy privacy = PostPrivacy.PUBLIC; // Mặc định là public
 } 

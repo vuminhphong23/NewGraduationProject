@@ -16,10 +16,6 @@ public class SecurityUtil {
 
     private UserDetails getUserDetails() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Authentication object: " + auth);
-        System.out.println("Is authenticated: " + (auth != null ? auth.isAuthenticated() : "null"));
-        System.out.println("Principal: " + (auth != null ? auth.getPrincipal() : "null"));
-        System.out.println("Principal class: " + (auth != null && auth.getPrincipal() != null ? auth.getPrincipal().getClass() : "null"));
         
         if (auth != null && auth.getPrincipal() instanceof UserDetails) {
             return (UserDetails) auth.getPrincipal();
@@ -28,7 +24,6 @@ public class SecurityUtil {
     }
     public User getCurrentUser() {
         String username = getCurrentUsername();
-        System.out.println("Looking for user with username: " + username);
         return userDao.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
@@ -36,13 +31,11 @@ public class SecurityUtil {
     public String getCurrentUsername() {
         UserDetails userDetails = getUserDetails();
         String username = userDetails.getUsername();
-        System.out.println("Current username from UserDetails: " + username);
         return username;
     }
 
     public Long getCurrentUserId() {
         User user = getCurrentUser();
-        System.out.println("Current user ID: " + user.getId());
         return user.getId();
     }
 }

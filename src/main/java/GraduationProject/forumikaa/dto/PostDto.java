@@ -5,6 +5,7 @@ import GraduationProject.forumikaa.entity.PostStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PostDto {
@@ -13,11 +14,11 @@ public class PostDto {
     private String content;
     private Long userId;
     private String userName;
-    private Long topicId;
-    private String topicName;
+    private List<String> topicNames; // Chỉ dùng tên topic thay vì Entity
     private PostStatus status;
     private PostPrivacy privacy;
     private LocalDateTime createdAt;
     private Long likeCount;
     private Long commentCount;
+    private Long shareCount;
 } 

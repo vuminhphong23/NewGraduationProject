@@ -13,12 +13,10 @@ public interface PostDao extends JpaRepository<Post, Long> {
 
     List<Post> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    List<Post> findByTopicIdOrderByCreatedAtDesc(Long topicId);
-
     @Query("""
         SELECT DISTINCT p FROM Post p
         LEFT JOIN FETCH p.user
-        LEFT JOIN FETCH p.topic
+        LEFT JOIN FETCH p.topics
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
         WHERE p.status = 'APPROVED' AND (
@@ -33,7 +31,7 @@ public interface PostDao extends JpaRepository<Post, Long> {
     @Query("""
         SELECT p FROM Post p
         LEFT JOIN FETCH p.user
-        LEFT JOIN FETCH p.topic
+        LEFT JOIN FETCH p.topics
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
         WHERE p.id = :postId AND (
@@ -47,10 +45,10 @@ public interface PostDao extends JpaRepository<Post, Long> {
     @Query("""
         SELECT DISTINCT p FROM Post p
         LEFT JOIN FETCH p.user
-        LEFT JOIN FETCH p.topic
+        LEFT JOIN FETCH p.topics t
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
-        WHERE p.topic.id = :topicId AND p.status = 'APPROVED' AND (
+        WHERE t.id = :topicId AND p.status = 'APPROVED' AND (
             (p.privacy = 'PUBLIC') OR
             (p.privacy = 'FRIENDS' AND (p.user.id = :userId OR f1.id IS NOT NULL OR f2.id IS NOT NULL)) OR
             (p.privacy = 'PRIVATE' AND p.user.id = :userId)

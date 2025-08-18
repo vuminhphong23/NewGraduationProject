@@ -4,7 +4,7 @@ import GraduationProject.forumikaa.entity.PostPrivacy;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 @Data
 public class UpdatePostRequest {
@@ -14,8 +14,11 @@ public class UpdatePostRequest {
     @NotBlank(message = "Nội dung không được để trống")
     private String content;
     
-    @NotNull(message = "Topic không được để trống")
+    // Legacy field for backward compatibility
     private Long topicId;
+    
+    // New field for hashtag system
+    private List<String> topicNames;
     
     private PostPrivacy privacy;
 } 

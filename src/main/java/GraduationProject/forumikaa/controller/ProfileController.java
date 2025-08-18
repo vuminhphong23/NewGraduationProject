@@ -4,8 +4,8 @@ import GraduationProject.forumikaa.dto.PostDto;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.PostService;
-import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.service.UserService;
+import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class ProfileController {

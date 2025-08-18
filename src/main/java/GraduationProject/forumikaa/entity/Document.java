@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @Entity
@@ -17,11 +19,18 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id")
-    private Post post;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "post_topics",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "topic_id")
+    )
+    private Set<Topic> topics = new HashSet<>();
 
-    @Column(name = "file_path", length = 500, nullable = false)
+    @Column(name = "file_type", nullable = false)
+    private String fileType;
+
+    @Column(name = "file_path", nullable = false)
     private String filePath;
 
     @CreationTimestamp

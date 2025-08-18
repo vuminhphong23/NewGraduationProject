@@ -34,11 +34,8 @@ public class PostController {
     @PostMapping
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostRequest request) {
         try {
-            System.out.println("Creating post with data: " + request);
             Long userId = getCurrentUserId();
-            System.out.println("Current user ID: " + userId);
             PostDto createdPost = postService.createPost(request, userId);
-            System.out.println("Post created successfully: " + createdPost);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
         } catch (RuntimeException e) {
             System.err.println("RuntimeException in createPost: " + e.getMessage());
@@ -137,14 +134,11 @@ public class PostController {
     private Long getCurrentUserId() {
         try {
             Long userId = securityUtil.getCurrentUserId();
-            System.out.println("SecurityUtil returned user ID: " + userId);
             if (userId == null) {
                 throw new RuntimeException("User ID is null - user may not be authenticated");
             }
             return userId;
         } catch (Exception e) {
-            System.err.println("Error getting current user ID: " + e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException("User not authenticated: " + e.getMessage());
         }
     }

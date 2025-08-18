@@ -16,8 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional
@@ -26,24 +30,53 @@ public class PostServiceImpl implements PostService {
     @Autowired private PostDao postDao;
     @Autowired private UserDao userDao;
     @Autowired private TopicDao topicDao;
+    @Autowired private TopicService topicService;
 
     @Override
     public PostDto createPost(CreatePostRequest request, Long userId) {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        Topic topic = topicDao.findById(request.getTopicId())
-                .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
-
         Post post = new Post();
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
         post.setUser(user);
         post.setPrivacy(request.getPrivacy());
-        post.setTopic(topic);
-        post.setStatus(PostStatus.APPROVED); // Mặc định pending
+        post.setStatus(PostStatus.APPROVED);
 
-        return convertToDto(postDao.save(post));
+        // Process topics from topicNames (hashtags)
+        Set<Topic> topics = new HashSet<>();
+        
+        // If topicNames is provided (from hashtag input)
+        if (request.getTopicNames() != null && !request.getTopicNames().isEmpty()) {
+            for (String topicName : request.getTopicNames()) {
+                if (topicName != null && !topicName.trim().isEmpty()) {
+                    Topic topic = topicService.findOrCreateTopic(topicName.trim(), user);
+                    topics.add(topic);
+                }
+            }
+        }
+        
+        // Fallback: if topicId is provided (backward compatibility)
+        else if (request.getTopicId() != null) {
+            topicDao.findById(request.getTopicId()).ifPresent(topics::add);
+        }
+        
+        // If no topics provided, create a default "General" topic
+        if (topics.isEmpty()) {
+            Topic defaultTopic = topicService.findOrCreateTopic("general", user);
+            topics.add(defaultTopic);
+        }
+        
+        post.setTopics(topics);
+
+        // Save post
+        Post savedPost = postDao.save(post);
+
+        // Update usage count for topics
+        topics.forEach(topicService::incrementUsageCount);
+
+        return convertToDto(savedPost);
     }
 
     @Override
@@ -55,18 +88,48 @@ public class PostServiceImpl implements PostService {
             throw new UnauthorizedException("You can only edit your own posts");
         }
 
+        // Giảm usage count của topics cũ
+        post.getTopics().forEach(topicService::decrementUsageCount);
+
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
 
-        if (request.getPrivacy() != null) post.setPrivacy(request.getPrivacy());
-
-        if (request.getTopicId() != null) {
-            Topic topic = topicDao.findById(request.getTopicId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Topic not found"));
-            post.setTopic(topic);
+        if (request.getPrivacy() != null) {
+            post.setPrivacy(request.getPrivacy());
         }
 
-        return convertToDto(postDao.save(post));
+        // Process topics from topicNames (hashtags) first
+        Set<Topic> newTopics = new HashSet<>();
+        
+        // If topicNames is provided (from hashtag input)
+        if (request.getTopicNames() != null && !request.getTopicNames().isEmpty()) {
+            for (String topicName : request.getTopicNames()) {
+                if (topicName != null && !topicName.trim().isEmpty()) {
+                    Topic topic = topicService.findOrCreateTopic(topicName.trim(), post.getUser());
+                    newTopics.add(topic);
+                }
+            }
+        }
+        // Fallback: if topicId is provided (backward compatibility)
+        else if (request.getTopicId() != null) {
+            topicDao.findById(request.getTopicId()).ifPresent(newTopics::add);
+        }
+        
+        // If no topics provided, create a default "General" topic
+        if (newTopics.isEmpty()) {
+            Topic defaultTopic = topicService.findOrCreateTopic("general", post.getUser());
+            newTopics.add(defaultTopic);
+        }
+
+
+        post.setTopics(newTopics);
+
+        Post savedPost = postDao.save(post);
+
+        // Cập nhật usage count cho topics mới
+        newTopics.forEach(topicService::incrementUsageCount);
+
+        return convertToDto(savedPost);
     }
 
     @Override
@@ -77,6 +140,9 @@ public class PostServiceImpl implements PostService {
         if (!post.getUser().getId().equals(userId)) {
             throw new UnauthorizedException("You can only delete your own posts");
         }
+
+        // Giảm usage count của các topics
+        post.getTopics().forEach(topicService::decrementUsageCount);
 
         postDao.delete(post);
     }
@@ -144,27 +210,56 @@ public class PostServiceImpl implements PostService {
                 .orElse(false);
     }
 
+    /**
+     * Trích xuất hashtags từ content và tạo/lấy topics tương ứng
+     */
+    private Set<Topic> extractAndProcessHashtags(String content, User user) {
+        Set<Topic> topics = new HashSet<>();
+
+        if (content == null || content.trim().isEmpty()) {
+            return topics;
+        }
+
+        // Pattern để tìm hashtags (#word)
+        Pattern hashtagPattern = Pattern.compile("#([a-zA-Z0-9_àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]+)");
+        Matcher matcher = hashtagPattern.matcher(content);
+
+        while (matcher.find()) {
+            String hashtagName = matcher.group(1); // Lấy phần sau dấu #
+            Topic topic = topicService.findOrCreateTopic(hashtagName, user);
+            topics.add(topic); // Set tự động tránh duplicate
+        }
+
+        return topics;
+    }
+
+    /**
+     * Convert Post entity sang PostDto
+     */
     private PostDto convertToDto(Post post) {
         PostDto dto = new PostDto();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setUserId(post.getUser().getId());
-        dto.setUserName(post.getUser().getUsername()); // FIX: Added missing userName mapping
-
-        if (post.getTopic() != null) {
-            dto.setTopicId(post.getTopic().getId());
-            dto.setTopicName(post.getTopic().getName());
-        } else {
-            dto.setTopicId(null);
-            dto.setTopicName("No Topic");
-        }
-
+        dto.setUserName(post.getUser().getUsername());
+        dto.setCreatedAt(post.getCreatedAt());
+        dto.setLikeCount(post.getLikeCount() != null ? post.getLikeCount() : 0L);
+        dto.setCommentCount(post.getCommentCount() != null ? post.getCommentCount() : 0L);
+        dto.setShareCount(post.getShareCount() != null ? post.getShareCount() : 0L);
         dto.setStatus(post.getStatus());
         dto.setPrivacy(post.getPrivacy());
-        dto.setCreatedAt(post.getCreatedAt());
-        dto.setLikeCount(0L);     // placeholder
-        dto.setCommentCount(0L);  // placeholder
+
+        // Set topic names for hashtag functionality 
+        if (post.getTopics() != null && !post.getTopics().isEmpty()) {
+            List<String> topicNames = post.getTopics().stream()
+                    .map(Topic::getName)
+                    .toList();
+            dto.setTopicNames(topicNames);
+        } else {
+            // Set empty list if no topics
+            dto.setTopicNames(new ArrayList<>());
+        }
 
         return dto;
     }
