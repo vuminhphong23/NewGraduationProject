@@ -3,17 +3,20 @@ window.HashtagManager = (function() {
     // State management
     let selectedHashtags = [];
     const maxHashtags = 5;
-    
+    let trendingCache = [];
+
     // DOM references
     let hashtagInput = null;
     let hashtagList = null;
     let hashtagCounter = null;
-    
+    let suggestionBox = null;
+
     // Initialize DOM references
     function initializeDOMReferences() {
         hashtagInput = document.getElementById('topic');
         hashtagList = document.getElementById('hashtag-list');
         hashtagCounter = document.getElementById('hashtag-counter');
+        suggestionBox = document.getElementById('hashtag-suggestions');
         
         if (!hashtagInput || !hashtagList || !hashtagCounter) {
             console.error('HashtagManager: Required DOM elements not found');
@@ -22,10 +25,10 @@ window.HashtagManager = (function() {
         
         setupEventListeners();
         updateDisplay();
+        loadTrending();
         return true;
     }
-    
-    // Setup event listeners
+
     function setupEventListeners() {
         if (hashtagInput) {
             hashtagInput.addEventListener('keydown', function(e) {
@@ -35,25 +38,73 @@ window.HashtagManager = (function() {
                     if (value) {
                         addHashtag(value);
                         this.value = '';
+                        renderSuggestions([]);
                     }
                 }
             });
             
-            hashtagInput.addEventListener('blur', function() {
-                const value = this.value.trim();
-                if (value) {
-                    addHashtag(value);
-                    this.value = '';
+            hashtagInput.addEventListener('input', function() {
+                const q = this.value.trim().toLowerCase();
+                if (!q) { renderSuggestions(trendingCache.slice(0,8)); return; }
+                const filtered = trendingCache
+                    .map(t => t.name || t)
+                    .filter(name => name.toLowerCase().includes(q) && !selectedHashtags.includes(name.toLowerCase()))
+                    .slice(0,8);
+                renderSuggestions(filtered);
+            });
+            
+            hashtagInput.addEventListener('focus', function() {
+                if (trendingCache.length > 0 && this.value.trim() === '') {
+                    renderSuggestions(trendingCache.slice(0,8));
                 }
+            });
+            
+            hashtagInput.addEventListener('blur', function() {
+                setTimeout(() => renderSuggestions([]), 200);
             });
         }
     }
-    
-    // Add hashtag
+
+    async function loadTrending() {
+        try {
+            const res = await fetch('/api/posts/trending-topics', { headers: { 'Accept': 'application/json' } });
+            if (res.ok) {
+                const data = await res.json();
+                trendingCache = (data || []).map(t => ({ name: t.name || t, count: t.usageCount || t.postCount || 0 }));
+            }
+        } catch (e) {
+            console.warn('Cannot load trending topics');
+        }
+    }
+
+    function renderSuggestions(items) {
+        if (!suggestionBox) return;
+        if (!items || items.length === 0) { suggestionBox.innerHTML = ''; return; }
+        suggestionBox.innerHTML = `
+            <div class="list-group shadow-sm">
+                ${items.map(i => {
+                    const name = typeof i === 'string' ? i : i.name;
+                    const count = typeof i === 'string' ? '' : (i.count ? ` <span class="text-muted small">(${i.count})</span>` : '');
+                    return `<button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" data-name="${name}">
+                                <span>#${name}</span>
+                                ${count}
+                            </button>`;
+                }).join('')}
+            </div>
+        `;
+        suggestionBox.querySelectorAll('[data-name]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const name = btn.getAttribute('data-name');
+                addHashtag(name);
+                if (hashtagInput) hashtagInput.value = '';
+                renderSuggestions([]);
+            });
+        });
+    }
+
     function addHashtag(value) {
         const cleanValue = value.trim().toLowerCase();
         
-        // Validation
         if (!isValidHashtag(cleanValue)) {
             showToast('Hashtag không hợp lệ! Chỉ được chứa chữ cái, số và dấu gạch dưới', 'error');
             return false;
@@ -69,33 +120,25 @@ window.HashtagManager = (function() {
             return false;
         }
         
-        // Add to list
         selectedHashtags.push(cleanValue);
         updateDisplay();
         showToast('Đã thêm hashtag thành công!', 'success');
         return true;
     }
-    
-    // Remove hashtag
+
     function removeHashtag(hashtag) {
         selectedHashtags = selectedHashtags.filter(h => h !== hashtag);
         updateDisplay();
         showToast('Đã xóa hashtag!', 'info');
     }
-    
-    // Validate hashtag format
+
     function isValidHashtag(hashtag) {
         return /^[a-zA-Z0-9_]+$/.test(hashtag) && hashtag.length >= 2 && hashtag.length <= 20;
     }
-    
-    // Update display
+
     function updateDisplay() {
         if (!hashtagList || !hashtagCounter) return;
-        
-        // Update counter
         hashtagCounter.textContent = `${selectedHashtags.length}/${maxHashtags}`;
-        
-        // Update list
         hashtagList.innerHTML = selectedHashtags.map(hashtag => 
             `<span class="badge bg-primary me-1 mb-1">
                 #${hashtag}
@@ -106,8 +149,7 @@ window.HashtagManager = (function() {
             </span>`
         ).join('');
     }
-    
-    // Show toast notification
+
     function showToast(message, type = 'info') {
         const toastId = 'hashtag-toast-' + Date.now();
         const toastHtml = `
@@ -127,69 +169,31 @@ window.HashtagManager = (function() {
             toastContainer.style.zIndex = '9999';
             document.body.appendChild(toastContainer);
         }
-        
         toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-        
         const toastElement = document.getElementById(toastId);
         const toast = new bootstrap.Toast(toastElement);
         toast.show();
-        
-        // Auto remove after hide
-        toastElement.addEventListener('hidden.bs.toast', () => {
-            toastElement.remove();
-        });
+        toastElement.addEventListener('hidden.bs.toast', () => { toastElement.remove(); });
     }
-    
-    // Public API
+
     return {
-        // Initialize the hashtag manager
-        init: function() {
-            return initializeDOMReferences();
-        },
-        
-        // Re-initialize DOM references (for dynamic content)
-        reinit: function() {
-            return initializeDOMReferences();
-        },
-        
-        // Add a hashtag
-        add: function(hashtag) {
-            return addHashtag(hashtag);
-        },
-        
-        // Remove a hashtag
-        remove: function(hashtag) {
-            removeHashtag(hashtag);
-        },
-        
-        // Get selected hashtags
-        getSelected: function() {
-            return [...selectedHashtags];
-        },
-        
-        // Set hashtags (for editing)
+        init: function() { return initializeDOMReferences(); },
+        reinit: function() { return initializeDOMReferences(); },
+        add: function(hashtag) { return addHashtag(hashtag); },
+        remove: function(hashtag) { removeHashtag(hashtag); },
+        getSelected: function() { return [...selectedHashtags]; },
         setHashtags: function(hashtags) {
-            // Ensure DOM is ready
-            if (!this.isReady()) {
-                this.reinit();
-            }
+            if (!this.isReady()) this.reinit();
             selectedHashtags = Array.isArray(hashtags) ? [...hashtags] : [];
             updateDisplay();
         },
-        
-        // Clear all hashtags
         reset: function() {
             selectedHashtags = [];
             updateDisplay();
-            if (hashtagInput) {
-                hashtagInput.value = '';
-            }
+            if (hashtagInput) hashtagInput.value = '';
+            renderSuggestions([]);
         },
-        
-        // Check if manager is ready
-        isReady: function() {
-            return hashtagInput !== null && hashtagList !== null && hashtagCounter !== null;
-        }
+        isReady: function() { return hashtagInput !== null && hashtagList !== null && hashtagCounter !== null; }
     };
 })();
 

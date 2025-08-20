@@ -3,6 +3,8 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.dao.PostDao;
 import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.UserDao;
+import GraduationProject.forumikaa.dao.LikeDao;
+import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostDto;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
@@ -10,18 +12,24 @@ import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.Like;
+import GraduationProject.forumikaa.entity.Comment;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -31,6 +39,8 @@ public class PostServiceImpl implements PostService {
     @Autowired private UserDao userDao;
     @Autowired private TopicDao topicDao;
     @Autowired private TopicService topicService;
+    @Autowired private LikeDao likeDao;
+    @Autowired private CommentDao commentDao;
 
     @Override
     public PostDto createPost(CreatePostRequest request, Long userId) {
@@ -208,6 +218,189 @@ public class PostServiceImpl implements PostService {
         return postDao.findById(postId)
                 .map(p -> p.getUser().getId().equals(userId))
                 .orElse(false);
+    }
+
+    // Like functionality
+    @Override
+    public boolean toggleLike(Long postId, Long userId) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
+        userDao.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean wasLiked = likeDao.existsByUserIdAndPostId(userId, postId);
+        if (wasLiked) {
+            likeDao.deleteByUserIdAndPostId(userId, postId);
+        } else {
+            // idempotent insert; return value 1 if inserted, 0 if existed
+            likeDao.insertIfNotExists(userId, postId);
+        }
+        // always recompute from DB to avoid drift
+        Long freshCount = likeDao.countByPostId(postId);
+        post.setLikeCount(freshCount);
+        postDao.save(post);
+        return !wasLiked;
+    }
+
+    @Override
+    public boolean isPostLikedByUser(Long postId, Long userId) {
+        return likeDao.existsByUserIdAndPostId(userId, postId);
+    }
+
+    @Override
+    public Long getPostLikeCount(Long postId) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        return post.getLikeCount() != null ? post.getLikeCount() : 0L;
+    }
+
+    // Comment functionality
+    @Override
+    public List<Map<String, Object>> getPostComments(Long postId, Long userId, int page, int size) {
+        // Check if user can access the post
+        if (!canAccessPost(postId, userId)) {
+            throw new UnauthorizedException("Cannot access post");
+        }
+        
+        Pageable pageable = PageRequest.of(page, size);
+        List<Comment> comments = commentDao.findByPostIdOrderByCreatedAtAsc(postId, pageable).getContent();
+        
+        return comments.stream().map(comment -> {
+            Map<String, Object> commentMap = Map.of(
+                "id", comment.getId(),
+                "content", comment.getContent(),
+                "userId", comment.getUser().getId(),
+                "userName", comment.getUser().getUsername(),
+                "createdAt", comment.getCreatedAt()
+            );
+            return commentMap;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, Object> addComment(Long postId, Long userId, String content) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // Add comment
+        Comment comment = new Comment();
+        comment.setUser(user);
+        comment.setPost(post);
+        comment.setContent(content);
+        Comment savedComment = commentDao.save(comment);
+        
+        // Update comment count
+        post.setCommentCount(post.getCommentCount() + 1);
+        postDao.save(post);
+        
+        // Return comment data
+        return Map.of(
+            "id", savedComment.getId(),
+            "content", content,
+            "userId", userId,
+            "userName", user.getUsername(),
+            "createdAt", savedComment.getCreatedAt()
+        );
+    }
+
+    @Override
+    public void deleteComment(Long postId, Long commentId, Long userId) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        
+        // Check if user can delete comment (owner of comment or owner of post)
+        boolean canDelete = commentDao.existsByIdAndUserId(commentId, userId) || 
+                           post.getUser().getId().equals(userId);
+        
+        if (!canDelete) {
+            throw new UnauthorizedException("Cannot delete this comment");
+        }
+        
+        // Delete comment
+        commentDao.deleteById(commentId);
+        
+        // Update comment count
+        post.setCommentCount(Math.max(0, post.getCommentCount() - 1));
+        postDao.save(post);
+    }
+
+    @Override
+    public Map<String, Object> updateComment(Long postId, Long commentId, Long userId, String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nội dung bình luận không được trống");
+        }
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        Comment comment = commentDao.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+        if (!comment.getPost().getId().equals(post.getId())) {
+            throw new UnauthorizedException("Comment không thuộc bài viết này");
+        }
+        if (!comment.getUser().getId().equals(userId) && !post.getUser().getId().equals(userId)) {
+            throw new UnauthorizedException("Bạn không có quyền sửa bình luận này");
+        }
+        comment.setContent(content.trim());
+        Comment saved = commentDao.save(comment);
+        return Map.of(
+                "id", saved.getId(),
+                "content", saved.getContent(),
+                "userId", saved.getUser().getId(),
+                "userName", saved.getUser().getUsername(),
+                "createdAt", saved.getCreatedAt()
+        );
+    }
+
+    @Override
+    public Long getPostCommentCount(Long postId) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        return post.getCommentCount() != null ? post.getCommentCount() : 0L;
+    }
+
+    // Share functionality
+    @Override
+    public Map<String, Object> sharePost(Long postId, Long userId, String message) {
+        Post originalPost = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // Create shared post
+        Post sharedPost = new Post();
+        sharedPost.setTitle("Chia sẻ: " + (originalPost.getTitle() != null ? originalPost.getTitle() : "Bài viết"));
+        sharedPost.setContent(message != null ? message : "Đã chia sẻ bài viết này");
+        sharedPost.setUser(user);
+        sharedPost.setPrivacy(originalPost.getPrivacy()); // Use same privacy as original
+        sharedPost.setStatus(PostStatus.APPROVED);
+        
+        // Update share count of original post
+        originalPost.setShareCount(originalPost.getShareCount() + 1);
+        postDao.save(originalPost);
+        
+        // Save shared post
+        Post savedSharedPost = postDao.save(sharedPost);
+        
+        return Map.of(
+            "id", savedSharedPost.getId(),
+            "title", savedSharedPost.getTitle(),
+            "content", savedSharedPost.getContent(),
+            "userId", userId,
+            "userName", user.getUsername(),
+            "createdAt", savedSharedPost.getCreatedAt(),
+            "originalPostId", postId
+        );
+    }
+
+    @Override
+    public Long getPostShareCount(Long postId) {
+        Post post = postDao.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        return post.getShareCount() != null ? post.getShareCount() : 0L;
     }
 
     /**

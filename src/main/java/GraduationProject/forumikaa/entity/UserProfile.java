@@ -25,9 +25,9 @@ public class UserProfile {
     @Column(length = 500)
     private String cover;
 
-    @Lob
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String bio;
 
-    @Lob
+    @Column(name = "social_links", columnDefinition = "NVARCHAR(MAX)")
     private String socialLinks;
 } 

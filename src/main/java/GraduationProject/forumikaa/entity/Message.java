@@ -26,7 +26,7 @@ public class Message {
     private User sender;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @CreationTimestamp

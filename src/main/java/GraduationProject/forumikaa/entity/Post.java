@@ -20,11 +20,11 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,9 +58,9 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private PostStatus status = PostStatus.APPROVED; // Mặc định là APPROVED
+    private PostStatus status = PostStatus.APPROVED;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "privacy", length = 20, nullable = false)
-    private PostPrivacy privacy = PostPrivacy.PUBLIC; // Mặc định là public
+    private PostPrivacy privacy = PostPrivacy.PUBLIC;
 }

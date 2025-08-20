@@ -207,3 +207,59 @@
 .modal.show .modal-dialog {
     transform: none;
 }
+
+/* Trending Topics Container */
+.trending-topics-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.trending-topics-container:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.trending-topics-list .trending-topic-btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    border: 1px solid #007bff;
+    color: #007bff;
+    background: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.trending-topic-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+}
+
+.trending-topic-btn:active {
+    transform: translateY(0);
+}
+
+/* Hashtag input focus effect */
+#topic:focus + .trending-topics-container {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .trending-topics-container {
+        margin-top: 0.5rem;
+    }
+    
+    .trending-topics-list {
+        gap: 0.25rem !important;
+    }
+    
+    .trending-topic-btn {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.4rem;
+    }
+}

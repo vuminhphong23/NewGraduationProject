@@ -27,10 +27,10 @@ public class Document {
     )
     private Set<Topic> topics = new HashSet<>();
 
-    @Column(name = "file_type", nullable = false)
+    @Column(name = "file_type", nullable = false, columnDefinition = "NVARCHAR(50)")
     private String fileType;
 
-    @Column(name = "file_path", nullable = false)
+    @Column(name = "file_path", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String filePath;
 
     @CreationTimestamp
