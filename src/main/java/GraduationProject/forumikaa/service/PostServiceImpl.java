@@ -39,7 +39,8 @@ public class PostServiceImpl implements PostService {
     @Autowired private UserDao userDao;
     @Autowired private TopicDao topicDao;
     @Autowired private TopicService topicService;
-    @Autowired private LikeDao likeDao;
+    @Autowired
+    private LikeService likeService;
     @Autowired private CommentDao commentDao;
 
     @Override
@@ -226,15 +227,14 @@ public class PostServiceImpl implements PostService {
         userDao.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        boolean wasLiked = likeDao.existsByUserIdAndPostId(userId, postId);
+        boolean wasLiked = likeService.isPostLikedByUser(postId, userId);
         if (wasLiked) {
-            likeDao.deleteByUserIdAndPostId(userId, postId);
+            likeService.unlikePost(postId, userId);
         } else {
-            // idempotent insert; return value 1 if inserted, 0 if existed
-            likeDao.insertIfNotExists(userId, postId);
+            likeService.likePost(postId, userId);
         }
         // always recompute from DB to avoid drift
-        Long freshCount = likeDao.countByPostId(postId);
+        Long freshCount = likeService.getPostLikeCount(postId);
         post.setLikeCount(freshCount);
         postDao.save(post);
         return !wasLiked;
@@ -242,7 +242,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public boolean isPostLikedByUser(Long postId, Long userId) {
-        return likeDao.existsByUserIdAndPostId(userId, postId);
+        return likeService.isPostLikedByUser(postId, userId);
     }
 
     @Override

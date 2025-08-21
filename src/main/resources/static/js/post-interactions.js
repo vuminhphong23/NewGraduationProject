@@ -185,11 +185,17 @@ class PostInteractions {
         comments.forEach(comment => {
             const commentHtml = this.createCommentHTML(comment);
             commentsList.insertAdjacentHTML('beforeend', commentHtml);
+            
+            // Load like status for this comment
+            this.loadCommentLikeStatus(comment.id);
         });
     }
     
     createCommentHTML(comment) {
         const createdAt = new Date(comment.createdAt).toLocaleString('vi-VN');
+        const isLiked = comment.isLiked || false;
+        const likeCount = comment.likeCount || 0;
+        
         return `
             <div class="comment-item d-flex gap-2 mb-2" data-comment-id="${comment.id}">
                 <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle" width="24" height="24">
@@ -208,6 +214,18 @@ class PostInteractions {
                         </div>
                         <div class="comment-content" data-content>${comment.content}</div>
                         <div class="text-muted small mt-1">${createdAt}</div>
+                        
+                        <!-- Comment Like Section -->
+                        <div class="d-flex align-items-center gap-3 mt-2">
+                            <button class="btn btn-link btn-sm p-0 like-comment-btn" 
+                                    onclick="toggleCommentLike(${comment.id})" 
+                                    data-liked="${isLiked}" 
+                                    data-loading="false">
+                                <i class="fa ${isLiked ? 'fa-solid text-primary' : 'fa-regular'}"></i>
+                                <span class="like-text">${isLiked ? 'Đã thích' : 'Thích'}</span>
+                            </button>
+                            <span class="comment-like-count text-muted small">${likeCount} lượt thích</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -299,23 +317,28 @@ class PostInteractions {
     startEditComment(commentId) {
         const item = document.querySelector(`[data-comment-id="${commentId}"]`);
         if (!item) return;
+        
         const contentEl = item.querySelector('[data-content]');
-        const original = contentEl.textContent;
-        contentEl.dataset.original = original;
-        contentEl.innerHTML = `
-            <div class="d-flex gap-2">
-                <input class="form-control form-control-sm" value="${original.replace(/"/g, '&quot;')}">
-                <button class="btn btn-sm btn-success" onclick="confirmEditComment(${commentId})"><i class="fa fa-check"></i></button>
-                <button class="btn btn-sm btn-secondary" onclick="cancelEditComment(${commentId})"><i class="fa fa-xmark"></i></button>
+        const currentContent = contentEl.textContent;
+        
+        const editHtml = `
+            <div class="edit-comment-form">
+                <textarea class="form-control mb-2" rows="2">${currentContent}</textarea>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="saveEditComment(${commentId})">Lưu</button>
+                    <button class="btn btn-secondary btn-sm" onclick="cancelEditComment(${commentId})">Hủy</button>
+                </div>
             </div>
         `;
+        
+        contentEl.style.display = 'none';
+        contentEl.insertAdjacentHTML('afterend', editHtml);
     }
 
     async confirmEditComment(commentId) {
         const item = document.querySelector(`[data-comment-id="${commentId}"]`);
         if (!item) return;
         const container = item.closest('.comment-section');
-        const postId = container.getAttribute('data-post-id');
         const input = item.querySelector('input');
         const newContent = input.value.trim();
         if (!newContent) {
@@ -323,7 +346,7 @@ class PostInteractions {
             return;
         }
         try {
-            const res = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+            const res = await fetch(`/api/posts/${container.getAttribute('data-post-id')}/comments/${commentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 credentials: 'same-origin',
@@ -345,9 +368,12 @@ class PostInteractions {
     cancelEditComment(commentId) {
         const item = document.querySelector(`[data-comment-id="${commentId}"]`);
         if (!item) return;
+        
+        const editForm = item.querySelector('.edit-comment-form');
         const contentEl = item.querySelector('[data-content]');
-        const original = contentEl.dataset.original || '';
-        contentEl.textContent = original;
+        
+        contentEl.style.display = 'block';
+        editForm.remove();
     }
     
     async loadMoreComments(button) {
@@ -535,6 +561,133 @@ class PostInteractions {
         
         toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
     }
+
+    async toggleCommentLike(commentId) {
+        const likeButton = document.querySelector(`[data-comment-id="${commentId}"] .like-comment-btn`);
+        if (!likeButton) {
+            console.error('Like button not found for comment:', commentId);
+            return;
+        }
+        
+        if (likeButton.dataset.loading === 'true') return;
+        likeButton.dataset.loading = 'true';
+        
+        try {
+            const response = await fetch(`/api/comments/${commentId}/like`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                this.updateCommentLikeUI(likeButton, result.isLiked, result.likeCount);
+            } else {
+                const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
+                this.showToast(error.message || 'Không thể thích bình luận', 'error');
+            }
+        } catch (error) {
+            console.error('Comment like error:', error);
+            this.showToast('Không thể kết nối đến máy chủ', 'error');
+        } finally {
+            likeButton.dataset.loading = 'false';
+        }
+    }
+
+    updateCommentLikeUI(button, isLiked, likeCount) {
+        const icon = button.querySelector('i');
+        const likeText = button.querySelector('.like-text');
+        const commentItem = button.closest('.comment-item');
+        const likeCountEl = commentItem.querySelector('.comment-like-count');
+
+        // Update icon
+        icon.classList.remove('fa-solid', 'fa-regular', 'text-primary');
+        icon.classList.add(isLiked ? 'fa-solid' : 'fa-regular');
+        if (isLiked) {
+            icon.classList.add('text-primary');
+        }
+
+        // Update text
+        likeText.textContent = isLiked ? 'Đã thích' : 'Thích';
+
+        // Update count
+        if (likeCountEl) {
+            likeCountEl.textContent = `${likeCount} lượt thích`;
+        }
+
+        // Update button state
+        button.setAttribute('data-liked', isLiked);
+    }
+
+    async saveEditComment(commentId) {
+        const item = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (!item) return;
+        
+        const editForm = item.querySelector('.edit-comment-form');
+        const textarea = editForm.querySelector('textarea');
+        const content = textarea.value.trim();
+        
+        if (!content) {
+            this.showToast('Nội dung không được để trống', 'warning');
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/comments/${commentId}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ content })
+            });
+            
+            if (response.ok) {
+                const contentEl = item.querySelector('[data-content]');
+                contentEl.textContent = content;
+                contentEl.style.display = 'block';
+                editForm.remove();
+                this.showToast('Đã cập nhật bình luận thành công!', 'success');
+            } else {
+                const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
+                this.showToast(error.message || 'Không thể cập nhật bình luận', 'error');
+            }
+        } catch (error) {
+            console.error('Edit comment error:', error);
+            this.showToast('Không thể kết nối đến máy chủ', 'error');
+        }
+    }
+
+    cancelEditComment(commentId) {
+        const item = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (!item) return;
+        
+        const editForm = item.querySelector('.edit-comment-form');
+        const contentEl = item.querySelector('[data-content]');
+        
+        contentEl.style.display = 'block';
+        editForm.remove();
+    }
+
+    async loadCommentLikeStatus(commentId) {
+        try {
+            const response = await fetch(`/api/comments/${commentId}/like-status`, {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                const likeButton = document.querySelector(`[data-comment-id="${commentId}"] .like-comment-btn`);
+                if (likeButton) {
+                    this.updateCommentLikeUI(likeButton, result.isLiked, result.likeCount);
+                }
+            }
+        } catch (error) {
+            console.error('Load comment like status error:', error);
+        }
+    }
 }
 
 // ===========================
@@ -694,6 +847,25 @@ window.confirmShare = (postId) => {
 window.startEditComment = (commentId) => window.postInteractions?.startEditComment(commentId);
 window.confirmEditComment = (commentId) => window.postInteractions?.confirmEditComment(commentId);
 window.cancelEditComment = (commentId) => window.postInteractions?.cancelEditComment(commentId);
+
+// Global functions for HTML onclick
+window.toggleCommentLike = (commentId) => {
+    if (window.postInteractions) {
+        window.postInteractions.toggleCommentLike(commentId);
+    }
+};
+
+window.saveEditComment = (commentId) => {
+    if (window.postInteractions) {
+        window.postInteractions.saveEditComment(commentId);
+    }
+};
+
+window.cancelEditComment = (commentId) => {
+    if (window.postInteractions) {
+        window.postInteractions.cancelEditComment(commentId);
+    }
+};
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
