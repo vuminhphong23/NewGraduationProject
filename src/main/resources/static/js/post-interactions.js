@@ -109,7 +109,6 @@ class PostInteractions {
     
     toggleCommentSection(button) {
         const postId = button.getAttribute('data-post-id');
-        console.log('Toggle comment section for post:', postId);
         
         // Find the post element by looking for the card that contains this button
         const postElement = button.closest('.card');
@@ -118,23 +117,13 @@ class PostInteractions {
             return;
         }
         
-        console.log('Found post element:', postElement);
-        
-        // Find comment section within the same card-footer
-        const cardFooter = button.closest('.card-footer');
-        if (!cardFooter) {
-            console.error('Card footer not found for comment button:', button);
-            return;
-        }
-        
-        const commentSection = cardFooter.querySelector('.comment-section');
+        // Find comment section within the same card
+        const commentSection = postElement.querySelector('.comment-section');
         if (!commentSection) {
             console.error('Comment section not found for post:', postId);
-            console.log('Available elements in card footer:', cardFooter.innerHTML);
+            console.log('Available elements in post:', postElement.innerHTML);
             return;
         }
-        
-        console.log('Found comment section:', commentSection);
         
         if (commentSection.classList.contains('d-none')) {
             // Show comment section
@@ -160,6 +149,9 @@ class PostInteractions {
                 // Update pagination state
                 this.commentPages.set(postId, { currentPage: page, hasMore: comments.length === 5 });
                 this.updateLoadMoreButton(postId);
+            } else {
+                console.error('Failed to load comments:', response.status, response.statusText);
+                this.showToast('Không thể tải bình luận', 'error');
             }
         } catch (error) {
             console.error('Load comments error:', error);
@@ -168,17 +160,10 @@ class PostInteractions {
     }
     
     displayComments(postId, comments, replace = false) {
-        // Find the comment section with the correct post ID
+        // Find the comment section by data-post-id
         const commentSection = document.querySelector(`.comment-section[data-post-id="${postId}"]`);
         if (!commentSection) {
             console.error('Comment section not found for post ID:', postId);
-            return;
-        }
-        
-        // Find the card-footer that contains this comment section
-        const cardFooter = commentSection.closest('.card-footer');
-        if (!cardFooter) {
-            console.error('Card footer not found for comment section:', commentSection);
             return;
         }
         
@@ -230,7 +215,7 @@ class PostInteractions {
     }
     
     updateLoadMoreButton(postId) {
-        // Find the comment section with the correct post ID
+        // Find the comment section by data-post-id
         const commentSection = document.querySelector(`.comment-section[data-post-id="${postId}"]`);
         if (!commentSection) {
             console.error('Comment section not found for post ID:', postId);
@@ -289,9 +274,9 @@ class PostInteractions {
                 const commentHtml = this.createCommentHTML(result.comment);
                 commentsList.insertAdjacentHTML('beforeend', commentHtml);
 
-                // Update comment count in the card footer
-                const cardFooter = container.closest('.card-footer');
-                const commentCountElement = cardFooter.querySelector('.comment-count');
+                // Update comment count in the post card
+                const postCard = container.closest('.card');
+                const commentCountElement = postCard.querySelector('.comment-count');
                 if (commentCountElement) {
                     commentCountElement.textContent = `${result.commentCount} bình luận`;
                 }
@@ -398,8 +383,8 @@ class PostInteractions {
 
                 // Update comment count
                 const result = await response.json();
-                const cardFooter = commentSection.closest('.card-footer');
-                const commentCountElement = cardFooter.querySelector('.comment-count');
+                const postCard = commentSection.closest('.card');
+                const commentCountElement = postCard.querySelector('.comment-count');
                 if (commentCountElement) {
                     commentCountElement.textContent = `${result.commentCount} bình luận`;
                 }
@@ -553,6 +538,127 @@ class PostInteractions {
 }
 
 // ===========================
+// HASHTAG SEARCH FUNCTIONALITY
+// ===========================
+
+window.searchByHashtag = (hashtag) => {
+    
+    // Remove # if present
+    const cleanHashtag = hashtag.startsWith('#') ? hashtag.substring(1) : hashtag;
+    
+    // Show toast notification
+    if (window.postInteractions) {
+        window.postInteractions.showToast(`Đang tìm kiếm bài viết với hashtag #${cleanHashtag}`, 'info');
+    }
+    
+    // Lọc bài viết theo hashtag
+    filterPostsByHashtag(cleanHashtag);
+};
+
+// Function để lọc bài viết theo hashtag
+function filterPostsByHashtag(hashtag) {
+    
+    // Ẩn nút "Xem tất cả bài viết" nếu đang hiển thị
+    const existingButton = document.getElementById('showAllPostsBtn');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    
+    const allPosts = document.querySelectorAll('.card[data-post-id]');
+    let visibleCount = 0;
+    
+    allPosts.forEach(post => {
+        // Tìm hashtags trong bài viết bằng data-hashtag
+        const hashtagElements = post.querySelectorAll('.hashtag-link[data-hashtag]');
+        let hasMatchingHashtag = false;
+        
+        hashtagElements.forEach(hashtagEl => {
+            const hashtagData = hashtagEl.getAttribute('data-hashtag');
+            const cleanHashtagLower = hashtag.toLowerCase();
+            
+            // So sánh chính xác hashtag
+            if (hashtagData && hashtagData.toLowerCase() === cleanHashtagLower) {
+                hasMatchingHashtag = true;
+            }
+        });
+        
+        // Hiển thị/ẩn bài viết dựa trên hashtag
+        if (hasMatchingHashtag) {
+            post.style.display = 'block';
+            visibleCount++;
+            // Highlight hashtag matching
+            post.style.border = '2px solid #007bff';
+            post.style.borderRadius = '8px';
+            post.style.boxShadow = '0 4px 8px rgba(0,123,255,0.2)';
+        } else {
+            post.style.display = 'none';
+        }
+    });
+    
+    // Hiển thị kết quả tìm kiếm
+    if (window.postInteractions) {
+        if (visibleCount > 0) {
+            window.postInteractions.showToast(`Tìm thấy ${visibleCount} bài viết với hashtag #${hashtag}`, 'success');
+        } else {
+            window.postInteractions.showToast(`Không tìm thấy bài viết nào với hashtag #${hashtag}`, 'warning');
+        }
+    }
+    
+    // Chỉ thêm nút "Xem tất cả bài viết" nếu đang lọc và có bài viết bị ẩn
+    if (visibleCount < allPosts.length) {
+        addShowAllPostsButton();
+    }
+}
+
+// Function để thêm nút "Xem tất cả bài viết"
+function addShowAllPostsButton() {
+    // Xóa nút cũ nếu có
+    const existingButton = document.getElementById('showAllPostsBtn');
+    if (existingButton) {
+        existingButton.remove();
+    }
+    
+    // Tạo nút mới
+    const showAllButton = document.createElement('div');
+    showAllButton.className = 'text-center my-3';
+    showAllButton.innerHTML = `
+        <button id="showAllPostsBtn" class="btn btn-outline-primary" onclick="showAllPosts()">
+            <i class="fa fa-eye me-2"></i>Xem tất cả bài viết
+        </button>
+    `;
+    
+    // Thêm vào cuối feed, sau tất cả bài viết
+    const feed = document.getElementById('feed');
+    if (feed) {
+        // Thêm vào cuối feed
+        feed.appendChild(showAllButton);
+    }
+}
+
+// Function để hiển thị tất cả bài viết
+window.showAllPosts = () => {
+    
+    const allPosts = document.querySelectorAll('.card[data-post-id]');
+    allPosts.forEach(post => {
+        post.style.display = 'block';
+        post.style.border = '';
+        post.style.borderRadius = '';
+        post.style.boxShadow = '';
+    });
+    
+    // Xóa nút "Xem tất cả bài viết"
+    const showAllButton = document.getElementById('showAllPostsBtn');
+    if (showAllButton) {
+        showAllButton.remove();
+    }
+    
+    // Hiển thị toast
+    if (window.postInteractions) {
+        window.postInteractions.showToast('Đã hiển thị tất cả bài viết', 'info');
+    }
+};
+
+// ===========================
 // GLOBAL FUNCTIONS (for onclick)
 // ===========================
 
@@ -591,7 +697,5 @@ window.cancelEditComment = (commentId) => window.postInteractions?.cancelEditCom
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing PostInteractions...');
     window.postInteractions = new PostInteractions();
-    console.log('PostInteractions initialized:', window.postInteractions);
 });

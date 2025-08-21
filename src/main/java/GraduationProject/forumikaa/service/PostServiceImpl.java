@@ -80,10 +80,8 @@ public class PostServiceImpl implements PostService {
         
         post.setTopics(topics);
 
-        // Save post
         Post savedPost = postDao.save(post);
 
-        // Update usage count for topics
         topics.forEach(topicService::incrementUsageCount);
 
         return convertToDto(savedPost);
@@ -151,7 +149,6 @@ public class PostServiceImpl implements PostService {
             throw new UnauthorizedException("You can only delete your own posts");
         }
 
-        // Giảm usage count của các topics
         post.getTopics().forEach(topicService::decrementUsageCount);
 
         postDao.delete(post);

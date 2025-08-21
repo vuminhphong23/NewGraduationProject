@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
+    <link rel="stylesheet" href="/css/post-interactions.css">
     <style>
         .profile-cover { height: 240px; object-fit: cover}
         .profile-avatar { width: 112px; height: 112px; border: 6px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.10); position: absolute; left: 40px; bottom:-56px; background: #fff; }
@@ -98,6 +99,7 @@
                         <i class="fa-solid fa-envelope me-2 text-primary"></i>
                         <span class="small" th:text="${user.email}">minh.nguyen@phenikaa-uni.edu.vn</span>
                     </div>
+
                     <div class="d-flex align-items-center mb-2" th:unless="${user.email}">
                         <i class="fa-solid fa-envelope me-2 text-primary"></i>
                         <span class="small">minh.nguyen@phenikaa-uni.edu.vn</span>
@@ -193,7 +195,7 @@
 
             <!-- Danh sách bài viết từ database -->
             <div id="feed">
-                <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm">
+                <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
                     <!-- Header -->
                     <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
@@ -250,20 +252,63 @@
                     <!-- Footer (like/comment/share placeholders) -->
                     <div class="card-footer bg-white border-0 pt-0">
                         <div class="d-flex justify-content-between text-muted small mb-2">
-                            <span th:text="${post.likeCount + ' lượt thích'}">0 lượt thích</span>
-                            <span th:text="${post.commentCount + ' bình luận'}">0 bình luận</span>
+                            <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
+                            <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
                         </div>
                         <hr class="my-2" style="color: #c3d2e0;">
                         <div class="d-flex justify-content-around">
-                            <button class="btn btn-light d-flex align-items-center gap-2">
-                                <i class="fa-regular fa-thumbs-up"></i> Thích
+                            <button class="btn btn-light d-flex align-items-center gap-2 like-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="toggleLike(this)">
+                                <i class="fa-regular fa-thumbs-up"></i> 
+                                <span class="like-text">Thích</span>
                             </button>
-                            <button class="btn btn-light d-flex align-items-center gap-2">
-                                <i class="fa-regular fa-comment"></i> Bình luận
+                            <button class="btn btn-light d-flex align-items-center gap-2 comment-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="toggleCommentSection(this)">
+                                <i class="fa-regular fa-comment"></i> 
+                                <span>Bình luận</span>
                             </button>
-                            <button class="btn btn-light d-flex align-items-center gap-2">
-                                <i class="fa-regular fa-share-from-square"></i> Chia sẻ
+                            <button class="btn btn-light d-flex align-items-center gap-2 share-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="sharePost(this)">
+                                <i class="fa-regular fa-share-from-square"></i> 
+                                <span>Chia sẻ</span>
                             </button>
+                        </div>
+                        
+                        <!-- Comment Section (Hidden by default) -->
+                        <div class="comment-section mt-3 d-none" th:attr="data-post-id=${post.id}">
+                            <hr class="my-2" style="color: #c3d2e0;">
+                            
+                            <!-- Comment Input -->
+                            <div class="d-flex gap-2 mb-3">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="rounded-circle" width="32" height="32">
+                                <div class="flex-grow-1">
+                                    <input type="text" class="form-control comment-input" 
+                                           placeholder="Viết bình luận..." 
+                                           th:attr="data-post-id=${post.id}">
+                                </div>
+                                <button class="btn btn-primary btn-sm post-comment-btn" 
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="postComment(this)" title="Đăng">
+                                    <i class="fa fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Comments List -->
+                            <div class="comments-list" th:attr="data-post-id=${post.id}">
+                                <!-- Comments will be loaded here -->
+                            </div>
+                            
+                            <!-- Load More Comments -->
+                            <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
+                                <button class="btn btn-link btn-sm load-more-comments" 
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="loadMoreComments(this)">
+                                    Xem thêm bình luận
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -417,6 +462,7 @@
 
 <script src="/js/topics.js"></script>
 <script src="/js/post-manager.js"></script>
+<script src="/js/post-interactions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

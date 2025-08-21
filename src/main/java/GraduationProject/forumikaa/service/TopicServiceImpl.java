@@ -4,6 +4,7 @@ import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +20,13 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public Topic findOrCreateTopic(String name, User createdBy) {
-        // Làm sạch tên hashtag (bỏ # nếu có, chuyển thành lowercase, thay space bằng _)
         String cleanName = cleanHashtagName(name);
         
         return topicDao.findByName(cleanName)
                 .orElseGet(() -> {
                     Topic newTopic = new Topic(cleanName);
                     newTopic.setCreatedBy(createdBy);
-                    newTopic.setUsageCount(0); // Khởi tạo usage count
+                    newTopic.setUsageCount(0);
                     return topicDao.save(newTopic);
                 });
     }
@@ -40,14 +40,23 @@ public class TopicServiceImpl implements TopicService {
         return topicNames.stream()
                 .filter(name -> name != null && !name.trim().isEmpty())
                 .map(name -> findOrCreateTopic(name, createdBy))
-                .distinct() // Tránh duplicate
+                .distinct()
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Topic> getTrendingTopics() {
-        return topicDao.findTrendingTopics();
+        // Lấy trending topics, nếu không có thì lấy top topics
+        List<Topic> trendingTopics = topicDao.findTrendingTopics();
+        if (trendingTopics.isEmpty()) {
+            trendingTopics = getTopTopics(10);
+        }
+        
+        // Lọc chỉ lấy topics có usageCount > 0
+        return trendingTopics.stream()
+                .filter(topic -> topic.getUsageCount() != null && topic.getUsageCount() > 0)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -55,6 +64,7 @@ public class TopicServiceImpl implements TopicService {
     public List<Topic> getTopTopics(int limit) {
         List<Topic> allTop = topicDao.findTopTopics();
         return allTop.stream()
+                .filter(topic -> topic.getUsageCount() != null && topic.getUsageCount() > 0)
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -86,14 +96,11 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public void updateTrendingStatus() {
-        // Lấy top 10 hashtags có usage count cao nhất
         List<Topic> topTopics = getTopTopics(10);
         
-        // Reset tất cả trending status
         List<Topic> allTopics = topicDao.findAll();
         allTopics.forEach(topic -> topic.setTrending(false));
 
-        // Set trending cho top hashtags
         topTopics.forEach(topic -> topic.setTrending(true));
 
         topicDao.saveAll(allTopics);
@@ -104,6 +111,17 @@ public class TopicServiceImpl implements TopicService {
     public List<Topic> getAllTopics() {
         return topicDao.getAllTopics();
     }
+    
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void scheduledUpdateTrendingStatus() {
+        try {
+            updateTrendingStatus();
+            System.out.println("Đã cập nhật trending status cho topics");
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trending status: " + e.getMessage());
+        }
+    }
 
     /**
      * Helper method để làm sạch tên hashtag
@@ -113,15 +131,13 @@ public class TopicServiceImpl implements TopicService {
             return "";
         }
         
-        // Bỏ dấu # nếu có
         String cleanName = name.trim();
         if (cleanName.startsWith("#")) {
             cleanName = cleanName.substring(1);
         }
         
-        // Chuyển thành lowercase và làm sạch ký tự đặc biệt
         cleanName = cleanName.toLowerCase()
-                .replaceAll("\\s+", "_") // Thay space bằng _
+                .replaceAll("\\s+", "_")
                 .replaceAll("[^a-zA-Z0-9_àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]", "");
         
         return cleanName;

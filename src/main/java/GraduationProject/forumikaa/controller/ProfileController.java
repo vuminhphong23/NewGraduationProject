@@ -1,11 +1,9 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.PostDto;
-import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.service.UserService;
-import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -18,14 +16,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
-import java.util.Set;
 
 @Controller
 public class ProfileController {
 
     private UserService userService;
     @Autowired private PostService postService;
-    @Autowired private TopicService topicService;
     @Autowired private SecurityUtil securityUtil;
 
     @Autowired
@@ -47,10 +43,9 @@ public class ProfileController {
 
         // Lấy các bài viết của người dùng này
         List<PostDto> userPosts = postService.getUserPosts(user.getId());
-        List<Topic> topics = topicService.getAllTopics();
+        
         model.addAttribute("user", user);
         model.addAttribute("posts", userPosts);
-        model.addAttribute("topics", topics);
         model.addAttribute("postCount", userPosts.size());
 
         // Kiểm tra xem có phải profile của chính mình không

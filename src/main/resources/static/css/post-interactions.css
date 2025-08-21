@@ -222,3 +222,52 @@ hr.my-2 {
     margin: 0.5rem 0;
     opacity: 0.3;
 }
+
+/* Hashtag filtering styles */
+.hashtag-link {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.hashtag-link:hover {
+    color: #0056b3 !important;
+    text-decoration: underline;
+    transform: translateY(-1px);
+}
+
+/* Post highlighting when filtered by hashtag */
+.card[data-post-id] {
+    transition: all 0.3s ease;
+}
+
+.card[data-post-id].filtered {
+    border: 2px solid #007bff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 8px rgba(0,123,255,0.2) !important;
+}
+
+/* Show all posts button */
+#showAllPostsBtn {
+    transition: all 0.2s ease;
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+
+#showAllPostsBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+}
+
+/* Trending topics styling */
+.trending-topics-list .hashtag-link {
+    color: #1da1f2;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.trending-topics-list .hashtag-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+    transform: translateY(-1px);
+}

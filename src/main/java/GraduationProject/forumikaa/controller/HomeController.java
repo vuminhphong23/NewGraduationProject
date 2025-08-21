@@ -48,15 +48,21 @@ public class HomeController {
 
         List<PostDto> posts = (userId != null)
                 ? postService.getUserFeed(userId)
-                : List.of(); // hoặc cho phép xem public feed
+                : List.of();
 
-        List<Topic> topics = topicService.getAllTopics();
+        List<Topic> trendingTopics = topicService.getTrendingTopics();
+        
+        if (trendingTopics.isEmpty()) {
+            trendingTopics = topicService.getTopTopics(10);
+        }
+        
+        trendingTopics = trendingTopics.stream()
+                .filter(topic -> topic.getUsageCount() != null && topic.getUsageCount() > 0)
+                .collect(java.util.stream.Collectors.toList());
 
         model.addAttribute("userName", userName);
         model.addAttribute("posts", posts);
-        model.addAttribute("topics", topics);
+        model.addAttribute("trendingTopics", trendingTopics);
         return "user/index";
     }
-
-
-} 
+}
