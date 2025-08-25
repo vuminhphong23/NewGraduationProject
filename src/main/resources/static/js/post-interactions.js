@@ -37,10 +37,8 @@ class PostInteractions {
         button.dataset.loading = 'true';
         
         try {
-            const response = await fetch(`/api/posts/${postId}/like`, {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+            const response = await authenticatedFetch(`/api/posts/${postId}/like`, {
+                method: 'POST'
             });
             
             if (response.ok) {
@@ -89,10 +87,7 @@ class PostInteractions {
     async loadLikeStatus(button) {
         const postId = button.getAttribute('data-post-id');
         try {
-            const response = await fetch(`/api/posts/${postId}/like-status`, {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
-            });
+            const response = await authenticatedFetch(`/api/posts/${postId}/like-status`);
             
             if (response.ok) {
                 const result = await response.json();
@@ -137,10 +132,7 @@ class PostInteractions {
     
     async loadComments(postId, page = 0) {
         try {
-            const response = await fetch(`/api/posts/${postId}/comments?page=${page}&size=5`, {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
-            });
+            const response = await authenticatedFetch(`/api/posts/${postId}/comments?page=${page}&size=5`);
             
             if (response.ok) {
                 const comments = await response.json();
@@ -268,13 +260,12 @@ class PostInteractions {
         }
         
         try {
-            const response = await fetch(`/api/posts/${postId}/comments`, {
+            const response = await authenticatedFetch(`/api/posts/${postId}/comments`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                credentials: 'same-origin',
                 body: JSON.stringify({ content })
             });
             
@@ -346,10 +337,9 @@ class PostInteractions {
             return;
         }
         try {
-            const res = await fetch(`/api/posts/${container.getAttribute('data-post-id')}/comments/${commentId}`, {
+            const res = await authenticatedFetch(`/api/posts/${container.getAttribute('data-post-id')}/comments/${commentId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                credentials: 'same-origin',
                 body: JSON.stringify({ content: newContent })
             });
             if (res.ok) {
@@ -397,10 +387,8 @@ class PostInteractions {
             const commentSection = commentElement.closest('.comment-section');
             const postId = commentSection.getAttribute('data-post-id');
             
-            const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
-                method: 'DELETE',
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+            const response = await authenticatedFetch(`/api/posts/${postId}/comments/${commentId}`, {
+                method: 'DELETE'
             });
             
             if (response.ok) {
@@ -488,13 +476,12 @@ class PostInteractions {
         const message = document.getElementById('shareMessage')?.value?.trim() || null;
         
         try {
-            const response = await fetch(`/api/posts/${postId}/share`, {
+            const response = await authenticatedFetch(`/api/posts/${postId}/share`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                credentials: 'same-origin',
                 body: JSON.stringify({ message })
             });
             
@@ -573,10 +560,8 @@ class PostInteractions {
         likeButton.dataset.loading = 'true';
         
         try {
-            const response = await fetch(`/api/comments/${commentId}/like`, {
-                method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+            const response = await authenticatedFetch(`/api/comments/${commentId}/like`, {
+                method: 'POST'
             });
             
             if (response.ok) {
@@ -633,13 +618,12 @@ class PostInteractions {
         }
         
         try {
-            const response = await fetch(`/api/comments/${commentId}`, {
+            const response = await authenticatedFetch(`/api/comments/${commentId}`, {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                credentials: 'same-origin',
                 body: JSON.stringify({ content })
             });
             
@@ -672,10 +656,7 @@ class PostInteractions {
 
     async loadCommentLikeStatus(commentId) {
         try {
-            const response = await fetch(`/api/comments/${commentId}/like-status`, {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
-            });
+            const response = await authenticatedFetch(`/api/comments/${commentId}/like-status`);
             
             if (response.ok) {
                 const result = await response.json();

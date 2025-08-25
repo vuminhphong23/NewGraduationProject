@@ -67,13 +67,27 @@ window.HashtagManager = (function() {
 
     async function loadTrending() {
         try {
-            const res = await fetch('/api/posts/trending-topics', { headers: { 'Accept': 'application/json' } });
+            const res = await authenticatedFetch('/api/posts/trending-topics', { headers: { 'Accept': 'application/json' } });
             if (res.ok) {
-                const data = await res.json();
-                trendingCache = (data || []).map(t => ({ name: t.name || t, count: t.usageCount || t.postCount || 0 }));
+                const topics = await res.json();
+                displayTrendingTopics(topics);
+            } else {
+                console.error('Failed to load trending topics');
+            }
+        } catch (error) {
+            console.error('Error loading trending topics:', error);
+        }
+    }
+
+    function displayTrendingTopics(topics) {
+        try {
+            trendingCache = Array.isArray(topics) ? topics : [];
+            // Nếu input đang trống, hiển thị gợi ý top 8
+            if (hashtagInput && hashtagInput.value.trim() === '') {
+                renderSuggestions(trendingCache.slice(0, 8));
             }
         } catch (e) {
-            console.warn('Cannot load trending topics');
+            console.error('displayTrendingTopics error:', e);
         }
     }
 

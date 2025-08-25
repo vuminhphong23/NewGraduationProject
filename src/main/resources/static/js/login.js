@@ -46,6 +46,92 @@ document.addEventListener("DOMContentLoaded", function() {
             el.style.transform = 'translateY(0)';
         }, 200 + idx * 120);
     });
+
+    const loginForm = document.getElementById("loginForm");
+
+    if (!loginForm) {
+        return; // Không có form đăng nhập ở trang này
+    }
+
+    loginForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        try {
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const token = data.token;
+                
+                // Lưu token vào cả localStorage và cookie
+                if (window.jwtUtils && window.jwtUtils.saveToken) {
+                    window.jwtUtils.saveToken(token, 7);
+                } else {
+                    // Fallback nếu JWT utility chưa load
+                    localStorage.setItem('jwt_token', token);
+                    console.log('JWT utility chưa sẵn sàng, sử dụng localStorage fallback');
+                }
+                
+                const isAdmin = (Array.isArray(data.roles) && data.roles.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN'))
+                    || (window.jwtUtils && window.jwtUtils.hasRole && window.jwtUtils.hasRole('ADMIN'));
+                
+                showSuccessMessage("Đăng nhập thành công!");
+                setTimeout(() => {
+                    window.location.href = isAdmin ? '/admin' : '/';
+                }, 800);
+            } else {
+                const errorData = await response.json();
+                showErrorMessage(errorData.message || "Đăng nhập thất bại!");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            showErrorMessage("Có lỗi xảy ra khi đăng nhập!");
+        }
+    });
 });
+
+// Helper functions
+function showSuccessMessage(message) {
+    const successDiv = document.getElementById('success-message');
+    if (successDiv) {
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        successDiv.className = 'alert alert-success';
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 3000);
+    } else {
+        alert(message);
+    }
+}
+
+function showErrorMessage(message) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        errorDiv.className = 'alert alert-danger';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    } else {
+        alert(message);
+    }
+}
 
 

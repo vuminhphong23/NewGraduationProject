@@ -152,6 +152,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean checkPassword(String password) {
-        return password != null && password.length() >= 6;
+        return password != null;
     }
 } 

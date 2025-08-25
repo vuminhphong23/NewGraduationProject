@@ -4,55 +4,60 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.DecodedJWT;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
-import java.util.HashMap;
 
 public class JwtTokenProvider implements TokenProvider {
+    private final Algorithm algorithm;
+    private final JWTVerifier verifier;
+    private final String issuer;
+    private final long expirationSeconds;
 
-    private final String jwtSecret;
-    private final String jwtIssuer;
-    private final long jwtExpiration;
-
-    public JwtTokenProvider(String jwtSecret, String jwtIssuer, long jwtExpiration) {
-        this.jwtSecret = jwtSecret;
-        this.jwtIssuer = jwtIssuer;
-        this.jwtExpiration = jwtExpiration;
-    }
-
-    private Algorithm getAlgorithm() {
-        return Algorithm.HMAC256(jwtSecret);
+    public JwtTokenProvider(String secret, String issuer, long expirationSeconds
+    ) {
+        this.algorithm = Algorithm.HMAC256(secret);
+        this.issuer = issuer;
+        this.expirationSeconds = expirationSeconds;
+        this.verifier = JWT.require(algorithm)
+                .withIssuer(this.issuer)
+                .build();
     }
 
     @Override
     public String generateToken(Map<String, Object> payload) {
-        Instant now = Instant.now();
-        Instant expiryDate = now.plus(jwtExpiration, ChronoUnit.SECONDS);
+        long nowMillis = System.currentTimeMillis();
+        Date issuedAt = new Date(nowMillis);
+        Date expiresAt = new Date(nowMillis + (expirationSeconds * 1000));
 
-        return JWT.create()
-                .withIssuer(jwtIssuer)
-                .withIssuedAt(Date.from(now))
-                .withExpiresAt(Date.from(expiryDate))
-                .withPayload(payload)
-                .sign(getAlgorithm());
+        com.auth0.jwt.JWTCreator.Builder builder = JWT.create()
+                .withIssuer(issuer)
+                .withIssuedAt(issuedAt)
+                .withExpiresAt(expiresAt);
+
+        if (payload != null) {
+            for (Map.Entry<String, Object> entry : payload.entrySet()) {
+                String key = entry.getKey();
+                Object value = entry.getValue();
+                if (value == null) continue;
+                // Handle common types explicitly; fallback to toString
+                if (value instanceof String v) builder.withClaim(key, v);
+                else if (value instanceof Integer v) builder.withClaim(key, v);
+                else if (value instanceof Long v) builder.withClaim(key, v);
+                else if (value instanceof Boolean v) builder.withClaim(key, v);
+                else if (value instanceof Double v) builder.withClaim(key, v);
+                else if (value instanceof Date v) builder.withClaim(key, v);
+                else builder.withClaim(key, String.valueOf(value));
+            }
+        }
+        return builder.sign(algorithm);
     }
 
     @Override
     public boolean validateToken(String token) {
         try {
-            JWTVerifier verifier = JWT.require(getAlgorithm())
-                    .withIssuer(jwtIssuer)
-                    .build();
-            
-            DecodedJWT jwt = verifier.verify(token);
-            
-            // Kiểm tra token có hết hạn chưa
-            return !jwt.getExpiresAt().before(new Date());
-            
+            verifier.verify(token);
+            return true;
         } catch (JWTVerificationException e) {
             return false;
         }
@@ -61,44 +66,58 @@ public class JwtTokenProvider implements TokenProvider {
     @Override
     public Map<String, Object> getPayload(String token) {
         try {
-            DecodedJWT jwt = JWT.decode(token);
-            Map<String, Object> payload = new HashMap<>();
-            
-            // Lấy các claim cơ bản
-            if (jwt.getIssuer() != null) {
-                payload.put("iss", jwt.getIssuer());
-            }
-            if (jwt.getSubject() != null) {
-                payload.put("sub", jwt.getSubject());
-            }
-            if (jwt.getIssuedAt() != null) {
-                payload.put("iat", jwt.getIssuedAt());
-            }
-            if (jwt.getExpiresAt() != null) {
-                payload.put("exp", jwt.getExpiresAt());
-            }
-            
-            // Lấy các custom claims từ payload
-            jwt.getClaims().forEach((key, claim) -> {
-                if (claim.asString() != null) {
-                    payload.put(key, claim.asString());
-                } else if (claim.asLong() != null) {
-                    payload.put(key, claim.asLong());
-                } else if (claim.asBoolean() != null) {
-                    payload.put(key, claim.asBoolean());
-                } else if (claim.asDate() != null) {
-                    payload.put(key, claim.asDate());
-                } else if (claim.asDouble() != null) {
-                    payload.put(key, claim.asDouble());
+            var jwt = verifier.verify(token);
+            var result = new java.util.HashMap<String, Object>();
+
+            // Standard registered claims
+            if (jwt.getIssuer() != null) result.put("iss", jwt.getIssuer());
+            if (jwt.getIssuedAt() != null) result.put("iat", jwt.getIssuedAt());
+            if (jwt.getExpiresAt() != null) result.put("exp", jwt.getExpiresAt());
+            if (jwt.getSubject() != null) result.put("sub", jwt.getSubject());
+            if (jwt.getId() != null) result.put("jti", jwt.getId());
+            if (jwt.getAudience() != null && !jwt.getAudience().isEmpty()) result.put("aud", jwt.getAudience());
+
+            // Custom and other claims
+            var claims = jwt.getClaims();
+            for (var entry : claims.entrySet()) {
+                String key = entry.getKey();
+                var claim = entry.getValue();
+                if (claim == null || claim.isNull()) continue;
+
+                Object value = null;
+                // Try to decode into common types used by generator
+                Boolean asBool = claim.asBoolean();
+                if (asBool != null) {
+                    value = asBool;
+                } else {
+                    Integer asInt = claim.asInt();
+                    if (asInt != null) value = asInt;
+                    else {
+                        Long asLong = claim.asLong();
+                        if (asLong != null) value = asLong;
+                        else {
+                            Double asDouble = claim.asDouble();
+                            if (asDouble != null) value = asDouble;
+                            else {
+                                java.util.Date asDate = claim.asDate();
+                                if (asDate != null) value = asDate;
+                                else {
+                                    String asString = claim.asString();
+                                    if (asString != null) value = asString;
+                                }
+                            }
+                        }
+                    }
                 }
-            });
-            
-            return payload;
-        } catch (Exception e) {
-            // Trả về map rỗng nếu có lỗi khi decode token
-            return new HashMap<>();
+
+                if (value != null) {
+                    result.put(key, value);
+                }
+            }
+            return result;
+        } catch (JWTVerificationException e) {
+            // Invalid token
+            return Map.of();
         }
     }
-
-
 }

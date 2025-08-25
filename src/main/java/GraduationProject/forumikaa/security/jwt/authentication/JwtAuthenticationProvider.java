@@ -32,9 +32,9 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
             return null;
         }
         Map<String, Object> payload = tokenProvider.getPayload(token);
-        String principal = payload.get("username").toString();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(principal);
-        return new JwtAuthenticationToken(principal, token, userDetails.getAuthorities());
+        String username = payload.get("username").toString();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        return new JwtAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
 
     @Override

@@ -6,6 +6,7 @@
 class PostManager {
     constructor() {
         this.modal = document.getElementById('postModal');
+        this.modalTitle = document.getElementById('postModalLabel');
         this.form = document.getElementById('postForm');
         this.titleInput = document.getElementById('postTitle');
         this.contentInput = document.getElementById('postContent');
@@ -132,13 +133,12 @@ class PostManager {
         try {
             this.setLoading(true);
             
-            const response = await fetch(url, {
+            const response = await authenticatedFetch(url, {
                 method,
                 headers: { 
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                credentials: 'same-origin',
                 body: JSON.stringify(postData)
             });
             
@@ -180,9 +180,8 @@ class PostManager {
     
     async editPost(postId) {
         try {
-            const response = await fetch(`/api/posts/${postId}`, {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+            const response = await authenticatedFetch(`/api/posts/${postId}`, {
+                headers: { 'Accept': 'application/json' }
             });
             
             if (response.ok) {
@@ -198,6 +197,9 @@ class PostManager {
                 
                 this.editingPostId = postId;
                 this.publishBtn.textContent = 'Cập nhật';
+                if (this.modalTitle) {
+                    this.modalTitle.textContent = 'Chỉnh sửa bài viết';
+                }
                 
                 new bootstrap.Modal(this.modal).show();
                 this.validateForm();
@@ -227,10 +229,9 @@ class PostManager {
             
             console.log('Deleting post:', postId); // Debug log
             
-            const response = await fetch(`/api/posts/${postId}`, {
+            const response = await authenticatedFetch(`/api/posts/${postId}`, {
                 method: 'DELETE',
-                headers,
-                credentials: 'same-origin'
+                headers
             });
             
             console.log('Delete response status:', response.status); // Debug log
@@ -271,10 +272,9 @@ class PostManager {
     
     async toggleLike(postId) {
         try {
-            const response = await fetch(`/api/posts/${postId}/like`, {
+            const response = await authenticatedFetch(`/api/posts/${postId}/like`, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+                headers: { 'Accept': 'application/json' }
             });
 
             if (response.ok) {
@@ -323,6 +323,9 @@ class PostManager {
         this.setPrivacy('PUBLIC');
         this.editingPostId = null;
         this.publishBtn.textContent = 'Đăng bài';
+        if (this.modalTitle) {
+            this.modalTitle.textContent = 'Tạo bài viết';
+        }
         
         // Reset hashtag selection but don't save to server
         if (window.HashtagManager) {
