@@ -204,6 +204,8 @@ public class PostController {
             List<Map<String, Object>> comments = postService.getPostComments(postId, userId, page, size);
             return ResponseEntity.ok(comments);
         } catch (Exception e) {
+            System.err.println("PostController: Error getting comments for post " + postId + ": " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(List.of());
         }
@@ -299,6 +301,7 @@ public class PostController {
     private Long getCurrentUserId() {
         try {
             Long userId = securityUtil.getCurrentUserId();
+            
             if (userId == null) {
                 throw new RuntimeException("User ID is null - user may not be authenticated");
             }

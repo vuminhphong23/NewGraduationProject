@@ -155,7 +155,7 @@ body {
 
 .card {
     box-shadow: 0 2px 8px rgba(35,50,107,0.08) !important;
-    border: none; !important;
+    border: none !important;
 }
 .card-header {
     color: #0F2E6F;
@@ -178,4 +178,506 @@ a, .btn-link, .sidebar-link, .sidebar-link-block, .card a {
     background: #f6f7fb !important;
     color: #ff6b00 !important;
     text-decoration: none !important;
+}
+
+/* Notification styles */
+.notification-dropdown {
+    position: relative;
+}
+
+.notification-dropdown .menu-text {
+    opacity: 0;
+    max-width: 0;
+    margin-left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.18s, max-width 0.18s, margin-left 0.18s;
+    font-size: 1.08rem;
+    font-weight: 700;
+}
+
+.notification-dropdown:hover .menu-text,
+.notification-dropdown:focus-within .menu-text {
+    opacity: 1;
+    max-width: 200px;
+    margin-left: 0.5rem;
+}
+
+.notification-bell {
+    position: relative;
+    color: #fff;
+    text-decoration: none;
+    padding: 0.3rem 0.7rem;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s, box-shadow 0.18s;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.notification-bell:hover, .notification-bell:focus {
+    color: #ff6b00;
+    background: rgba(255,107,0,0.08);
+}
+
+.notification-badge {
+    position: absolute;
+    display: flex;
+    top: 2px;
+    right: 3px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    justify-content: center;
+    align-items: center;
+    padding: 1px 4px;
+    font-weight: bold;
+}
+
+
+.notification-menu {
+    border: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border-radius: 16px;
+    padding: 0;
+    min-width: 350px;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.notification-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item:hover {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    transform: translateX(4px);
+}
+
+.notification-item.unread {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border-left: 4px solid #2196f3;
+}
+
+.notification-item.unread:hover {
+    background: linear-gradient(135deg, #bbdefb, #90caf9);
+}
+
+.notification-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.notification-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 2px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notification-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-message {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.notification-actions .btn {
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.notification-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Profile friendship buttons */
+.friendship-actions {
+    display: flex;
+    align-items: center;
+}
+
+.friendship-actions .btn {
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s;
+    border: none;
+}
+
+/* Nút Kết bạn - màu xanh dương */
+.friendship-actions .btn.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+/*.friendship-actions .btn.btn-primary:hover {*/
+/*    background-color: #f6f7fb !important;*/
+/*    color: white !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút Đã gửi yêu cầu - màu xám */
+.friendship-actions .btn.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+/*.friendship-actions .btn.btn-secondary:hover {*/
+/*    background-color: #5a6268 !important;*/
+/*    color: white !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút Chấp nhận - màu xanh lá */
+.friendship-actions .btn.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+/*.friendship-actions .btn.btn-success:hover {*/
+/*    background-color: #63d552 !important;*/
+/*    color: white !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút Từ chối - màu đỏ */
+.friendship-actions .btn.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/*.friendship-actions .btn.btn-danger:hover {*/
+/*    background-color: #e75b5b !important;*/
+/*    color: white !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút Hủy kết bạn - màu đỏ outline */
+.friendship-actions .btn.btn-outline-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/*.friendship-actions .btn.btn-outline-danger:hover {*/
+/*    background-color: #6c757d !important;*/
+/*    color: white !important;*/
+/*    border-color: #6c757d !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút Đã chặn - màu vàng */
+.friendship-actions .btn.btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+/*.friendship-actions .btn.btn-warning:hover {*/
+/*    background-color: #6c757d !important;*/
+/*    color: white !important;*/
+/*    transform: translateY(-1px);*/
+/*    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);*/
+/*}*/
+
+/* Nút bị disabled */
+.friendship-actions .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Button group styling */
+.friendship-actions .btn-group .btn {
+    border-radius: 0;
+}
+
+.friendship-actions .btn-group .btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.friendship-actions .btn-group .btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Hover effect cho tất cả các nút */
+.friendship-actions .btn:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-menu {
+        width: 300px !important;
+        right: 0;
+        left: auto;
+    }
+    
+    .header-menu {
+        gap: 8px;
+    }
+    
+    .notification-bell {
+        padding: 6px 8px;
+    }
+}
+
+/* Search friends section - Clean & Consistent Design */
+.search-friends-section {
+    margin-bottom: 1.5rem;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(35,50,107,0.08) !important;
+    border-radius: 10px !important;
+    background: #fff;
+}
+
+.search-friends-section .card-header {
+    background: #fff;
+    padding: 1rem 1.5rem 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #0F2E6F;
+}
+
+.search-friends-section .input-group {
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(35,50,107,0.04);
+    border: 1px solid #e0e6ed !important;
+    border-radius: 8px !important;
+
+}
+
+#userSearchInput{
+    border: none !important;
+}
+
+.search-friends-section .form-control {
+    border: 1px solid #e0e6ed;
+    border-radius: 0;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    background: #f8fafc;
+    color: #333;
+    transition: all 0.2s ease;
+}
+
+.search-friends-section .form-control:focus {
+    background: #fff;
+    border-color: #ff6b00;
+    box-shadow: 0 0 0 0.15rem rgba(255, 107, 0, 0.1);
+    color: #333;
+    border-radius: 8px !important;
+}
+
+.search-friends-section .form-control::placeholder {
+    color: #9ca3af;
+}
+
+.search-friends-section .btn {
+    border-radius: 0;
+    padding: 0.6rem 0.8rem;
+    background: #f8fafc;
+    color: #6c757d;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.15s, background 0.15s;
+    min-width: 40px;
+}
+
+.search-friends-section .btn:hover {
+    background: #f6f7fb !important;
+    color: #ff6b00 !important;
+}
+
+.search-friends-section .btn i {
+    font-size: 0.85rem;
+}
+
+/* Search results styling - Clean Cards */
+#userSearchResults {
+    max-height: 350px;
+    overflow-y: auto;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+}
+
+#userSearchResults .list-group-item {
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    box-shadow: 0 2px 6px rgba(35,50,107,0.04);
+    transition: all 0.2s ease;
+}
+
+#userSearchResults .list-group-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(35,50,107,0.08);
+}
+
+#userSearchResults .list-group-item:last-child {
+    margin-bottom: 0;
+}
+
+/* User item content styling */
+.user-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f6f7fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+    border: 2px solid #e9ecef;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-username {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
+}
+
+.user-fullname {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Action buttons styling */
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.user-actions .btn {
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+    min-width: 70px;
+}
+
+.user-actions .btn.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.user-actions .btn.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.user-actions .btn.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.user-actions .btn.btn-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.user-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Empty state styling */
+#userSearchResults .empty-state {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    color: #9ca3af;
+}
+
+#userSearchResults .empty-state i {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    opacity: 0.6;
+}
+
+/* Scrollbar styling */
+#userSearchResults::-webkit-scrollbar {
+    width: 4px;
+}
+
+#userSearchResults::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 2px;
+}
+
+#userSearchResults::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+}
+
+#userSearchResults::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }

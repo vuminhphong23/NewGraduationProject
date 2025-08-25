@@ -41,9 +41,13 @@ public class HomeController {
     public String home(Model model) {
         String userName = "Khách";
         Long userId = null;
+        GraduationProject.forumikaa.entity.User user = null;
         try {
             userName = securityUtil.getCurrentUsername();
             userId = securityUtil.getCurrentUserId();
+            if (userId != null) {
+                user = securityUtil.getCurrentUser();
+            }
         } catch (RuntimeException ignored) {}
 
         List<PostDto> posts = (userId != null)
@@ -61,6 +65,7 @@ public class HomeController {
                 .collect(java.util.stream.Collectors.toList());
 
         model.addAttribute("userName", userName);
+        model.addAttribute("user", user);
         model.addAttribute("posts", posts);
         model.addAttribute("trendingTopics", trendingTopics);
         return "user/index";

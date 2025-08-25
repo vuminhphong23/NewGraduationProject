@@ -105,7 +105,7 @@ public class AdminController {
             bindingResult.rejectValue("phone", "error.user", "Số điện thoại đã tồn tại");
             return "admin/user-form";
         }
-        if(userService.checkPassword(user.getPassword())){
+        if(!userService.checkPassword(user.getPassword())){
             bindingResult.rejectValue("password", "error.user", "Mật khẩu phải nhiều hơn 6 ký tự");
             return "admin/user-form";
         }
