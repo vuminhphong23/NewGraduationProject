@@ -1,8 +1,7 @@
 package GraduationProject.forumikaa.service;
 
-import GraduationProject.forumikaa.dto.ChatMessageDao;
+import GraduationProject.forumikaa.dao.ChatMessageDao;
 import GraduationProject.forumikaa.entity.ChatMessage;
-import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

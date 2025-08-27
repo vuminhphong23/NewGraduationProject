@@ -41,9 +41,9 @@
         <!-- SIDEBAR LEFT -->
         <aside class="col-lg-3 d-none d-lg-block">
             <div class="card mb-4 text-center p-3 border-0 ">
-                <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0zMiAzMkM0MS45NDExIDMyIDUwIDIzLjk0MTEgNTAgMTRDNTAgNC4wNTg4OSA0MS45NDExIC00IDMyIC00QzIyLjA1ODkgLTQgMTQgNC4wNTg4OSAxNCAxNEMxNCAyMy45NDExIDIyLjA1ODkgMzIgMzIgMzJaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0zMiAzNkM0Mi4wODUxIDM2IDUwIDI4LjA4NTEgNTAgMThIMTRDMTQgMjguMDg1MSAyMS45MTQ5IDM2IDMyIDM2WiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'}" 
+                <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
                      alt="avatar" class="rounded-circle mx-auto mb-2" width="64" height="64"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0zMiAzMkM0MS45NDExIDMyIDUwIDIzLjk0MTEgNTAgMTRDNTAgNC4wNTg4OSA0MS45NDExIC00IDMyIC00QzIyLjA1ODkgLTQgMTQgNC4wNTg4OSAxNCAxNEMxNCAyMy45NDExIDIyLjA1ODkgMzIgMzIgMzJaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0zMiAzNkM0Mi4wODUxIDM2IDUwIDI4LjA4NTEgNTAgMThIMTRDMTQgMjguMDg1MSAyMS45MTQ5IDM2IDMyIDM2WiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'">
+                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                 <div>
                     <div class="fw-semibold" th:text="${userName}">Tên người dùng</div>
                     <div class="text-muted small">Công nghệ thông tin</div>
@@ -106,9 +106,9 @@
         <main class="col-lg-6">
             <div class="card mb-4 border-0 pb-2">
                 <div class="card-body d-flex align-items-center gap-3 pb-1">
-                    <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA0NCA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQ0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMiAyMkMyOC42MjY0IDIyIDM0IDI4LjYyNjQgMzQgMzZDMzQgNDMuMzczNiAyOC42MjY0IDUwIDIyIDUwQzE1LjM3MzYgNTAgOSAyOC42MjY0IDkgMjJDMTkgMTUuMzczNiAyMiAyMiAyMiAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg=='}" 
+                    <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
                          alt="avatar" class="rounded-circle" width="44" height="44"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDQiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA0NCA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ0IiBoZWlnaHQ9IjQ0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMiAyMkMyOC42MjY0IDIyIDM0IDI4LjYyNjQgMzQgMzZDMzQgNDMuMzczNiAyOC42MjY0IDUwIDIyIDUwQzE1LjM3MzYgNTAgOSAyOC42MjY0IDkgMjJDMTkgMTUuMzczNiAyMiAyMiAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg=='">
+                         onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                     <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn đang nghĩ gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?" data-bs-toggle="modal" data-bs-target="#postModal" readonly style="cursor:pointer;">
                 </div>
                 <hr style="color: #c3d2e0; margin: 1rem">
@@ -118,7 +118,6 @@
                     <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-calendar"></i>Sự kiện</button>
                 </div>
             </div>
-            <!-- Posts Feed -->
 
             <!-- Posts Feed -->
             <div id="feed">
@@ -132,9 +131,9 @@
                     <!-- Header -->
                     <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyNi42MjY0IDIwIDMyIDI2LjYyNjQgMzIgMzRDMzIgNDEuMzczNiAyNi42MjY0IDQ4IDIwIDQ4QzEzLjM3MzYgNDggNyAyNi42MjY0IDcgMjBDMTcgMTMuMzczNiAyMCAyMCAyMCAyMFoiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg=='}"
+                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
                                  class="rounded-circle" width="40" height="40" alt="avatar"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0yMCAyMEMyNi42MjY0IDIwIDMyIDI2LjYyNjQgMzIgMzRDMzIgNDEuMzczNiAyNi42MjY0IDQ4IDIwIDQ4QzEzLjM3MzYgNDggNyAyNi42MjY0IDcgMjBDMTcgMTMuMzczNiAyMCAyMCAyMCAyMFoiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg=='">
+                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                             <div>
                                 <div class="fw-semibold" th:text="${post.userName}">User name</div>
                                 <div class="text-muted small">
@@ -216,9 +215,9 @@
                             
                             <!-- Comment Input -->
                             <div class="d-flex gap-2 mb-3">
-                                <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xNiAxNkMxOS45NDExIDE2IDI4IDIzLjk0MTEgMjggMTRDMjggNC4wNTg4OSAxOS45NDExIC00IDE2IC00QzUuMDU4ODkgLTQgLTEgNC4wNTg4OSAtMSAxNEMtMSAyMy45NDExIDUuMDU4ODkgMzIgMTYgMzJaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0xNiAzNkMxNiAzNiAyNCAyOC4wODUxIDI0IDE4SDE0QzE0IDI4LjA4NTEgMjEuOTE0OSAzNiAxNiAzNloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg=='}" 
+                                <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
                                      alt="avatar" class="rounded-circle" width="32" height="32"
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNMTYgMTZDMTkuOTQxMSAxNiAyOCAyMy45NDExIDI4IDE0QzI4IDQuMDU4ODkgMTkuOTQxMSAtNCAxNiAtNEMyLjA1ODg5IC00IC0xIDQuMDU4ODkgLTEgMTRDLTEgMjMuOTQxMSA1LjA1ODg5IDMyIDE2IDMyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNMTYgMzZDMTYgMzYgMjQgMjguMDg1MSAyNCAxOEgxNEMyNCAyOC4wODUxIDIxLjkxNDkgMzYgMTYgMzZaIiBmaWxsPSIjRDlEOUQ5Ii8+Cjwvc3ZnPgo='">
+                                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                                 <div class="flex-grow-1">
                                     <input type="text" class="form-control comment-input" 
                                            placeholder="Viết bình luận..." 
@@ -449,9 +448,8 @@
 <script src="/js/post-manager.js"></script>
         <script src="/js/toast-manager.js"></script>
         <script src="/js/post-interactions.js"></script>
+        <script src="/js/websocket-manager.js"></script>
         <script src="/js/notifications.js"></script>
         <script src="/js/suggested-users.js"></script>
-        <!-- API Test - Chỉ sử dụng trong development -->
-        <script src="/js/api-test.js"></script>
 </body>
 </html>

@@ -34,6 +34,19 @@ public interface FriendshipDao extends JpaRepository<Friendship, Long> {
           AND f.status = 'ACCEPTED'
     """)
     List<User> findFriendsOf(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT u FROM User u
+        LEFT JOIN FETCH u.userProfile
+        WHERE u.id IN (
+            SELECT CASE WHEN f.user.id = :userId THEN f.friend.id ELSE f.user.id END
+            FROM Friendship f
+            WHERE (f.user.id = :userId OR f.friend.id = :userId)
+              AND f.status = 'ACCEPTED'
+        )
+    """)
+    List<User> findFriendsOfWithProfile(@Param("userId") Long userId);
 }
+
 
 

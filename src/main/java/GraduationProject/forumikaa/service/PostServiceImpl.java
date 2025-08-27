@@ -43,6 +43,7 @@ public class PostServiceImpl implements PostService {
     @Autowired
     private LikeService likeService;
     @Autowired private CommentDao commentDao;
+    @Autowired private NotificationService notificationService;
 
     @Override
     public PostDto createPost(CreatePostRequest request, Long userId) {
@@ -234,6 +235,10 @@ public class PostServiceImpl implements PostService {
             likeService.unlikePost(postId, userId);
         } else {
             likeService.likePost(postId, userId);
+            // Gửi notification khi like bài viết (chỉ khi chưa like trước đó)
+            if (!post.getUser().getId().equals(userId)) { // Không gửi notification cho chính mình
+                notificationService.createPostLikeNotification(postId, post.getUser().getId(), userId);
+            }
         }
         // always recompute from DB to avoid drift
         Long freshCount = likeService.getPostLikeCount(postId);
@@ -263,7 +268,7 @@ public class PostServiceImpl implements PostService {
         // }
         
         Pageable pageable = PageRequest.of(page, size);
-        List<Comment> comments = commentDao.findByPostIdOrderByCreatedAtAsc(postId, pageable).getContent();
+        List<Comment> comments = commentDao.findByPostIdOrderByCreatedAtDesc(postId, pageable).getContent();
         
         return comments.stream().map(comment -> {
             // Lấy avatar từ UserProfile
@@ -302,6 +307,11 @@ public class PostServiceImpl implements PostService {
         // Update comment count
         post.setCommentCount(post.getCommentCount() + 1);
         postDao.save(post);
+        
+        // Gửi notification khi comment bài viết
+        if (!post.getUser().getId().equals(userId)) { // Không gửi notification cho chính mình
+            notificationService.createPostCommentNotification(postId, post.getUser().getId(), userId, savedComment.getId());
+        }
         
         // Return comment data
         Map<String, Object> commentData = new HashMap<>();
@@ -402,6 +412,16 @@ public class PostServiceImpl implements PostService {
         sharedPostData.put("content", savedSharedPost.getContent());
         sharedPostData.put("userId", userId);
         sharedPostData.put("userName", user.getUsername());
+        
+        // Lấy avatar của user chia sẻ
+        String userAvatar = null;
+        if (user.getUserProfile() != null && user.getUserProfile().getAvatar() != null && !user.getUserProfile().getAvatar().trim().isEmpty()) {
+            userAvatar = user.getUserProfile().getAvatar();
+        } else {
+            userAvatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+        }
+        sharedPostData.put("userAvatar", userAvatar);
+        
         sharedPostData.put("createdAt", savedSharedPost.getCreatedAt());
         sharedPostData.put("originalPostId", postId);
         
@@ -448,6 +468,16 @@ public class PostServiceImpl implements PostService {
         dto.setContent(post.getContent());
         dto.setUserId(post.getUser().getId());
         dto.setUserName(post.getUser().getUsername());
+        
+        // Lấy avatar của user từ UserProfile
+        String userAvatar = null;
+        if (post.getUser().getUserProfile() != null && post.getUser().getUserProfile().getAvatar() != null && !post.getUser().getUserProfile().getAvatar().trim().isEmpty()) {
+            userAvatar = post.getUser().getUserProfile().getAvatar();
+        } else {
+            userAvatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+        }
+        dto.setUserAvatar(userAvatar);
+        
         dto.setCreatedAt(post.getCreatedAt());
         dto.setLikeCount(post.getLikeCount() != null ? post.getLikeCount() : 0L);
         dto.setCommentCount(post.getCommentCount() != null ? post.getCommentCount() : 0L);

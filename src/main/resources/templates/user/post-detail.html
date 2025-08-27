@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${post.title != null ? post.title : 'Bài viết'} + ' - Forumikaa'">Bài viết - Forumikaa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/user/layout.css">
+    <link rel="stylesheet" href="/css/post-interactions.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div th:replace="~{fragments/user/header :: header}"></div>
+
+    <div class="container py-4">
+        <div class="row">
+            <!-- MAIN CONTENT -->
+            <main class="col-lg-9 mx-auto">
+                <!-- Back Button -->
+                <div class="mb-3">
+                    <a href="/" class="btn btn-outline-secondary">
+                        <i class="fa fa-arrow-left"></i> Quay lại trang chủ
+                    </a>
+                </div>
+
+                <!-- Post Detail -->
+                <div class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
+                    <!-- Header -->
+                    <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                 class="rounded-circle" width="40" height="40" alt="avatar"
+                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                            <div>
+                                <div class="fw-semibold" th:text="${post.userName}">User name</div>
+                                <div class="text-muted small">
+                                    <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
+                                    •
+                                    <span th:switch="${post.privacy.name()}">
+                                        <i th:case="'PUBLIC'" class="fa fa-globe-asia"></i>
+                                        <i th:case="'FRIENDS'" class="fa fa-users"></i>
+                                        <i th:case="'PRIVATE'" class="fa fa-lock"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <!-- Display topics as hashtags -->
+                            <div class="post-hashtags" th:if="${post.topicNames != null and !post.topicNames.isEmpty()}">
+                                <span th:each="topicName : ${post.topicNames}"
+                                      class="hashtag-link me-2"
+                                      th:text="'#' + ${topicName}"
+                                      style="color: #1da1f2; font-weight: 500; text-decoration: none; cursor: pointer;"
+                                      th:data-hashtag="${topicName}"
+                                      onclick="searchByHashtag(this.dataset.hashtag)">
+                                    #topic
+                                </span>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                    <i class="fa fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" th:attr="data-id=${post.id}" onclick="deletePost(this)">Xoá</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="card-body pt-2">
+                        <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
+                            th:text="${post.title}">Tiêu đề bài viết</h5>
+
+                        <p class="card-text" style="white-space: pre-wrap;"
+                           th:text="${post.content}">Nội dung bài viết...</p>
+                    </div>
+
+                    <!-- Footer (like/comment/share placeholders) -->
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <div class="d-flex justify-content-between text-muted small mb-2">
+                            <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
+                            <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                        </div>
+                        <hr class="my-2" style="color: #c3d2e0;">
+                        <div class="d-flex justify-content-around">
+                            <button class="btn btn-light d-flex align-items-center gap-2 like-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="toggleLike(this)">
+                                <i class="fa-regular fa-thumbs-up"></i> 
+                                <span class="like-text">Thích</span>
+                            </button>
+                            <button class="btn btn-light d-flex align-items-center gap-2 comment-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="toggleCommentSection(this)">
+                                <i class="fa-regular fa-comment"></i> 
+                                <span>Bình luận</span>
+                            </button>
+                            <button class="btn btn-light d-flex align-items-center gap-2 share-btn" 
+                                    th:attr="data-post-id=${post.id}"
+                                    onclick="sharePost(this)">
+                                <i class="fa-regular fa-share-from-square"></i> 
+                                <span>Chia sẻ</span>
+                            </button>
+                        </div>
+
+                        <div class="comment-section mt-3" th:attr="data-post-id=${post.id}">
+                            <hr class="my-2" style="color: #c3d2e0;">
+                            
+                            <!-- Comment Input -->
+                            <div class="d-flex gap-2 mb-3">
+                                <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                     alt="avatar" class="rounded-circle" width="32" height="32"
+                                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                                <div class="flex-grow-1">
+                                    <input type="text" class="form-control comment-input" 
+                                           placeholder="Viết bình luận..." 
+                                           th:attr="data-post-id=${post.id}">
+                                </div>
+                                <button class="btn btn-primary btn-sm post-comment-btn" 
+                                        th:attr="data-post-id=${post.id}"
+                                        title="Đăng">
+                                    <i class="fa fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Comments List -->
+                            <div class="comments-list" th:attr="data-post-id=${post.id}">
+                                <!-- Comments will be loaded here -->
+                            </div>
+                            
+                            <!-- Load More Comments -->
+                            <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
+                                <button class="btn btn-link btn-sm load-more-comments" 
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="loadMoreComments(this)">
+                                    Xem thêm bình luận
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jwt-utils.js"></script>
+    <script src="/js/websocket-manager.js"></script>
+    <script src="/js/toast-manager.js"></script>
+    <script src="/js/notifications.js"></script>
+    <script src="/js/post-interactions.js"></script>
+    <script src="/js/post-manager.js"></script>
+    <script src="/js/post-detail.js"></script>
+</body>
+</html>

@@ -14,6 +14,7 @@ public class PostDto {
     private String content;
     private Long userId;
     private String userName;
+    private String userAvatar; // Avatar của user đăng post
     private List<String> topicNames; // Chỉ dùng tên topic thay vì Entity
     private PostStatus status;
     private PostPrivacy privacy;

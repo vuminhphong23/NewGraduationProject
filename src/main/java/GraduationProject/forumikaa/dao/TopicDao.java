@@ -12,6 +12,27 @@ import java.util.Set;
 
 @Repository
 public interface TopicDao extends JpaRepository<Topic, Long> {
+    
+    // Định nghĩa Projection Interface
+    interface TopicSummaryProjection {
+        Long getId();
+        String getName();
+        Long getUsageCount();
+        Boolean getIsTrending();
+    }
+    
+    // Thêm các phương thức sử dụng projection
+
+    @Query("SELECT t.id as id, t.name as name, t.usageCount as usageCount, t.isTrending as isTrending " +
+           "FROM Topic t WHERE t.isTrending = true ORDER BY t.usageCount DESC")
+    List<TopicSummaryProjection> findTrendingTopicsProjection();
+
+    @Query("SELECT t.id as id, t.name as name, t.usageCount as usageCount, t.isTrending as isTrending " +
+           "FROM Topic t ORDER BY t.usageCount DESC LIMIT :limit")
+    List<TopicSummaryProjection> findTopTopicsProjectionLimited(@Param("limit") int limit);
+
+
+
     // Tìm hashtag theo tên
     Optional<Topic> findByName(String name);
 

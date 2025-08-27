@@ -4,21 +4,14 @@ import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostDto;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
-import GraduationProject.forumikaa.entity.PostPrivacy;
-import GraduationProject.forumikaa.entity.PostStatus;
-import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +46,7 @@ public class PostController {
         }
     }
 
-    // 2. Lấy feed giống Facebook (toàn bộ)
+    // 2. Lấy toàn bộ
     @GetMapping("/feed")
     public ResponseEntity<List<PostDto>> getUserFeed() {
         Long userId = getCurrentUserId();

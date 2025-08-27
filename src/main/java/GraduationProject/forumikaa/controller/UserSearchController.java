@@ -81,6 +81,70 @@ public class UserSearchController {
                 "items", users
         ));
     }
+
+    @GetMapping("/suggested")
+    public ResponseEntity<List<Map<String, Object>>> getSuggestedUsers(
+            @RequestParam(defaultValue = "5") int limit
+    ) {
+        Long currentUserId = securityUtil.getCurrentUserId();
+        System.out.println("Getting suggested users for current user ID: " + currentUserId);
+        
+        // Tạo Pageable với limit
+        Pageable pageable = PageRequest.of(0, limit);
+        
+        // Lấy danh sách người dùng gợi ý
+        // Logic: người dùng chưa kết bạn, sắp xếp ngẫu nhiên
+        List<User> suggestedUsers = userDao.findSuggestedUsers(currentUserId, pageable);
+        System.out.println("Found " + suggestedUsers.size() + " suggested users from database");
+        
+        List<Map<String, Object>> result = suggestedUsers.stream().map(u -> {
+            System.out.println("Processing user: " + u.getUsername() + " (ID: " + u.getId() + ")");
+            System.out.println("User profile: " + (u.getUserProfile() != null ? "exists" : "null"));
+            if (u.getUserProfile() != null) {
+                System.out.println("Avatar from profile: " + u.getUserProfile().getAvatar());
+            }
+            Map<String, Object> userMap = new java.util.HashMap<>();
+            userMap.put("id", u.getId());
+            userMap.put("username", u.getUsername());
+            userMap.put("fullName", (u.getFirstName() != null ? u.getFirstName() : "") + 
+                               (u.getLastName() != null ? " " + u.getLastName() : "").trim());
+            
+            // Lấy avatar từ UserProfile
+            String avatar = null;
+            if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null && !u.getUserProfile().getAvatar().trim().isEmpty()) {
+                avatar = u.getUserProfile().getAvatar();
+                System.out.println("User " + u.getUsername() + " has avatar: " + avatar);
+            } else {
+                System.out.println("User " + u.getUsername() + " has no avatar or empty avatar");
+                // Sử dụng avatar mặc định CDN
+                avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+            }
+            userMap.put("avatar", avatar);
+            
+            // Lấy thông tin khoa từ profileInfo
+            String department = "Chưa cập nhật";
+            if (u.getProfileInfo() != null && !u.getProfileInfo().trim().isEmpty()) {
+                department = u.getProfileInfo();
+            }
+            userMap.put("department", department);
+            
+            // Đếm số bạn chung (có thể implement sau)
+            int mutualFriends = 0; // TODO: implement mutual friends count
+            userMap.put("mutualFriends", mutualFriends);
+            
+            // Kiểm tra trạng thái kết bạn
+            Optional<Friendship> fs = friendshipService.getFriendshipBetween(currentUserId, u.getId());
+            String friendshipStatus = fs.map(f -> f.getStatus().name()).orElse("NONE");
+            Long requesterId = fs.map(f -> f.getUser().getId()).orElse(null);
+            userMap.put("friendshipStatus", friendshipStatus);
+            userMap.put("requestedByMe", requesterId != null && requesterId.equals(currentUserId));
+            
+            return userMap;
+        }).collect(Collectors.toList());
+        
+        System.out.println("Returning " + result.size() + " suggested users");
+        return ResponseEntity.ok(result);
+    }
 }
 
 

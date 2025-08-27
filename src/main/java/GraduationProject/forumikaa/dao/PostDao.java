@@ -11,11 +11,13 @@ import java.util.List;
 @Repository
 public interface PostDao extends JpaRepository<Post, Long> {
 
-    List<Post> findByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user u LEFT JOIN FETCH u.userProfile WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+    List<Post> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     @Query("""
         SELECT DISTINCT p FROM Post p
-        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.user u
+        LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
@@ -30,7 +32,8 @@ public interface PostDao extends JpaRepository<Post, Long> {
 
     @Query("""
         SELECT p FROM Post p
-        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.user u
+        LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
@@ -44,7 +47,8 @@ public interface PostDao extends JpaRepository<Post, Long> {
 
     @Query("""
         SELECT DISTINCT p FROM Post p
-        LEFT JOIN FETCH p.user
+        LEFT JOIN FETCH p.user u
+        LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics t
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')

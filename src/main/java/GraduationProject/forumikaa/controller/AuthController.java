@@ -1,19 +1,32 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.LoginRequest;
+import GraduationProject.forumikaa.dto.LoginResponse;
+import GraduationProject.forumikaa.dto.UserDto;
+import GraduationProject.forumikaa.dto.UserInfoResponse;
 import GraduationProject.forumikaa.security.jwt.JwtCookieService;
 import GraduationProject.forumikaa.security.jwt.TokenProvider;
+import GraduationProject.forumikaa.service.CustomUserDetailsService;
+import GraduationProject.forumikaa.util.SecurityUtil;
+import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -23,6 +36,12 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final JwtCookieService jwtCookieService;
+    
+    @Autowired
+    private SecurityUtil securityUtil;
+
+    @Autowired
+    private UserService userService;
 
     public AuthController(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder, TokenProvider tokenProvider, JwtCookieService jwtCookieService) {
         this.userDetailsService = userDetailsService;
@@ -32,9 +51,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> body, HttpServletResponse response) {
-        String username = body.get("username");
-        String password = body.get("password");
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+        String username = request.getUsername();
+        String password = request.getPassword();
+
         // Verify username and password
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
@@ -43,25 +63,47 @@ public class AuthController {
         if (!userDetails.isEnabled()) {
             throw new RuntimeException("User is disabled");
         }
-        // Generate token with roles
-        java.util.List<String> roles = userDetails.getAuthorities().stream()
+
+        // Generate token with roles and userId
+        List<String> roles = userDetails.getAuthorities().stream()
                 .map(a -> a.getAuthority())
                 .toList();
-        String token = tokenProvider.generateToken(java.util.Map.of(
-                "username", username,
-                "roles", roles
-        ));
+        
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("username", username);
+        payload.put("roles", roles);
+
+        
+        String token = tokenProvider.generateToken(payload);
         
         // Tạo JWT cookie (7 ngày = 604800 giây)
         jwtCookieService.createJwtCookie(response, token, 604800);
         
-        return java.util.Map.of("token", token, "roles", roles);
+        return ResponseEntity.ok(new LoginResponse(token, roles));
     }
 
     @PostMapping("/logout")
-    public Map<String, Object> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response) {
         // Xóa JWT cookie
         jwtCookieService.removeJwtCookie(response);
-        return Map.of("message", "Đăng xuất thành công");
+        return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser() {
+        Long userId = securityUtil.getCurrentUserId();
+        // Lấy thông tin user từ database
+        User user = userService.findById(userId).orElse(null);
+
+        UserInfoResponse userInfoResponse = new UserInfoResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName()
+        );
+
+        return ResponseEntity.ok(userInfoResponse);
+    }
+
 }

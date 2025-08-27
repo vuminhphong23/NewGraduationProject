@@ -16,7 +16,6 @@ public interface NotificationDao extends JpaRepository<Notification, Long> {
 
     List<Notification> findByRecipientId(Long recipientId);
 
-
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.recipientId = :recipientId AND n.isRead = false")
     Long countUnreadByRecipientId(@Param("recipientId") Long recipientId);
 
@@ -27,6 +26,8 @@ public interface NotificationDao extends JpaRepository<Notification, Long> {
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.id = :notificationId")
     void markAsReadById(@Param("notificationId") Long notificationId);
+
+    List<Notification> findByTypeIn(List<Notification.NotificationType> types);
 
 
 

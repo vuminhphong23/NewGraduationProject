@@ -37,8 +37,11 @@ public interface LikeDao extends JpaRepository<Like, Long> {
         return countByLikeableIdAndLikeableType(postId, LikeableType.POST);
     }
     
-    // SQL Server conditional insert to avoid unique key violation
+
     @Modifying
-    @Query(value = "IF NOT EXISTS (SELECT 1 FROM likes WHERE user_id = :userId AND likeable_id = :likeableId AND likeable_type = :likeableType) INSERT INTO likes (user_id, likeable_id, likeable_type, created_at) VALUES (:userId, :likeableId, :likeableType, GETDATE())", nativeQuery = true)
+    @Query(value = "IF NOT EXISTS (" +
+                    "SELECT 1 FROM likes WHERE user_id = :userId AND likeable_id = :likeableId AND likeable_type = :likeableType) " +
+                    "INSERT INTO likes (user_id, likeable_id, likeable_type, created_at) " +
+                    "VALUES (:userId, :likeableId, :likeableType, GETDATE())", nativeQuery = true)
     int insertIfNotExists(@Param("userId") Long userId, @Param("likeableId") Long likeableId, @Param("likeableType") String likeableType);
 }

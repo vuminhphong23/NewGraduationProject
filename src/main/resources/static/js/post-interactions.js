@@ -6,6 +6,7 @@
 class PostInteractions {
     constructor() {
         this.commentPages = new Map(); // Lưu trạng thái phân trang comment
+        this.loadedComments = new Set(); // Track which posts have comments loaded
         this.init();
     }
     
@@ -15,13 +16,8 @@ class PostInteractions {
     }
     
     bindEvents() {
-        // Enter key để đăng comment
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && e.target.classList.contains('comment-input')) {
-                e.preventDefault();
-                this.postComment(e.target);
-            }
-        });
+        // Event listeners sẽ được xử lý trong HTML onclick
+        // Không cần thêm event listener ở đây để tránh duplicate
     }
     
     // ===========================
@@ -123,7 +119,10 @@ class PostInteractions {
         if (commentSection.classList.contains('d-none')) {
             // Show comment section
             commentSection.classList.remove('d-none');
-            this.loadComments(postId);
+            // Only load comments if not already loaded
+            if (!this.loadedComments.has(postId)) {
+                this.loadComments(postId);
+            }
         } else {
             // Hide comment section
             commentSection.classList.add('d-none');
@@ -141,6 +140,11 @@ class PostInteractions {
                 // Update pagination state
                 this.commentPages.set(postId, { currentPage: page, hasMore: comments.length === 5 });
                 this.updateLoadMoreButton(postId);
+                
+                // Mark as loaded for first page
+                if (page === 0) {
+                    this.loadedComments.add(postId);
+                }
             } else {
                 console.error('Failed to load comments:', response.status, response.statusText);
                 this.showToast('Không thể tải bình luận', 'error');
@@ -189,7 +193,7 @@ class PostInteractions {
         const likeCount = comment.likeCount || 0;
         
         // Sử dụng avatar từ backend, để trống nếu không có
-        let avatarSrc = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMDkxIDEyIDE2IDEwLjIwOTEgMTYgOEMxNiA1Ljc5MDg2IDE0LjIwOTEgNCAxMiA0QzkuNzkwODYgNCA4IDUuNzkwODYgOCA4QzggMTAuMjA5MSA5Ljc5MDg2IDEyIDEyIDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNMTIgMTRDMTUuMzEzNyAxNCAxOCAxNi42ODYzIDE4IDIwSDFWMTZDMSAxNi42ODYzIDMuNjg2MyAxNCA3IDE0SDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'; // Ảnh placeholder trống
+        let avatarSrc = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'; // Ảnh placeholder trống
         if (comment.userAvatar && comment.userAvatar.trim() !== '') {
             avatarSrc = comment.userAvatar; // Sử dụng avatar từ Cloudinary
         }
@@ -197,7 +201,7 @@ class PostInteractions {
         return `
             <div class="comment-item d-flex gap-2 mb-2" data-comment-id="${comment.id}">
                 <img src="${avatarSrc}" alt="avatar" class="rounded-circle" width="24" height="24"
-                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMDkxIDEyIDE2IDEwLjIwOTEgMTYgOEMxNiA1Ljc5MDg2IDE0LjIwOTEgNCAxMiA0QzkuNzkwODYgNCA4IDUuNzkwODYgOCA4QzggMTAuMjA5MSA5Ljc5MDg2IDEyIDEyIDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNMTIgMTRDMTUuMzEzNyAxNCAxOCAxNi42ODYzIDE4IDIwSDFWMTZDMSAxNi42ODYzIDMuNjg2MyAxNCA3IDE0SDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'">
+                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                 <div class="flex-grow-1">
                     <div class="bg-light rounded p-2">
                         <div class="d-flex justify-content-between align-items-center mb-1">
@@ -256,6 +260,11 @@ class PostInteractions {
     }
     
     async postComment(inputOrButton) {
+        // Prevent duplicate submission
+        if (inputOrButton.dataset.submitting === 'true') {
+            return;
+        }
+        
         const container = inputOrButton.closest('.comment-section');
         const input = container.querySelector('.comment-input');
         const postId = input.getAttribute('data-post-id');
@@ -264,6 +273,14 @@ class PostInteractions {
         if (!content) {
             this.showToast('Vui lòng nhập nội dung bình luận', 'warning');
             return;
+        }
+        
+        // Mark as submitting to prevent duplicate
+        inputOrButton.dataset.submitting = 'true';
+        const submitButton = container.querySelector('.post-comment-btn');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
         }
         
         try {
@@ -297,9 +314,10 @@ class PostInteractions {
                     commentCountElement.textContent = `${result.commentCount} bình luận`;
                 }
                 
-                // Reset pagination
+                // Reset pagination and mark as loaded
                 this.commentPages.set(postId, { currentPage: 0, hasMore: false });
                 this.updateLoadMoreButton(postId);
+                this.loadedComments.add(postId); // Mark as loaded since we have comments now
                 
                 this.showToast('Đã đăng bình luận thành công!', 'success');
             } else {
@@ -309,6 +327,13 @@ class PostInteractions {
         } catch (error) {
             console.error('Post comment error:', error);
             this.showToast('Không thể kết nối đến máy chủ', 'error');
+        } finally {
+            // Reset submitting state
+            inputOrButton.dataset.submitting = 'false';
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fa fa-paper-plane"></i>';
+            }
         }
     }
 
@@ -524,36 +549,43 @@ class PostInteractions {
     // ===========================
     
     showToast(message, type = 'info') {
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            container.style.zIndex = '1055';
-            document.body.appendChild(container);
-        }
-        
-        const toastId = 'toast-' + Date.now();
-        const bgClass = {
-            'error': 'bg-danger',
-            'success': 'bg-success', 
-            'warning': 'bg-warning'
-        }[type] || 'bg-info';
-        
-        container.insertAdjacentHTML('beforeend', `
-            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        // Sử dụng ToastManager nếu có
+        if (window.toastManager) {
+            return window.toastManager.show(message, type);
+        } else {
+            // Fallback nếu ToastManager chưa load
+            console.warn('ToastManager not available, using fallback');
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                container.style.zIndex = '1055';
+                document.body.appendChild(container);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const bgClass = {
+                'error': 'bg-danger',
+                'success': 'bg-success', 
+                'warning': 'bg-warning'
+            }[type] || 'bg-info';
+            
+            container.insertAdjacentHTML('beforeend', `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
                 </div>
-            </div>
-        `);
-        
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-        toast.show();
-        
-        toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+            `);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+        }
     }
 
     async toggleCommentLike(commentId) {
@@ -574,6 +606,7 @@ class PostInteractions {
             if (response.ok) {
                 const result = await response.json();
                 this.updateCommentLikeUI(likeButton, result.isLiked, result.likeCount);
+                this.showToast(result.message || (result.isLiked ? 'Đã thích bình luận' : 'Đã bỏ thích bình luận'), 'success');
             } else {
                 const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
                 this.showToast(error.message || 'Không thể thích bình luận', 'error');

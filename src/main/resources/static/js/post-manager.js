@@ -55,10 +55,8 @@ class PostManager {
             e.stopPropagation(); // Prevent event bubbling
             
             const postId = this.getPostId(target);
-            console.log('Post action triggered:', target.className, 'postId:', postId); // Debug log
-            
+
             if (!postId) {
-                console.error('No post ID found for element:', target);
                 this.showToast('Không tìm thấy ID bài viết', 'error');
                 return;
             }
@@ -88,7 +86,6 @@ class PostManager {
                       element.closest('[data-id]')?.dataset.id ||
                       element.closest('.card')?.dataset.postId;
         
-        console.log('Getting post ID from element:', element, 'Found ID:', postId); // Debug log
         return postId;
     }
     
@@ -149,10 +146,8 @@ class PostManager {
                 if (selectedTopics.length > 0 && window.HashtagManager && typeof window.HashtagManager.saveTopics === 'function') {
                     try {
                         await window.HashtagManager.saveTopics(selectedTopics);
-                        console.log('Topics saved successfully after post creation');
                     } catch (topicError) {
                         console.warn('Failed to save topics:', topicError);
-                        // Don't show error to user since post was successful
                     }
                 }
                 
@@ -165,7 +160,6 @@ class PostManager {
                 this.showToast(error.message || 'Có lỗi xảy ra khi xử lý bài viết', 'error');
             }
         } catch (error) {
-            console.error('Submit error:', error);
             this.showToast('Không thể kết nối đến máy chủ', 'error');
         } finally {
             this.setLoading(false);
@@ -226,16 +220,12 @@ class PostManager {
             if (csrfToken && csrfHeader) {
                 headers[csrfHeader] = csrfToken;
             }
-            
-            console.log('Deleting post:', postId); // Debug log
-            
+
             const response = await authenticatedFetch(`/api/posts/${postId}`, {
                 method: 'DELETE',
                 headers
             });
-            
-            console.log('Delete response status:', response.status); // Debug log
-            
+
             if (response.ok || response.status === 204) {
                 this.showToast('Đã xóa bài viết thành công!', 'success');
                 
@@ -252,8 +242,7 @@ class PostManager {
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 const errorText = await response.text();
-                console.error('Delete error response:', errorText); // Debug log
-                
+
                 let errorMessage = 'Không thể xóa bài viết';
                 try {
                     const errorJson = JSON.parse(errorText);
@@ -265,7 +254,6 @@ class PostManager {
                 this.showToast(errorMessage, 'error');
             }
         } catch (error) {
-            console.error('Delete error:', error); // Debug log
             this.showToast('Có lỗi xảy ra khi xóa bài viết: ' + error.message, 'error');
         }
     }
@@ -330,7 +318,6 @@ class PostManager {
         // Reset hashtag selection but don't save to server
         if (window.HashtagManager) {
             window.HashtagManager.reset();
-            console.log('Form reset - topics cleared from UI only, not saved to server');
         }
         
         this.validateForm();
@@ -342,61 +329,60 @@ class PostManager {
     }
     
     showToast(message, type = 'info') {
-        let container = document.getElementById('toast-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'toast-container';
-            container.className = 'toast-container position-fixed top-0 end-0 p-3';
-            container.style.zIndex = '1055';
-            document.body.appendChild(container);
-        }
-        
-        const toastId = 'toast-' + Date.now();
-        const bgClass = {
-            'error': 'bg-danger',
-            'success': 'bg-success', 
-            'warning': 'bg-warning'
-        }[type] || 'bg-info';
-        
-        container.insertAdjacentHTML('beforeend', `
-            <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        // Sử dụng ToastManager nếu có
+        if (window.toastManager) {
+            return window.toastManager.show(message, type);
+        } else {
+            // Fallback nếu ToastManager chưa load
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                container.style.zIndex = '1055';
+                document.body.appendChild(container);
+            }
+            
+            const toastId = 'toast-' + Date.now();
+            const bgClass = {
+                'error': 'bg-danger',
+                'success': 'bg-success', 
+                'warning': 'bg-warning'
+            }[type] || 'bg-info';
+            
+            container.insertAdjacentHTML('beforeend', `
+                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
                 </div>
-            </div>
-        `);
-        
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-        toast.show();
-        
-        toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+            `);
+            
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+            toast.show();
+            
+            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+        }
     }
     
     bindExistingPosts() {
-        console.log('Binding existing posts...'); // Debug log
-        
+
         // Find all delete buttons and log them
         const deleteButtons = document.querySelectorAll('[onclick*="deletePost"], .delete-post-btn, .dropdown-item.text-danger');
-        console.log('Found delete buttons:', deleteButtons.length, deleteButtons); // Debug log
-        
+
         // Remove old onclick handlers and add new event listeners
         document.querySelectorAll('[onclick*="deletePost"]').forEach(btn => {
-            console.log('Processing delete button:', btn); // Debug log
             btn.removeAttribute('onclick');
             
             // Add direct event listener as backup
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('Direct delete click handler triggered'); // Debug log
                 const postId = this.getPostId(btn);
-                if (postId) {
-                    this.deletePost(postId);
-                } else {
-                    console.error('No post ID found for delete button:', btn);
-                }
+                this.deletePost(postId);
+
             });
         });
         
@@ -410,8 +396,6 @@ class PostManager {
                 if (postId) this.editPost(postId);
             });
         });
-        
-        console.log('Existing posts bound successfully');
     }
 }
 
@@ -420,25 +404,20 @@ class PostManager {
 // ===========================
 
 window.deletePost = (element) => {
-    console.log('Global deletePost called with:', element); // Debug log
     const postId = window.postManager?.getPostId(element);
-    console.log('Extracted post ID:', postId); // Debug log
-    
+
     if (postId && window.postManager) {
         window.postManager.deletePost(postId);
     } else {
-        console.error('PostManager not available or no post ID found');
         alert('Không thể xóa bài viết. Vui lòng tải lại trang.');
     }
 };
 
 window.editPost = (element) => {
-    console.log('Global editPost called with:', element); // Debug log
     const postId = window.postManager?.getPostId(element);
     if (postId && window.postManager) {
         window.postManager.editPost(postId);
     } else {
-        console.error('PostManager not available or no post ID found');
         alert('Không thể chỉnh sửa bài viết. Vui lòng tải lại trang.');
     }
 };
@@ -464,18 +443,5 @@ window.showErrorToast = (msg) => window.postManager?.showToast(msg, 'error');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing PostManager...'); // Debug log
     window.postManager = new PostManager();
-    console.log('PostManager initialized:', window.postManager); // Debug log
-    
-    // Test if buttons exist
-    const deleteButtons = document.querySelectorAll('[onclick*="deletePost"], .delete-post-btn, .dropdown-item.text-danger');
-    console.log('Delete buttons found:', deleteButtons.length); // Debug log
-    deleteButtons.forEach((btn, index) => {
-        console.log(`Delete button ${index}:`, btn, 'data attributes:', {
-            'data-id': btn.getAttribute('data-id'),
-            'data-post-id': btn.getAttribute('data-post-id'),
-            'onclick': btn.getAttribute('onclick')
-        });
-    });
 });

@@ -57,9 +57,25 @@ public class FriendshipController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<User>> getFriendsList() {
+    public ResponseEntity<List<Map<String, Object>>> getFriendsList() {
         Long currentUserId = securityUtil.getCurrentUserId();
-        return ResponseEntity.ok(friendshipService.listFriends(currentUserId));
+        List<User> friends = friendshipService.listFriends(currentUserId);
+        List<Map<String, Object>> result = new java.util.ArrayList<>();
+        for (User u : friends) {
+            Map<String, Object> m = new java.util.HashMap<>();
+            m.put("id", u.getId());
+            m.put("username", u.getUsername());
+            String fullName = ((u.getFirstName() != null ? u.getFirstName() : "") +
+                    (u.getLastName() != null ? " " + u.getLastName() : "")).trim();
+            m.put("fullName", fullName.isEmpty() ? u.getUsername() : fullName);
+            String avatar = null;
+            if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null && !u.getUserProfile().getAvatar().trim().isEmpty()) {
+                avatar = u.getUserProfile().getAvatar();
+            }
+            m.put("avatar", avatar);
+            result.add(m);
+        }
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/requests")

@@ -22,6 +22,9 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @Override
     @Transactional
     public boolean toggleLike(Long commentId, Long userId) {
@@ -31,7 +34,15 @@ public class CommentServiceImpl implements CommentService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
 
-        return likeService.toggleLike(userId, commentId, LikeableType.COMMENT);
+        boolean wasLiked = likeService.isLikedByUser(userId, commentId, LikeableType.COMMENT);
+        boolean isLiked = likeService.toggleLike(userId, commentId, LikeableType.COMMENT);
+        
+        // Gửi notification khi like comment (chỉ khi chưa like trước đó)
+        if (isLiked && !comment.getUser().getId().equals(userId)) { // Không gửi notification cho chính mình
+            notificationService.createCommentLikeNotification(commentId, comment.getUser().getId(), userId);
+        }
+        
+        return isLiked;
     }
 
     @Override

@@ -49,11 +49,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship saved = friendshipDao.save(friendship);
 
         // Tạo thông báo cho người nhận
-        notificationService.createNotification(
-            target, requester,
-            requester.getUsername() + " đã gửi yêu cầu kết bạn",
-            "/profile/" + requester.getUsername()
-        );
+        notificationService.createFriendshipRequestNotification(target.getId(), requester.getId());
 
         return saved;
     }
@@ -69,13 +65,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship saved = friendshipDao.save(friendship);
 
         // Tạo thông báo cho người gửi yêu cầu
-        User currentUser = userDao.findById(currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        notificationService.createNotification(
-            friendship.getUser(), currentUser,
-            currentUser.getUsername() + " đã chấp nhận yêu cầu kết bạn",
-            "/profile/" + currentUser.getUsername()
-        );
+        notificationService.createFriendshipAcceptedNotification(friendship.getUser().getId(), currentUserId);
 
         return saved;
     }
@@ -87,13 +77,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendshipDao.delete(friendship);
 
         // Tạo thông báo cho người gửi yêu cầu
-        User currentUser = userDao.findById(currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        notificationService.createNotification(
-            friendship.getUser(), currentUser,
-            currentUser.getUsername() + " đã từ chối yêu cầu kết bạn",
-            "/profile/" + currentUser.getUsername()
-        );
+        notificationService.createFriendshipRejectedNotification(friendship.getUser().getId(), currentUserId);
     }
 
     @Override
@@ -111,6 +95,9 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship friendship = friendshipDao.findBetweenUsers(currentUserId, friendUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quan hệ bạn bè không tồn tại"));
         friendshipDao.delete(friendship);
+        
+        // Tạo thông báo cho người bị hủy kết bạn
+        notificationService.createFriendshipCancelledNotification(friendUserId, currentUserId);
     }
 
     @Override
@@ -120,7 +107,8 @@ public class FriendshipServiceImpl implements FriendshipService {
 
     @Override
     public List<User> listFriends(Long userId) {
-        return friendshipDao.findFriendsOf(userId);
+        // Load luôn userProfile để có avatar, tránh LazyInitialization
+        return friendshipDao.findFriendsOfWithProfile(userId);
     }
 
     @Override

@@ -16,7 +16,7 @@ public interface CommentDao extends JpaRepository<Comment, Long> {
     
     List<Comment> findByPostIdOrderByCreatedAtAsc(Long postId);
     
-    Page<Comment> findByPostIdOrderByCreatedAtAsc(Long postId, Pageable pageable);
+    Page<Comment> findByPostIdOrderByCreatedAtDesc(Long postId, Pageable pageable);
     
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.post.id = :postId")
     Long countByPostId(@Param("postId") Long postId);
@@ -25,5 +25,8 @@ public interface CommentDao extends JpaRepository<Comment, Long> {
     
     @Query("SELECT c FROM Comment c WHERE c.id = :commentId")
     Optional<Comment> findById(@Param("commentId") Long commentId);
+    
+    @Query("SELECT c.post.id FROM Comment c WHERE c.id = :commentId")
+    Optional<Long> findPostIdByCommentId(@Param("commentId") Long commentId);
 }
 

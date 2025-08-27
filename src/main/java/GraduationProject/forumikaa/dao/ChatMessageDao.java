@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.dto;
+package GraduationProject.forumikaa.dao;
 
 import GraduationProject.forumikaa.entity.ChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;

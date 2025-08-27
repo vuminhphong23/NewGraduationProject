@@ -142,4 +142,15 @@ public class TopicServiceImpl implements TopicService {
         
         return cleanName;
     }
+
+    // Các phương thức mới sử dụng projection (hiệu suất cao hơn)
+    @Override
+    public List<TopicDao.TopicSummaryProjection> getTopTopicsProjection(int limit) {
+        return topicDao.findTopTopicsProjectionLimited(limit);
+    }
+
+    @Override
+    public List<TopicDao.TopicSummaryProjection> getTrendingTopicsProjection() {
+        return topicDao.findTrendingTopicsProjection();
+    }
 }

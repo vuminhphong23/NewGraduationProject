@@ -1,6 +1,7 @@
 package GraduationProject.forumikaa.handler.notification;
 
 import GraduationProject.forumikaa.entity.Notification;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+@Slf4j
 @Component
 public class NotificationBroadcaster {
 
@@ -18,16 +20,15 @@ public class NotificationBroadcaster {
     public void publish(Long recipientId, Notification notification) {
         List<Consumer<Notification>> recipientSubscribers = subscribers.get(recipientId);
         if (recipientSubscribers == null || recipientSubscribers.isEmpty()) {
+            log.debug("Không có subscriber nào cho recipientId: {}", recipientId);
             return;
         }
-        
-        System.out.println("✅ Found " + recipientSubscribers.size() + " subscribers for recipientId: " + recipientId);
-        
+
         recipientSubscribers.forEach(consumer -> {
             try {
                 consumer.accept(notification);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Lỗi khi gửi notification tới subscriber: {}", e.getMessage());
             }
         });
     }
@@ -37,4 +38,33 @@ public class NotificationBroadcaster {
         subscribers.computeIfAbsent(recipientId, id -> new CopyOnWriteArrayList<>())
                 .add(consumer);
     }
+
+    // Hủy đăng ký
+    public void unsubscribe(Long recipientId) {
+        List<Consumer<Notification>> recipientSubscribers = subscribers.remove(recipientId);
+        if (recipientSubscribers != null) {
+            log.info("User {} đã hủy đăng ký notification", recipientId);
+        }
+    }
+
+//    // Hủy đăng ký consumer cụ thể
+//    public void unsubscribe(Long recipientId, Consumer<Notification> consumer) {
+//        List<Consumer<Notification>> recipientSubscribers = subscribers.get(recipientId);
+//        if (recipientSubscribers != null) {
+//            boolean removed = recipientSubscribers.remove(consumer);
+//            if (removed) {
+//                // Nếu không còn subscriber nào, xóa key
+//                if (recipientSubscribers.isEmpty()) {
+//                    subscribers.remove(recipientId);
+//                }
+//            }
+//        }
+//    }
+//
+//
+//    // Kiểm tra xem một recipient có đang subscribe không
+//    public boolean isSubscribed(Long recipientId) {
+//        List<Consumer<Notification>> recipientSubscribers = subscribers.get(recipientId);
+//        return recipientSubscribers != null && !recipientSubscribers.isEmpty();
+//    }
 }
