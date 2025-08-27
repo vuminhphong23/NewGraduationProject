@@ -53,11 +53,11 @@
     <!-- Card cover + info + tab -->
     <div class="card profile-card bg-white my-4">
         <div class="position-relative" style="height:340px;">
-            <img src="https://media.vietnamplus.vn/images/ff19e4aafab8485e8307470102cc768913111b4eeeb06dd8393e71d67982f6bf02764b1fba7ad23425af24c332b1cd09/dai-hoc-phenikaa.jpg" class="profile-cover w-100 h-100">
+            <img th:src="${user.userProfile?.cover}" alt="cover" class="profile-cover w-100 h-100">
             <button class="btn btn-light border position-absolute d-flex align-items-center gap-2 px-3 py-1" style="top:20px; right:32px; border-radius:10px; font-weight:500; font-size:0.98rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                 <i class="fa-regular fa-pen-to-square"></i> Đổi ảnh bìa
             </button>
-            <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='}" class="profile-avatar rounded-circle position-absolute" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='">
+            <img th:src="${user.userProfile?.avatar}" alt="avatar" class="profile-avatar rounded-circle position-absolute" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='">
         </div>
         <div class="d-flex align-items-center justify-content-between px-5 profile-info">
             <div style="margin-left:8px;">
@@ -77,7 +77,7 @@
         </div>
         <ul class="nav nav-tabs profile-tabs px-5 bg-white border-bottom" id="profileTabs" role="tablist">
             <li class="nav-item"><a class="nav-link active" id="posts-tab" data-bs-toggle="tab" href="#posts" role="tab">Bài viết</a></li>
-            <li class="nav-item"><a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#about" role="tab">Giới thiệu</a></li>
+            <li class="nav-item"><a class="nav-link" id="about-tab" data-bs-toggle="tab" href="#friends-tab" role="tab">Bạn bè</a></li>
             <li class="nav-item"><a class="nav-link" id="groups-tab" data-bs-toggle="tab" href="#groups" role="tab">Nhóm</a></li>
             <li class="nav-item"><a class="nav-link" id="photos-tab" data-bs-toggle="tab" href="#photos" role="tab">Ảnh</a></li>
         </ul>
@@ -85,16 +85,7 @@
     <div class="row g-4">
         <!-- Sidebar trái: About, Contact, Groups, Stats -->
         <aside class="col-lg-4 d-none d-lg-block">
-            <div class="card bg-white mb-4 py-3 search-friends-section">
-                <div class="card-header border-0 fw-bold fs-5 bg-white">Tìm kiếm bạn bè</div>
-                <div class="px-3 pb-3">
-                    <div class="input-group mb-2">
-                        <input id="userSearchInput" type="text" class="form-control" placeholder="Nhập tên/email...">
-                        <button id="userSearchBtn" class="btn btn-primary"><i class="fa fa-search"></i></button>
-                    </div>
-                    <div id="userSearchResults" class="list-group small"></div>
-                </div>
-            </div>
+            
             <div class="card bg-white mb-4 py-2">
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Giới thiệu</div>
                 <div class="text-muted small mb-2 px-4" th:text="${user.profileInfo ?: 'Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.'}">Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.</div>
@@ -136,28 +127,28 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYidmlld0JveD0iMCAwIDM2IDM2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiNGNUY1RjUiLz4KPHBhdGggZD0iTTE4IDE4QzIyLjYyNjQgMTggMjYgMTQuNjI2NCAyNiAxMEMyNiA1LjM3MzYgMjIuNjI2NCAyIDE4IDJDMTMuMzczNiAyIDEwIDUuMzczNiAxMCAxMEMxMCAxNC42MjY0IDEzLjM3MzYgMTggMTggMThaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0xOCAyMkMxOCAyMiAyNiAxOS4wODUxIDI2IDEySDEwQzEwIDE5LjA4NTEgMTcuOTE0OSAyMiAxOCAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==" class="rounded" width="36" height="36">
+                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
                             <span>CLB Tin học</span>
                         </div>
                         <span class="badge bg-warning text-dark rounded-pill">+5</span>
                     </li>
                     <li class="list-group-item d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYidmlld0JveD0iMCAwIDM2IDM2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiNGNUY1RjUiLz4KPHBhdGggZD0iTTE4IDE4QzIyLjYyNjQgMTggMjYgMTQuNjI2NCAyNiAxMEMyNiA1LjM3MzYgMjIuNjI2NCAyIDE4IDJDMTMuMzczNiAyIDEwIDUuMzczNiAxMCAxMEMxMCAxNC42MjY0IDEzLjM3MzYgMTggMTggMThaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0xOCAyMkMxOCAyMiAyNiAxOS4wODUxIDI2IDEySDEwQzEwIDE5LjA4NTEgMTcuOTE0OSAyMiAxOCAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==" class="rounded" width="36" height="36">
+                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
                             <span>Hội Sinh viên Dược</span>
                         </div>
                         <span class="badge bg-warning text-dark rounded-pill">+2</span>
                     </li>
                     <li class="list-group-item d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYidmlld0JveD0iMCAwIDM2IDM2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiNGNUY1RjUiLz4KPHBhdGggZD0iTTE4IDE4QzIyLjYyNjQgMTggMjYgMTQuNjI2NCAyNiAxMEMyNiA1LjM3MzYgMjIuNjI2NCAyIDE4IDJDMTMuMzczNiAyIDEwIDUuMzczNiAxMCAxMEMxMCAxNC42MjY0IDEzLjM3MzYgMTggMTggMThaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0xOCAyMkMxOCAyMiAyNiAxOS4wODUxIDI2IDEySDEwQzEwIDE5LjA4NTEgMTcuOTE0OSAyMiAxOCAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==" class="rounded" width="36" height="36">
+                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
                             <span>Hội Kỹ thuật</span>
                         </div>
                         <span class="badge bg-warning text-dark rounded-pill">+7</span>
                     </li>
                     <li class="list-group-item d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzYiIGhlaWdodD0iMzYidmlld0JveD0iMCAwIDM2IDM2IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMzYiIGhlaWdodD0iMzYiIGZpbGw9IiNGNUY1RjUiLz4KPHBhdGggZD0iTTE4IDE4QzIyLjYyNjQgMTggMjYgMTQuNjI2NCAyNiAxMEMyNiA1LjM3MzYgMjIuNjI2NCAyIDE4IDJDMTMuMzczNiAyIDEwIDUuMzczNiAxMCAxMEMxMCAxNC42MjY0IDEzLjM3MzYgMTggMTggMThaIiBmaWxsPSIjRDlEOUQ5Ii8+CjxwYXRoIGQ9Ik0xOCAyMkMxOCAyMiAyNiAxOS4wODUxIDI2IDEySDEwQzEwIDE5LjA4NTEgMTcuOTE0OSAyMiAxOCAyMloiIGZpbGw9IiNENUQ1RDUiLz4KPC9zdmc+Cg==" class="rounded" width="36" height="36">
+                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
                             <span>CLB Nhiếp ảnh</span>
                         </div>
                         <span class="badge bg-warning text-dark rounded-pill">+3</span>
@@ -165,6 +156,8 @@
                 </ul>
                 <a href="#" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Xem tất cả</a>
             </div>
+            
+            
             <div class="sidebar-card bg-white p-4 mb-4" style="border-radius: 16px; box-shadow: 0 2px 16px rgba(35,50,107,0.10);">
                 <div class="fw-bold mb-3" style="color: #22336b; font-size: 1.1rem;">Thống kê</div>
                 <div class="d-flex justify-content-between text-center">
@@ -212,126 +205,148 @@
                 <p th:if="${isOwnProfile}" class="text-muted">Hãy chia sẻ những suy nghĩ đầu tiên của bạn!</p>
             </div>
 
-            <!-- Danh sách bài viết từ database -->
-            <div id="feed">
-                <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
-                    <!-- Header -->
-                    <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='}"
-                                 class="rounded-circle" width="40" height="40" alt="avatar"
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='">
-                            <div>
-                                <div class="fw-semibold" th:text="${post.userName}">User name</div>
-                                <div class="text-muted small">
-                                    <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
-                                    •
-                                    <span th:switch="${post.privacy.name()}">
-                                    <i th:case="'PUBLIC'" class="fa fa-globe-asia" title="Công khai"></i>
-                                    <i th:case="'FRIENDS'" class="fa fa-users" title="Bạn bè"></i>
-                                    <i th:case="'PRIVATE'" class="fa fa-lock" title="Riêng tư"></i>
-                                    <span th:case="*">?</span>
-                                </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <!-- Display topics as hashtags -->
-                            <div class="post-hashtags" th:if="${post.topicNames != null and !post.topicNames.isEmpty()}">
-                                <span th:each="topicName : ${post.topicNames}"
-                                      class="hashtag-link me-2"
-                                      th:text="'#' + ${topicName}"
-                                      style="color: #1da1f2; font-weight: 500; text-decoration: none; cursor: pointer;"
-                                      th:data-hashtag="${topicName}"
-                                      onclick="searchByHashtag(this.dataset.hashtag)">
-                                    #topic
-                                </span>
-                            </div>
-                            <div class="dropdown" th:if="${isOwnProfile}">
-                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                    <i class="fa fa-ellipsis-h"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
-                                    <li><a class="dropdown-item text-danger delete-post-btn" href="#" th:attr="data-post-id=${post.id}">Xoá</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Body -->
-                    <div class="card-body pt-2">
-                        <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
-                            th:text="${post.title}">Tiêu đề bài viết</h5>
-
-                        <p class="card-text" style="white-space: pre-wrap;"
-                           th:text="${post.content}">Nội dung bài viết...</p>
-                    </div>
-
-                    <!-- Footer (like/comment/share placeholders) -->
-                    <div class="card-footer bg-white border-0 pt-0">
-                        <div class="d-flex justify-content-between text-muted small mb-2">
-                            <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
-                            <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
-                        </div>
-                        <hr class="my-2" style="color: #c3d2e0;">
-                        <div class="d-flex justify-content-around">
-                            <button class="btn btn-light d-flex align-items-center gap-2 like-btn" 
-                                    th:attr="data-post-id=${post.id}"
-                                    onclick="toggleLike(this)">
-                                <i class="fa-regular fa-thumbs-up"></i> 
-                                <span class="like-text">Thích</span>
-                            </button>
-                            <button class="btn btn-light d-flex align-items-center gap-2 comment-btn" 
-                                    th:attr="data-post-id=${post.id}"
-                                    onclick="toggleCommentSection(this)">
-                                <i class="fa-regular fa-comment"></i> 
-                                <span>Bình luận</span>
-                            </button>
-                            <button class="btn btn-light d-flex align-items-center gap-2 share-btn" 
-                                    th:attr="data-post-id=${post.id}"
-                                    onclick="sharePost(this)">
-                                <i class="fa-regular fa-share-from-square"></i> 
-                                <span>Chia sẻ</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Comment Section (Hidden by default) -->
-                        <div class="comment-section mt-3 d-none" th:attr="data-post-id=${post.id}">
-                            <hr class="my-2" style="color: #c3d2e0;">
-                            
-                            <!-- Comment Input -->
-                            <div class="d-flex gap-2 mb-3">
-                                <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='}" 
-                                     alt="avatar" class="rounded-circle" width="32" height="32"
+            <!-- Khu vực chuyển nội dung theo tab -->
+            <div id="tabContentArea">
+                <!-- Danh sách bài viết từ database -->
+                <div id="feed">
+                    <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
+                        <!-- Header -->
+                        <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='}"
+                                     class="rounded-circle" width="40" height="40" alt="avatar"
                                      onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='">
-                                <div class="flex-grow-1">
-                                    <input type="text" class="form-control comment-input" 
-                                           placeholder="Viết bình luận..." 
-                                           th:attr="data-post-id=${post.id}">
+                                <div>
+                                    <div class="fw-semibold" th:text="${post.userName}">User name</div>
+                                    <div class="text-muted small">
+                                        <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
+                                        •
+                                        <span th:switch="${post.privacy.name()}">
+                                        <i th:case="'PUBLIC'" class="fa fa-globe-asia" title="Công khai"></i>
+                                        <i th:case="'FRIENDS'" class="fa fa-users" title="Bạn bè"></i>
+                                        <i th:case="'PRIVATE'" class="fa fa-lock" title="Riêng tư"></i>
+                                        <span th:case="*">?</span>
+                                    </span>
+                                    </div>
                                 </div>
-                                <button class="btn btn-primary btn-sm post-comment-btn" 
-                                        th:attr="data-post-id=${post.id}"
-                                        onclick="postComment(this)" title="Đăng">
-                                    <i class="fa fa-paper-plane"></i>
-                                </button>
                             </div>
-                            
-                            <!-- Comments List -->
-                            <div class="comments-list" th:attr="data-post-id=${post.id}">
-                                <!-- Comments will be loaded here -->
-                            </div>
-                            
-                            <!-- Load More Comments -->
-                            <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
-                                <button class="btn btn-link btn-sm load-more-comments" 
-                                        th:attr="data-post-id=${post.id}"
-                                        onclick="loadMoreComments(this)">
-                                    Xem thêm bình luận
-                                </button>
+
+                            <div class="d-flex align-items-center gap-2">
+                                <!-- Display topics as hashtags -->
+                                <div class="post-hashtags" th:if="${post.topicNames != null and !post.topicNames.isEmpty()}">
+                                    <span th:each="topicName : ${post.topicNames}"
+                                          class="hashtag-link me-2"
+                                          th:text="'#' + ${topicName}"
+                                          style="color: #1da1f2; font-weight: 500; text-decoration: none; cursor: pointer;"
+                                          th:data-hashtag="${topicName}"
+                                          onclick="searchByHashtag(this.dataset.hashtag)">
+                                        #topic
+                                    </span>
+                                </div>
+                                <div class="dropdown" th:if="${isOwnProfile}">
+                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                        <i class="fa fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
+                                        <li><a class="dropdown-item text-danger delete-post-btn" href="#" th:attr="data-post-id=${post.id}">Xoá</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Body -->
+                        <div class="card-body pt-2">
+                            <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
+                                th:text="${post.title}">Tiêu đề bài viết</h5>
+
+                            <p class="card-text" style="white-space: pre-wrap;"
+                               th:text="${post.content}">Nội dung bài viết...</p>
+                        </div>
+
+                        <!-- Footer (like/comment/share placeholders) -->
+                        <div class="card-footer bg-white border-0 pt-0">
+                            <div class="d-flex justify-content-between text-muted small mb-2">
+                                <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
+                                <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                            </div>
+                            <hr class="my-2" style="color: #c3d2e0;">
+                            <div class="d-flex justify-content-around">
+                                <button class="btn btn-light d-flex align-items-center gap-2 like-btn"
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="toggleLike(this)">
+                                    <i class="fa-regular fa-thumbs-up"></i>
+                                    <span class="like-text">Thích</span>
+                                </button>
+                                <button class="btn btn-light d-flex align-items-center gap-2 comment-btn"
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="toggleCommentSection(this)">
+                                    <i class="fa-regular fa-comment"></i>
+                                    <span>Bình luận</span>
+                                </button>
+                                <button class="btn btn-light d-flex align-items-center gap-2 share-btn"
+                                        th:attr="data-post-id=${post.id}"
+                                        onclick="sharePost(this)">
+                                    <i class="fa-regular fa-share-from-square"></i>
+                                    <span>Chia sẻ</span>
+                                </button>
+                            </div>
+
+                            <!-- Comment Section (Hidden by default) -->
+                            <div class="comment-section mt-3 d-none" th:attr="data-post-id=${post.id}">
+                                <hr class="my-2" style="color: #c3d2e0;">
+
+                                <!-- Comment Input -->
+                                <div class="d-flex gap-2 mb-3">
+                                    <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='}"
+                                         alt="avatar" class="rounded-circle" width="32" height="32"
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IGhlaWdodD0iMTI4IHZpZXdCb3g9IjAgMCAxMjggMTI4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgZmlsbD0iI0Y1RjVGNSIvPgo8cGF0aCBkPSJNNjQgNjRDNzguNTQxMiA2NCA5MCA1Mi41NDEyIDkwIDM4QzkwIDIzLjQ1ODggNzguNTQxMiAxMiA2NCAxMkM0OS40NTg4IDEyIDM4IDIzLjQ1ODggMzggMzhDMzggNTIuNTQxMiA0OS40NTg4IDY0IDY0IDY0WiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNNjQgNzJDNjQgNzIgOTAgNjQuMDg1MSA5MCA1NEgzNEMzNCA2NC4wODUxIDQxLjkxNDkgNzIgNjQgNzJaIiBmaWxsPSIjRDVENUQ1Ii8+Cjwvc3ZnPgo='">
+                                    <div class="flex-grow-1">
+                                        <input type="text" class="form-control comment-input"
+                                               placeholder="Viết bình luận..."
+                                               th:attr="data-post-id=${post.id}">
+                                    </div>
+                                    <button class="btn btn-primary btn-sm post-comment-btn"
+                                            th:attr="data-post-id=${post.id}"
+                                            onclick="postComment(this)" title="Đăng">
+                                        <i class="fa fa-paper-plane"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Comments List -->
+                                <div class="comments-list" th:attr="data-post-id=${post.id}">
+                                    <!-- Comments will be loaded here -->
+                                </div>
+
+                                <!-- Load More Comments -->
+                                <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
+                                    <button class="btn btn-link btn-sm load-more-comments"
+                                            th:attr="data-post-id=${post.id}"
+                                            onclick="loadMoreComments(this)">
+                                        Xem thêm bình luận
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nội dung tab Bạn bè -->
+                <div id="friendsTabContent" class="card mb-4 border-0 d-none">
+                    <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
+                        <span>Bạn bè</span>
+                        <span class="small text-muted" id="friendsCount"></span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tìm kiếm bạn bè chuyển vào bên trong khối Bạn bè -->
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input id="searchFriend" type="text" class="form-control" placeholder="Nhập tên/email...">
+                                <button id="searchFriendBtn" class="btn"><i class="fa fa-search"></i></button>
+                            </div>
+                        </div>
+                        <div id="friendsList" class="row g-3"></div>
+                        <div id="friendsEmpty" class="text-center text-muted py-4 d-none">Chưa có bạn bè</div>
                     </div>
                 </div>
             </div>
@@ -500,9 +515,9 @@
 <script src="/js/topics.js"></script>
 <script src="/js/post-manager.js"></script>
 <script src="/js/post-interactions.js"></script>
-<script src="/js/user-search.js"></script>
-<script src="/js/notifications.js"></script>
-<script src="/js/profile-friendship.js"></script>
+        <script src="/js/toast-manager.js"></script>
+        <script src="/js/notifications.js"></script>
+        <script src="/js/profile-friendship.js"></script>
 
 </body>
 </html>

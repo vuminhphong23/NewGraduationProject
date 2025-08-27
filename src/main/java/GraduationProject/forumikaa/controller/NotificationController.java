@@ -1,5 +1,7 @@
 package GraduationProject.forumikaa.controller;
 
+import GraduationProject.forumikaa.dto.NotificationRequest;
+import GraduationProject.forumikaa.entity.Notification;
 import GraduationProject.forumikaa.service.NotificationService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,4 +43,14 @@ public class NotificationController {
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok(Map.of("message", "Đã đánh dấu tất cả đã đọc"));
     }
+
+    @PostMapping("/send")
+    public Notification send(@RequestBody NotificationRequest req) {
+        return notificationService.createNotification(
+                req.getSenderId(),
+                req.getRecipientId(),
+                req.getMessage()
+        );
+    }
 }
+

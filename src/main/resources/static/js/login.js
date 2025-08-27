@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (response.ok) {
                 const data = await response.json();
                 const token = data.token;
+                const roles = data.roles || [];
                 
                 // Lưu token vào cả localStorage và cookie
                 if (window.jwtUtils && window.jwtUtils.saveToken) {
@@ -80,10 +81,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else {
                     // Fallback nếu JWT utility chưa load
                     localStorage.setItem('jwt_token', token);
-                    console.log('JWT utility chưa sẵn sàng, sử dụng localStorage fallback');
+                    localStorage.setItem('roles', roles);
                 }
                 
-                const isAdmin = (Array.isArray(data.roles) && data.roles.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN'))
+                const isAdmin = (Array.isArray(roles) && roles.some(r => r === 'ROLE_ADMIN' || r === 'ADMIN'))
                     || (window.jwtUtils && window.jwtUtils.hasRole && window.jwtUtils.hasRole('ADMIN'));
                 
                 showSuccessMessage("Đăng nhập thành công!");
