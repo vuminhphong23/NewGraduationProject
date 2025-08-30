@@ -2,6 +2,10 @@
 
 Link
 
+# Link sơ đồ
+
+https://drive.google.com/file/d/1KX6Poybq3u-eO1RjwLmRCzF-VJ5mbu31/view?usp=sharing
+
 
 # Thuật toán 
 
