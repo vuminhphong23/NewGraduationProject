@@ -50,16 +50,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/", "/login", "/register", "/forgot-password", "/reset-password").permitAll()
+                        .requestMatchers("/login", "/register", "/forgot-password", "/reset-password").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/static/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws/**").authenticated()
                         .requestMatchers("/api/**").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 //                .formLogin(form -> form
 //                        .loginPage("/login")
-////                        .successHandler(customAuthenticationSuccessHandler)
+//                        .successHandler(customAuthenticationSuccessHandler)
 //                        .permitAll()
 //                )
 //                .oauth2Login(oauth2 -> oauth2

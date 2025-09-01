@@ -16,8 +16,12 @@ class PostInteractions {
     }
     
     bindEvents() {
-        // Event listeners sẽ được xử lý trong HTML onclick
-        // Không cần thêm event listener ở đây để tránh duplicate
+        // Bind Enter key events for comment inputs
+        document.addEventListener('keypress', (event) => {
+            if (event.target.classList.contains('comment-input')) {
+                this.handleCommentInputKeyPress(event);
+            }
+        });
     }
     
     // ===========================
@@ -26,16 +30,12 @@ class PostInteractions {
     
     async toggleLike(button) {
         const postId = button.getAttribute('data-post-id');
-        if (!postId) return;
-
-        // Prevent double click while request pending
-        if (button.dataset.loading === 'true') return;
+        if (!postId || button.dataset.loading === 'true') return;
+        
         button.dataset.loading = 'true';
         
         try {
-            const response = await authenticatedFetch(`/api/posts/${postId}/like`, {
-                method: 'POST'
-            });
+            const response = await authenticatedFetch(`/api/posts/${postId}/like`, { method: 'POST' });
             
             if (response.ok) {
                 const result = await response.json();
@@ -260,14 +260,10 @@ class PostInteractions {
     }
     
     async postComment(inputOrButton) {
-        // Prevent duplicate submission
-        if (inputOrButton.dataset.submitting === 'true') {
-            return;
-        }
+        if (inputOrButton.dataset.submitting === 'true') return;
         
         const container = inputOrButton.closest('.comment-section');
         const input = container.querySelector('.comment-input');
-        const postId = input.getAttribute('data-post-id');
         const content = input.value.trim();
         
         if (!content) {
@@ -275,7 +271,6 @@ class PostInteractions {
             return;
         }
         
-        // Mark as submitting to prevent duplicate
         inputOrButton.dataset.submitting = 'true';
         const submitButton = container.querySelector('.post-comment-btn');
         if (submitButton) {
@@ -284,40 +279,28 @@ class PostInteractions {
         }
         
         try {
-            const response = await authenticatedFetch(`/api/posts/${postId}/comments`, {
+            const response = await authenticatedFetch(`/api/posts/${input.getAttribute('data-post-id')}/comments`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content })
             });
             
             if (response.ok) {
                 const result = await response.json();
-                
-                // Clear input
                 input.value = '';
                 
-                // Find the comment section and add new comment
                 const commentsList = container.querySelector('.comments-list');
-                // Remove empty state if exists
-                const emptyState = commentsList.querySelector('.text-muted.text-center');
-                if (emptyState) emptyState.remove();
-                const commentHtml = this.createCommentHTML(result.comment);
-                commentsList.insertAdjacentHTML('beforeend', commentHtml);
+                commentsList.querySelector('.text-muted.text-center')?.remove();
+                commentsList.insertAdjacentHTML('beforeend', this.createCommentHTML(result.comment));
 
-                // Update comment count in the post card
-                const postCard = container.closest('.card');
-                const commentCountElement = postCard.querySelector('.comment-count');
+                const commentCountElement = container.closest('.card').querySelector('.comment-count');
                 if (commentCountElement) {
                     commentCountElement.textContent = `${result.commentCount} bình luận`;
                 }
                 
-                // Reset pagination and mark as loaded
-                this.commentPages.set(postId, { currentPage: 0, hasMore: false });
-                this.updateLoadMoreButton(postId);
-                this.loadedComments.add(postId); // Mark as loaded since we have comments now
+                this.commentPages.set(input.getAttribute('data-post-id'), { currentPage: 0, hasMore: false });
+                this.updateLoadMoreButton(input.getAttribute('data-post-id'));
+                this.loadedComments.add(input.getAttribute('data-post-id'));
                 
                 this.showToast('Đã đăng bình luận thành công!', 'success');
             } else {
@@ -328,12 +311,19 @@ class PostInteractions {
             console.error('Post comment error:', error);
             this.showToast('Không thể kết nối đến máy chủ', 'error');
         } finally {
-            // Reset submitting state
             inputOrButton.dataset.submitting = 'false';
             if (submitButton) {
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<i class="fa fa-paper-plane"></i>';
             }
+        }
+    }
+
+    // Xử lý Enter key cho comment input
+    handleCommentInputKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            this.postComment(event.target);
         }
     }
 
@@ -549,59 +539,17 @@ class PostInteractions {
     // ===========================
     
     showToast(message, type = 'info') {
-        // Sử dụng ToastManager nếu có
-        if (window.toastManager) {
-            return window.toastManager.show(message, type);
-        } else {
-            // Fallback nếu ToastManager chưa load
-            console.warn('ToastManager not available, using fallback');
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                container.style.zIndex = '1055';
-                document.body.appendChild(container);
-            }
-            
-            const toastId = 'toast-' + Date.now();
-            const bgClass = {
-                'error': 'bg-danger',
-                'success': 'bg-success', 
-                'warning': 'bg-warning'
-            }[type] || 'bg-info';
-            
-            container.insertAdjacentHTML('beforeend', `
-                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `);
-            
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-            toast.show();
-            
-            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
-        }
+        window.toastManager?.show(message, type);
     }
 
     async toggleCommentLike(commentId) {
         const likeButton = document.querySelector(`[data-comment-id="${commentId}"] .like-comment-btn`);
-        if (!likeButton) {
-            console.error('Like button not found for comment:', commentId);
-            return;
-        }
+        if (!likeButton || likeButton.dataset.loading === 'true') return;
         
-        if (likeButton.dataset.loading === 'true') return;
         likeButton.dataset.loading = 'true';
         
         try {
-            const response = await authenticatedFetch(`/api/comments/${commentId}/like`, {
-                method: 'POST'
-            });
+            const response = await authenticatedFetch(`/api/comments/${commentId}/like`, { method: 'POST' });
             
             if (response.ok) {
                 const result = await response.json();
@@ -864,29 +812,13 @@ window.confirmShare = (postId) => {
     window.postInteractions?.confirmShare(postId);
 };
 
-// Global wrappers for edit actions
+// Global functions for HTML onclick
 window.startEditComment = (commentId) => window.postInteractions?.startEditComment(commentId);
 window.confirmEditComment = (commentId) => window.postInteractions?.confirmEditComment(commentId);
 window.cancelEditComment = (commentId) => window.postInteractions?.cancelEditComment(commentId);
-
-// Global functions for HTML onclick
-window.toggleCommentLike = (commentId) => {
-    if (window.postInteractions) {
-        window.postInteractions.toggleCommentLike(commentId);
-    }
-};
-
-window.saveEditComment = (commentId) => {
-    if (window.postInteractions) {
-        window.postInteractions.saveEditComment(commentId);
-    }
-};
-
-window.cancelEditComment = (commentId) => {
-    if (window.postInteractions) {
-        window.postInteractions.cancelEditComment(commentId);
-    }
-};
+window.toggleCommentLike = (commentId) => window.postInteractions?.toggleCommentLike(commentId);
+window.saveEditComment = (commentId) => window.postInteractions?.saveEditComment(commentId);
+window.handleCommentKeyPress = (event) => window.postInteractions?.handleCommentInputKeyPress(event);
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {

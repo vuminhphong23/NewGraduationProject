@@ -18,6 +18,12 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         
+        // Kiểm tra xem user có được authenticated không
+        if (authentication == null || !authentication.isAuthenticated()) {
+            response.sendRedirect("/login");
+            return;
+        }
+        
         String redirectUrl = "/"; // URL mặc định
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();

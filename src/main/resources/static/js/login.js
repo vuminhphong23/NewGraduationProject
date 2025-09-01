@@ -114,8 +114,6 @@ function showSuccessMessage(message) {
         setTimeout(() => {
             successDiv.style.display = 'none';
         }, 3000);
-    } else {
-        alert(message);
     }
 }
 
@@ -130,8 +128,6 @@ function showErrorMessage(message) {
         setTimeout(() => {
             errorDiv.style.display = 'none';
         }, 5000);
-    } else {
-        alert(message);
     }
 }
 

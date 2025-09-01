@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.dto.SuggestedPostDto;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
 
@@ -41,4 +42,8 @@ public interface PostService {
     // Share functionality
     Map<String, Object> sharePost(Long postId, Long userId, String message);
     Long getPostShareCount(Long postId);
+    
+    // Suggested posts
+    List<SuggestedPostDto> getSuggestedPosts(Long userId, Integer maxLevel, Integer limit);
+
 }

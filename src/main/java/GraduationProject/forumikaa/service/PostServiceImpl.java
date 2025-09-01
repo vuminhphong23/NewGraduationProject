@@ -7,6 +7,7 @@ import GraduationProject.forumikaa.dao.LikeDao;
 import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.dto.SuggestedPostDto;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
@@ -435,6 +436,19 @@ public class PostServiceImpl implements PostService {
         return post.getShareCount() != null ? post.getShareCount() : 0L;
     }
 
+    @Override
+    public List<SuggestedPostDto> getSuggestedPosts(Long userId, Integer maxLevel, Integer limit) {
+        if (maxLevel == null) maxLevel = 3;
+        if (limit == null) limit = 20;
+
+        List<Object[]> results = postDao.findSuggestedPostsByFriendshipLevel(userId, maxLevel, limit);
+
+        return results.stream()
+                .map(this::convertToSuggestedPostDto)
+                .collect(Collectors.toList());
+    }
+
+
     /**
      * Trích xuất hashtags từ content và tạo/lấy topics tương ứng
      */
@@ -496,6 +510,21 @@ public class PostServiceImpl implements PostService {
             dto.setTopicNames(new ArrayList<>());
         }
 
+        return dto;
+    }
+
+    /**
+     * Convert Object[] từ native query sang SuggestedPostDto
+     */
+    private SuggestedPostDto convertToSuggestedPostDto(Object[] result) {
+        SuggestedPostDto dto = new SuggestedPostDto();
+        dto.setId((Long) result[0]);
+        dto.setTitle((String) result[1]);
+        dto.setContent((String) result[2]);
+        dto.setUserId((Long) result[3]);
+        dto.setCreatedAt((java.time.LocalDateTime) result[4]);
+        dto.setPrivacy((String) result[5]);
+        dto.setFriendshipLevel((Integer) result[6]);
         return dto;
     }
 }
