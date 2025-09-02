@@ -7,16 +7,15 @@
     // Load friendship status khi trang load (nếu có target user)
     if (targetUserId) loadFriendshipStatus();
 
-    // ===== Tab switching: Bài viết (#feed) <-> Bạn bè =====
+    // ===== Load danh sách bạn bè khi ở tab Friends =====
     try {
-        const feed = document.getElementById('feed');
-        const postsTab = document.getElementById('posts-tab');
-        const friendsTab = document.getElementById('friends-tab') || document.getElementById('about-tab');
-        const friendsContainer = document.getElementById('friendsTabContent') || document.getElementById('friendsList')?.closest('.card') || document.getElementById('friendsList')?.parentElement;
+        const friendsContainer = document.getElementById('friends');
+        const friendsList = document.getElementById('friendsList');
 
         // Hàm load danh sách bạn bè (lazy 1 lần)
         let friendsLoaded = false;
         let allFriends = [];
+        
         async function loadFriendsOnce() {
             if (friendsLoaded) return;
             try {
@@ -32,24 +31,27 @@
                 // nếu user đã nhập sẵn từ khóa, lọc ngay
                 wireSearch(true);
             } catch (e) {
-                /* noop */
+                console.error('Error loading friends:', e);
             }
         }
 
         function renderFriends(users) {
-            const list = document.getElementById('friendsList');
+            if (!friendsList) return;
+            
             const empty = document.getElementById('friendsEmpty');
             const count = document.getElementById('friendsCount');
+            
             if (!users || users.length === 0) {
                 if (empty) empty.classList.remove('d-none');
                 if (count) count.textContent = '';
-                if (list) list.innerHTML = '';
+                friendsList.innerHTML = '';
                 return;
             }
+            
             if (empty) empty.classList.add('d-none');
             if (count) count.textContent = `${users.length} bạn`;
-            if (!list) return;
-            list.innerHTML = users.map(u => {
+            
+            friendsList.innerHTML = users.map(u => {
                 const avatar = u.avatar && u.avatar.trim() !== '' ? u.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
                 const name = u.fullName && u.fullName.trim() !== '' ? u.fullName : (u.username || 'Người dùng');
                 const username = u.username || '';
@@ -71,7 +73,7 @@
             }).join('');
 
             // Wire buttons hủy kết bạn
-            list.querySelectorAll('.unfriend-btn').forEach(btn => {
+            friendsList.querySelectorAll('.unfriend-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -87,7 +89,7 @@
                         const col = btn.closest('.col-12');
                         if (col) col.remove();
                         // update count
-                        const current = friendsContainer.querySelectorAll('.col-12').length;
+                        const current = friendsList.querySelectorAll('.col-12').length;
                         if (count) count.textContent = current > 0 ? `${current} bạn` : '';
                         if (current === 0 && empty) empty.classList.remove('d-none');
                     } catch (err) {
@@ -99,11 +101,12 @@
             });
         }
 
-        // Lọc danh sách bạn bè theo ô tìm kiếm trong card Bạn bè
+        // Lọc danh sách bạn bè theo ô tìm kiếm
         function wireSearch(runImmediate = false) {
-            const input = document.getElementById('searchFriend') || document.getElementById('userSearchInput');
-            const btn = document.getElementById('searchFriendBtn') || document.getElementById('userSearchBtn');
+            const input = document.getElementById('searchFriend');
+            const btn = document.getElementById('searchFriendBtn');
             if (!input || !btn) return;
+            
             const doFilter = () => {
                 const q = (input.value || '').toLowerCase().trim();
                 if (!q) {
@@ -118,35 +121,35 @@
                 });
                 renderFriends(filtered);
             };
+            
             input.addEventListener('input', doFilter);
             input.addEventListener('keyup', (e) => { if (e.key === 'Enter') doFilter(); });
             btn.addEventListener('click', (e) => { e.preventDefault(); doFilter(); });
             if (runImmediate) doFilter();
         }
 
-        function showFeed() {
-            if (feed) feed.classList.remove('d-none');
-            if (friendsContainer) friendsContainer.classList.add('d-none');
-        }
-        function showFriends() {
-            if (feed) feed.classList.add('d-none');
-            if (friendsContainer) friendsContainer.classList.remove('d-none');
-        }
+            // Tự động load danh sách bạn bè nếu đang ở tab Friends
+    if (friendsContainer && friendsList && !friendsContainer.classList.contains('d-none')) {
+        loadFriendsOnce();
+    }
 
-        // Gán click cho tab
-        postsTab?.addEventListener('click', (e) => { e.preventDefault(); showFeed(); });
-        friendsTab?.addEventListener('click', async (e) => { e.preventDefault(); await loadFriendsOnce(); showFriends(); });
+    // Highlight tab active dựa trên URL hiện tại
+    function highlightActiveTab() {
+        const currentPath = window.location.pathname;
+        const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+        
+        tabs.forEach(tab => {
+            tab.classList.remove('active');
+            if (tab.getAttribute('href') === currentPath) {
+                tab.classList.add('active');
+            }
+        });
+    }
 
-        // Mặc định hiển thị feed
-        showFeed();
-
-        // Nếu phần danh sách bạn bè đã có sẵn trong DOM (đang ở tab Bạn bè)
-        // thì tự động load dữ liệu và gắn tìm kiếm ngay không cần click tab
-        if (document.getElementById('friendsList')) {
-            loadFriendsOnce();
-        }
+    // Chạy khi trang load
+    highlightActiveTab();
     } catch (e) {
-        /* noop */
+        console.error('Error in friends tab logic:', e);
     }
 
     // Tìm kiếm bạn bè: lọc trực tiếp danh sách bên dưới

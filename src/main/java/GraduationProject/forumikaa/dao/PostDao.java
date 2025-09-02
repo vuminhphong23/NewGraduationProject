@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.dao;
 
 import GraduationProject.forumikaa.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PostDao extends JpaRepository<Post, Long> {
+public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
     @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user u LEFT JOIN FETCH u.userProfile WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
     List<Post> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
@@ -62,49 +63,7 @@ public interface PostDao extends JpaRepository<Post, Long> {
     List<Post> findByTopicIdWithUserAccess(@Param("topicId") Long topicId, @Param("userId") Long userId);
 
 
-    @Query(value = """
-        WITH friendship_levels AS (
-            SELECT 
-                f.user_id as friend_id,
-                1 as level
-            FROM friendships f
-            WHERE f.friend_id = :userId AND f.status = 'ACCEPTED'
-            
-            UNION ALL
-            
-            SELECT 
-                f.friend_id,
-                fl.level + 1
-            FROM friendships f
-            INNER JOIN friendship_levels fl ON f.user_id = fl.friend_id
-            WHERE f.status = 'ACCEPTED' 
-                AND fl.level < :maxLevel
-                AND f.friend_id != :userId
-        )
-        SELECT TOP(:limit)
-            p.id,
-            p.title,
-            p.content,
-            p.user_id,
-            p.created_at,
-            p.privacy,
-            fl.level
-        FROM posts p
-        INNER JOIN friendship_levels fl ON p.user_id = fl.friend_id
-        WHERE p.status = 'APPROVED'
-            AND p.privacy IN ('PUBLIC', 'FRIENDS')
-            AND p.user_id != :userId
-        ORDER BY fl.level ASC, p.created_at DESC
-        """, nativeQuery = true)
-    List<Object[]> findSuggestedPostsByFriendshipLevel(
-        @Param("userId") Long userId,
-        @Param("maxLevel") Integer maxLevel,
-        @Param("limit") Integer limit
-    );
-
     default boolean canEdit(Post post, Long userId) {
         return post != null && post.getUser().getId().equals(userId);
     }
-
-
 }

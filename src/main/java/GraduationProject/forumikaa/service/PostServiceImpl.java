@@ -3,23 +3,26 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.dao.PostDao;
 import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.UserDao;
-import GraduationProject.forumikaa.dao.LikeDao;
 import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
-import GraduationProject.forumikaa.dto.PostDto;
-import GraduationProject.forumikaa.dto.SuggestedPostDto;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
+import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.Like;
 import GraduationProject.forumikaa.entity.Comment;
+import GraduationProject.forumikaa.entity.Friendship;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 
@@ -41,13 +42,12 @@ public class PostServiceImpl implements PostService {
     @Autowired private UserDao userDao;
     @Autowired private TopicDao topicDao;
     @Autowired private TopicService topicService;
-    @Autowired
-    private LikeService likeService;
+    @Autowired private LikeService likeService;
     @Autowired private CommentDao commentDao;
     @Autowired private NotificationService notificationService;
 
     @Override
-    public PostDto createPost(CreatePostRequest request, Long userId) {
+    public PostResponse createPost(CreatePostRequest request, Long userId) {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -92,7 +92,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto updatePost(Long postId, UpdatePostRequest request, Long userId) {
+    public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
@@ -159,7 +159,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto getPostById(Long postId, Long userId) {
+    public PostResponse getPostById(Long postId, Long userId) {
         Post post = postDao.findPostByIdAndUserAccess(postId, userId);
         if (post == null) {
             throw new ResourceNotFoundException("Post not found or access denied");
@@ -168,7 +168,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getUserFeed(Long userId) {
+    public List<PostResponse> getUserFeed(Long userId) {
         return postDao.findUserFeed(userId)
                 .stream()
                 .map(this::convertToDto)
@@ -176,7 +176,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getUserPosts(Long userId) {
+    public List<PostResponse> getUserPosts(Long userId) {
         return postDao.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::convertToDto)
@@ -184,7 +184,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDto> getPostsByTopic(Long topicId, Long userId) {
+    public List<PostResponse> getPostsByTopic(Long topicId, Long userId) {
         return postDao.findByTopicIdWithUserAccess(topicId, userId)
                 .stream()
                 .map(this::convertToDto)
@@ -192,7 +192,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto approvePost(Long postId) {
+    public PostResponse approvePost(Long postId) {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
@@ -201,7 +201,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDto rejectPost(Long postId, String reason) {
+    public PostResponse rejectPost(Long postId, String reason) {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
@@ -263,10 +263,10 @@ public class PostServiceImpl implements PostService {
     // Comment functionality
     @Override
     public List<Map<String, Object>> getPostComments(Long postId, Long userId, int page, int size) {
-        // Tạm thời bypass việc kiểm tra quyền truy cập để debug
-        // if (!canAccessPost(postId, userId)) {
-        //     throw new UnauthorizedException("Cannot access post");
-        // }
+
+         if (!canAccessPost(postId, userId)) {
+             throw new UnauthorizedException("Cannot access post");
+         }
         
         Pageable pageable = PageRequest.of(page, size);
         List<Comment> comments = commentDao.findByPostIdOrderByCreatedAtDesc(postId, pageable).getContent();
@@ -436,47 +436,14 @@ public class PostServiceImpl implements PostService {
         return post.getShareCount() != null ? post.getShareCount() : 0L;
     }
 
-    @Override
-    public List<SuggestedPostDto> getSuggestedPosts(Long userId, Integer maxLevel, Integer limit) {
-        if (maxLevel == null) maxLevel = 3;
-        if (limit == null) limit = 20;
-
-        List<Object[]> results = postDao.findSuggestedPostsByFriendshipLevel(userId, maxLevel, limit);
-
-        return results.stream()
-                .map(this::convertToSuggestedPostDto)
-                .collect(Collectors.toList());
-    }
 
 
-    /**
-     * Trích xuất hashtags từ content và tạo/lấy topics tương ứng
-     */
-    private Set<Topic> extractAndProcessHashtags(String content, User user) {
-        Set<Topic> topics = new HashSet<>();
-
-        if (content == null || content.trim().isEmpty()) {
-            return topics;
-        }
-
-        // Pattern để tìm hashtags (#word)
-        Pattern hashtagPattern = Pattern.compile("#([a-zA-Z0-9_àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]+)");
-        Matcher matcher = hashtagPattern.matcher(content);
-
-        while (matcher.find()) {
-            String hashtagName = matcher.group(1); // Lấy phần sau dấu #
-            Topic topic = topicService.findOrCreateTopic(hashtagName, user);
-            topics.add(topic); // Set tự động tránh duplicate
-        }
-
-        return topics;
-    }
 
     /**
      * Convert Post entity sang PostDto
      */
-    private PostDto convertToDto(Post post) {
-        PostDto dto = new PostDto();
+    private PostResponse convertToDto(Post post) {
+        PostResponse dto = new PostResponse();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
@@ -513,18 +480,4 @@ public class PostServiceImpl implements PostService {
         return dto;
     }
 
-    /**
-     * Convert Object[] từ native query sang SuggestedPostDto
-     */
-    private SuggestedPostDto convertToSuggestedPostDto(Object[] result) {
-        SuggestedPostDto dto = new SuggestedPostDto();
-        dto.setId((Long) result[0]);
-        dto.setTitle((String) result[1]);
-        dto.setContent((String) result[2]);
-        dto.setUserId((Long) result[3]);
-        dto.setCreatedAt((java.time.LocalDateTime) result[4]);
-        dto.setPrivacy((String) result[5]);
-        dto.setFriendshipLevel((Integer) result[6]);
-        return dto;
-    }
 }

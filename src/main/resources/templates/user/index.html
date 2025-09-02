@@ -8,7 +8,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/post-modal.css">
-    <link rel="stylesheet" href="/css/post-interactions.css">
+          <link rel="stylesheet" href="/css/post-interactions.css">
+      <link rel="stylesheet" href="/css/friends-chat.css">
+      <link rel="stylesheet" href="/css/chat-popup.css">
+      <link rel="stylesheet" href="/css/chat-manager.css">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -30,6 +33,7 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 
 </head>
 <body>
@@ -49,6 +53,24 @@
                     <div class="text-muted small">Công nghệ thông tin</div>
                 </div>
             </div>
+            <!-- Danh sách bạn bè -->
+            <div class="card mb-4 border-0">
+                <div class="card-header border-0 fw-bold fs-5 bg-white pt-3">
+                    <span>Bạn bè</span>
+                </div>
+                <div id="friendsList">
+                    <!-- Danh sách bạn bè sẽ được load động -->
+                    <div class="text-center text-muted py-3">
+                        <i class="fa fa-users fa-2x mb-2"></i>
+                        <p class="mb-0">Đang tải danh sách bạn bè...</p>
+                    </div>
+                </div>
+                <a th:href="@{'/profile/' + ${userName} + '/friends'}" class="btn btn-link text-primary w-100 mt-2">
+                    <i class="fa fa-cog me-1"></i>Quản lý bạn bè
+                </a>
+            </div>
+
+            <!-- Nhóm bạn đã tham gia -->
             <div class="card mb-4 border-0 ">
                 <div class="card-header border-0 fw-bold fs-5 bg-white pt-3">Nhóm bạn đã tham gia</div>
                 <ul class="list-group list-group-flush">
@@ -255,19 +277,10 @@
         </main>
         <!-- SIDEBAR RIGHT -->
         <aside class="col-lg-3 d-none d-lg-block">
-            <div class="card mb-4 border-0">
-                <div class="card-header border-0 fw-bold fs-5 bg-white pt-3">
-                    <span>Những người bạn có thể quan tâm</span>
-                </div>
-                <div id="suggestedUsersList">
-                    <div class="text-center py-3 text-muted">
-                        <i class="fa fa-users fa-2x mb-2"></i>
-                        <div>Đang tải gợi ý...</div>
-                    </div>
-                </div>
-                <a href="#" class="btn btn-link text-primary w-100 mt-2">Xem tất cả gợi ý</a>
-            </div>
 
+
+
+            <!-- Hashtags thịnh hành -->
             <div class="card mb-4 border-0">
                 <div class="card-header border-0 fw-bold fs-5 bg-white d-flex align-items-center justify-content-between pt-3">
                     <span>Hashtags thịnh hành</span>
@@ -443,14 +456,16 @@
         </div>
     </div>
 </div>
+
+
+
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/topics.js"></script>
 <script src="/js/post-manager.js"></script>
-        <script src="/js/toast-manager.js"></script>
-        <script src="/js/post-interactions.js"></script>
-        <script src="/js/websocket-manager.js"></script>
-        <script src="/js/notifications.js"></script>
-        <script src="/js/suggested-users.js"></script>
+<script src="/js/toast-manager.js"></script>
+<script src="/js/post-interactions.js"></script>
+<script src="/js/websocket-manager.js"></script>
+<script src="/js/notifications.js"></script>
 </body>
 </html>

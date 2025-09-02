@@ -1,29 +1,23 @@
 package GraduationProject.forumikaa.service;
-
 import GraduationProject.forumikaa.dto.CreatePostRequest;
-import GraduationProject.forumikaa.dto.PostDto;
-import GraduationProject.forumikaa.dto.SuggestedPostDto;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
-import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 import java.util.Map;
 
 public interface PostService {
-    PostDto createPost(CreatePostRequest request, Long userId);
-    PostDto updatePost(Long postId, UpdatePostRequest request, Long userId);
+    PostResponse createPost(CreatePostRequest request, Long userId);
+    PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId);
 
-//    @PreAuthorize("hasRole('ADMIN')")
     void deletePost(Long postId, Long userId);
-    PostDto getPostById(Long postId, Long userId);
-    List<PostDto> getUserFeed(Long userId);
-    List<PostDto> getUserPosts(Long userId);
-    List<PostDto> getPostsByTopic(Long topicId, Long userId);
+    PostResponse getPostById(Long postId, Long userId);
+    List<PostResponse> getUserFeed(Long userId);
+    List<PostResponse> getUserPosts(Long userId);
+    List<PostResponse> getPostsByTopic(Long topicId, Long userId);
+    PostResponse approvePost(Long postId);
 
-    PostDto approvePost(Long postId);
-
-//    @PreAuthorize("hasRole('ADMIN')")
-    PostDto rejectPost(Long postId, String reason);
+    PostResponse rejectPost(Long postId, String reason);
     boolean canAccessPost(Long postId, Long userId);
     boolean canEditPost(Long postId, Long userId);
     
@@ -42,8 +36,5 @@ public interface PostService {
     // Share functionality
     Map<String, Object> sharePost(Long postId, Long userId, String message);
     Long getPostShareCount(Long postId);
-    
-    // Suggested posts
-    List<SuggestedPostDto> getSuggestedPosts(Long userId, Integer maxLevel, Integer limit);
 
 }

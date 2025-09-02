@@ -1,6 +1,5 @@
 package GraduationProject.forumikaa.controller;
-
-import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.service.UserService;
@@ -42,11 +41,128 @@ public class ProfileController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
 
         // Lấy các bài viết của người dùng này
-        List<PostDto> userPosts = postService.getUserPosts(user.getId());
+        List<PostResponse> userPosts = postService.getUserPosts(user.getId());
         
         model.addAttribute("user", user);
         model.addAttribute("posts", userPosts);
         model.addAttribute("postCount", userPosts.size());
+        model.addAttribute("activeTab", "posts"); // Mặc định hiển thị tab posts
+
+        // Kiểm tra xem có phải profile của chính mình không
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            model.addAttribute("isOwnProfile", currentUserId.equals(user.getId()));
+        } catch (Exception e) {
+            model.addAttribute("isOwnProfile", false);
+        }
+
+        return "user/profile";
+    }
+
+    @GetMapping("/profile/{username}/posts")
+    public String profilePostsPage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+
+        // Lấy các bài viết của người dùng này
+        List<PostResponse> userPosts = postService.getUserPosts(user.getId());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("posts", userPosts);
+        model.addAttribute("postCount", userPosts.size());
+        model.addAttribute("activeTab", "posts");
+
+        // Kiểm tra xem có phải profile của chính mình không
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            model.addAttribute("isOwnProfile", currentUserId.equals(user.getId()));
+        } catch (Exception e) {
+            model.addAttribute("isOwnProfile", false);
+        }
+
+        return "user/profile";
+    }
+
+    @GetMapping("/profile/{username}/friends")
+    public String profileFriendsPage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+
+        // Lấy danh sách bạn bè
+        // TODO: Implement friendship service
+        
+        model.addAttribute("user", user);
+        model.addAttribute("activeTab", "friends");
+
+        // Kiểm tra xem có phải profile của chính mình không
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            model.addAttribute("isOwnProfile", currentUserId.equals(user.getId()));
+        } catch (Exception e) {
+            model.addAttribute("isOwnProfile", false);
+        }
+
+        return "user/profile";
+    }
+
+    @GetMapping("/profile/{username}/groups")
+    public String profileGroupsPage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+
+        // TODO: Implement groups service
+        
+        model.addAttribute("user", user);
+        model.addAttribute("activeTab", "groups");
+
+        // Kiểm tra xem có phải profile của chính mình không
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            model.addAttribute("isOwnProfile", currentUserId.equals(user.getId()));
+        } catch (Exception e) {
+            model.addAttribute("isOwnProfile", false);
+        }
+
+        return "user/profile";
+    }
+
+    @GetMapping("/profile/{username}/photos")
+    public String profilePhotosPage(@PathVariable String username, Model model) {
+        // Kiểm tra authentication trước
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/login";
+        }
+
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user"));
+
+        // TODO: Implement photos service
+        
+        model.addAttribute("user", user);
+        model.addAttribute("activeTab", "photos");
 
         // Kiểm tra xem có phải profile của chính mình không
         try {

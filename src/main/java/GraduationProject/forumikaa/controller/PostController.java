@@ -1,8 +1,7 @@
 package GraduationProject.forumikaa.controller;
 
-import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
-import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.util.SecurityUtil;
@@ -10,7 +9,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +30,7 @@ public class PostController {
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostRequest request) {
         try {
             Long userId = getCurrentUserId();
-            PostDto createdPost = postService.createPost(request, userId);
+            PostResponse createdPost = postService.createPost(request, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdPost);
         } catch (RuntimeException e) {
             System.err.println("RuntimeException in createPost: " + e.getMessage());
@@ -48,38 +46,38 @@ public class PostController {
 
     // 2. Lấy toàn bộ
     @GetMapping("/feed")
-    public ResponseEntity<List<PostDto>> getUserFeed() {
+    public ResponseEntity<List<PostResponse>> getUserFeed() {
         Long userId = getCurrentUserId();
-        List<PostDto> posts = postService.getUserFeed(userId);
+        List<PostResponse> posts = postService.getUserFeed(userId);
         return ResponseEntity.ok(posts);
     }
 
     // 3. Lấy bài viết cá nhân
     @GetMapping("/my-posts")
-    public ResponseEntity<List<PostDto>> getMyPosts() {
+    public ResponseEntity<List<PostResponse>> getMyPosts() {
         Long userId = getCurrentUserId();
-        List<PostDto> posts = postService.getUserPosts(userId);
+        List<PostResponse> posts = postService.getUserPosts(userId);
         return ResponseEntity.ok(posts);
     }
 
     // 4. Lấy bài viết theo topic
     @GetMapping("/topic/{topicId}")
-    public ResponseEntity<List<PostDto>> getPostsByTopic(@PathVariable Long topicId) {
-        List<PostDto> posts = postService.getPostsByTopic(topicId, getCurrentUserId());
+    public ResponseEntity<List<PostResponse>> getPostsByTopic(@PathVariable Long topicId) {
+        List<PostResponse> posts = postService.getPostsByTopic(topicId, getCurrentUserId());
         return ResponseEntity.ok(posts);
     }
 
     // 5. Lấy post theo ID (có kiểm tra quyền)
     @GetMapping("/{postId}")
-    public ResponseEntity<PostDto> getPostById(@PathVariable Long postId) {
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(postService.getPostById(postId, userId));
     }
 
     // 6. Cập nhật bài viết
     @PutMapping("/{postId}")
-    public ResponseEntity<PostDto> updatePost(@PathVariable Long postId,
-                                              @Valid @RequestBody UpdatePostRequest request) {
+    public ResponseEntity<PostResponse> updatePost(@PathVariable Long postId,
+                                                   @Valid @RequestBody UpdatePostRequest request) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(postService.updatePost(postId, request, userId));
     }
@@ -94,13 +92,13 @@ public class PostController {
 
     // 8. Duyệt & từ chối bài viết (admin)
     @PutMapping("/admin/{postId}/approve")
-    public ResponseEntity<PostDto> approvePost(@PathVariable Long postId) {
+    public ResponseEntity<PostResponse> approvePost(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.approvePost(postId));
     }
 
     @PutMapping("/admin/{postId}/reject")
-    public ResponseEntity<PostDto> rejectPost(@PathVariable Long postId,
-                                              @RequestParam String reason) {
+    public ResponseEntity<PostResponse> rejectPost(@PathVariable Long postId,
+                                                   @RequestParam String reason) {
         return ResponseEntity.ok(postService.rejectPost(postId, reason));
     }
 

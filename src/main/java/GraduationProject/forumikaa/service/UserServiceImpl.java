@@ -2,7 +2,6 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
-import GraduationProject.forumikaa.dto.UserExample;
 import GraduationProject.forumikaa.entity.User;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -155,30 +154,5 @@ public class UserServiceImpl implements UserService {
     public boolean checkPassword(String password) {
         return password != null && password.length() >= 6;
     }
-    
-    // QBE Implementation
-    @Override
-    public List<User> findByExample(UserExample example) {
-        return userDao.findAll(example.toExample());
-    }
-    
-    @Override
-    public List<User> findByExampleExact(UserExample example) {
-        return userDao.findAll(example.toExactExample());
-    }
-    
-    @Override
-    public Page<User> findByExample(UserExample example, Pageable pageable) {
-        return userDao.findAll(example.toExample(), pageable);
-    }
-    
-    @Override
-    public long countByExample(UserExample example) {
-        return userDao.count(example.toExample());
-    }
-    
-    @Override
-    public boolean existsByExample(UserExample example) {
-        return userDao.exists(example.toExample());
-    }
+
 } 

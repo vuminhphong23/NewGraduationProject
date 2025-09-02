@@ -1,5 +1,4 @@
 package GraduationProject.forumikaa.handler.chat;
-
 import GraduationProject.forumikaa.entity.ChatMessage;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ public class ChatBroadcaster {
         redisTemplate.convertAndSend(topic, msg);
     }
 
-    private String getTopic(String user1, String user2) {
+    private String getTopic(Long user1, Long user2) {
         return user1.compareTo(user2) < 0
                 ? "chat_" + user1 + "_" + user2
                 : "chat_" + user2 + "_" + user1;

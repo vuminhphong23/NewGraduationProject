@@ -25,6 +25,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .setAllowedOriginPatterns("*");
 
         registry.addHandler(chatHandler, "/ws/chat")
-                .setAllowedOrigins("*");
+                .setAllowedOriginPatterns("*");
     }
 }

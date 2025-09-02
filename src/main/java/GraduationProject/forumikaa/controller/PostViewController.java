@@ -1,6 +1,5 @@
 package GraduationProject.forumikaa.controller;
-
-import GraduationProject.forumikaa.dto.PostDto;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,7 @@ public class PostViewController {
     public String viewPost(@PathVariable Long postId, Model model) {
 
         Long userId = securityUtil.getCurrentUserId();
-        PostDto post = postService.getPostById(postId, userId);
+        PostResponse post = postService.getPostById(postId, userId);
             
         model.addAttribute("post", post);
         model.addAttribute("user", securityUtil.getCurrentUser());

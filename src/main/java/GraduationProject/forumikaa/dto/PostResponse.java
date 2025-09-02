@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class PostDto {
+public class PostResponse {
     private Long id;
     private String title;
     private String content;

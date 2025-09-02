@@ -1,6 +1,5 @@
 package GraduationProject.forumikaa.service;
 
-import GraduationProject.forumikaa.dto.UserExample;
 import GraduationProject.forumikaa.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,21 +34,5 @@ public interface UserService {
 
     boolean existsPhone(String phone, Long userId);
     boolean checkPassword(String password);
-    
-    // QBE methods
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    List<User> findByExample(UserExample example);
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    List<User> findByExampleExact(UserExample example);
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    Page<User> findByExample(UserExample example, Pageable pageable);
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    long countByExample(UserExample example);
-    
-    @PreAuthorize("hasRole('ADMIN')")
-    boolean existsByExample(UserExample example);
 
 } 

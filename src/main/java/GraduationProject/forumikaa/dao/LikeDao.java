@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -37,11 +38,6 @@ public interface LikeDao extends JpaRepository<Like, Long> {
         return countByLikeableIdAndLikeableType(postId, LikeableType.POST);
     }
     
-
-    @Modifying
-    @Query(value = "IF NOT EXISTS (" +
-                    "SELECT 1 FROM likes WHERE user_id = :userId AND likeable_id = :likeableId AND likeable_type = :likeableType) " +
-                    "INSERT INTO likes (user_id, likeable_id, likeable_type, created_at) " +
-                    "VALUES (:userId, :likeableId, :likeableType, GETDATE())", nativeQuery = true)
-    int insertIfNotExists(@Param("userId") Long userId, @Param("likeableId") Long likeableId, @Param("likeableType") String likeableType);
+    // Methods for recommendation system
+    List<Like> findByUserIdAndLikeableType(Long userId, LikeableType likeableType);
 }

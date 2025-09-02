@@ -87,12 +87,6 @@ public class TopicServiceImpl implements TopicService {
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Topic> searchTopics(String keyword) {
-        String cleanKeyword = cleanHashtagName(keyword);
-        return topicDao.findByNameContaining(cleanKeyword);
-    }
 
     @Override
     public void updateTrendingStatus() {
@@ -104,12 +98,6 @@ public class TopicServiceImpl implements TopicService {
         topTopics.forEach(topic -> topic.setTrending(true));
 
         topicDao.saveAll(allTopics);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Topic> getAllTopics() {
-        return topicDao.getAllTopics();
     }
     
     @Scheduled(fixedRate = 3600000)
@@ -141,16 +129,5 @@ public class TopicServiceImpl implements TopicService {
                 .replaceAll("[^a-zA-Z0-9_àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]", "");
         
         return cleanName;
-    }
-
-    // Các phương thức mới sử dụng projection (hiệu suất cao hơn)
-    @Override
-    public List<TopicDao.TopicSummaryProjection> getTopTopicsProjection(int limit) {
-        return topicDao.findTopTopicsProjectionLimited(limit);
-    }
-
-    @Override
-    public List<TopicDao.TopicSummaryProjection> getTrendingTopicsProjection() {
-        return topicDao.findTrendingTopicsProjection();
     }
 }

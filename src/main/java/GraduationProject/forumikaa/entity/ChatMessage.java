@@ -2,21 +2,52 @@ package GraduationProject.forumikaa.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.Instant;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "chat_messages")
 public class ChatMessage {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
-    @Column
-    private String senderId;
-    @Column
-    private String receiverId;
-    @Column
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "sender_id", nullable = false)
+    private Long senderId;
+
+    @Column(name = "receiver_id", nullable = false)
+    private Long receiverId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_id", nullable = false)
+    private ChatRoom room;
+
+    @Lob
+    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
     private String content;
-    @Column
-    private Instant createdAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "message_type", nullable = false)
+    private MessageType messageType = MessageType.TEXT;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "read_at")
+    private LocalDateTime readAt;
+    
+    public enum MessageType {
+        TEXT, IMAGE, FILE, EMOJI
+    }
 }
