@@ -23,7 +23,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name_name", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "room_name", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String roomName;
 
     @Column(name = "is_group", nullable = false)
@@ -44,18 +44,50 @@ public class ChatRoom {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "last_message_at")
-    private LocalDateTime lastMessageAt;
-
-    @Column(name = "last_message_content")
-    private String lastMessageContent;
-
-    @Column(name = "last_message_sender_id")
-    private Long lastMessageSenderId;
-
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ChatRoomMember> members = new HashSet<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ChatMessage> messages = new HashSet<>();
+    
+    // Helper methods để tính toán thông tin cuối cùng
+    public LocalDateTime getLastMessageAt() {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        return messages.stream()
+                .map(ChatMessage::getCreatedAt)
+                .max(LocalDateTime::compareTo)
+                .orElse(null);
+    }
+    
+    public String getLastMessageContent() {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        return messages.stream()
+                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .map(ChatMessage::getContent)
+                .orElse(null);
+    }
+    
+    public Long getLastMessageSenderId() {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        return messages.stream()
+                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .map(ChatMessage::getSenderId)
+                .orElse(null);
+    }
+    
+    public User getLastMessageSender() {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        return messages.stream()
+                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
+                .map(ChatMessage::getSender)
+                .orElse(null);
+    }
 } 

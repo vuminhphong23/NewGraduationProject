@@ -19,6 +19,9 @@ public interface UserDao extends JpaRepository<User, Long>, JpaSpecificationExec
     Optional<User> findByUsername(String username);
     Optional<User> findByPhone(String phone);
     
+    // Tìm kiếm user theo username và loại trừ user hiện tại
+    List<User> findByUsernameContainingIgnoreCaseAndIdNot(String username, Long userId);
+    
     @Query("""
            SELECT u FROM User u
            LEFT JOIN FETCH u.userProfile

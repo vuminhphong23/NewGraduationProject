@@ -19,11 +19,9 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "sender_id", nullable = false)
-    private Long senderId;
-
-    @Column(name = "receiver_id", nullable = false)
-    private Long receiverId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id", nullable = false)
+    private User sender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
@@ -49,5 +47,15 @@ public class ChatMessage {
     
     public enum MessageType {
         TEXT, IMAGE, FILE, EMOJI
+    }
+    
+    // Helper method để lấy senderId
+    public Long getSenderId() {
+        return sender != null ? sender.getId() : null;
+    }
+    
+    // Helper method để lấy roomId
+    public Long getRoomId() {
+        return room != null ? room.getId() : null;
     }
 }

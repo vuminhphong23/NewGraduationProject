@@ -1,26 +1,72 @@
 package GraduationProject.forumikaa.handler.chat;
+
 import GraduationProject.forumikaa.entity.ChatMessage;
-import org.springframework.data.redis.core.RedisTemplate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
+
+@Slf4j
 @Component
 public class ChatBroadcaster {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    // Lưu trữ các subscriber theo roomId
+    private final Map<Long, List<Consumer<ChatMessage>>> roomSubscribers = new ConcurrentHashMap<>();
 
-    public ChatBroadcaster(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
+    // Publish message tới tất cả subscriber của room
+    public void publish(ChatMessage message) {
+        Long roomId = message.getRoomId();
+        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
+        
+        if (subscribers == null || subscribers.isEmpty()) {
+            log.debug("Không có subscriber nào cho roomId: {}", roomId);
+            return;
+        }
+
+        subscribers.forEach(consumer -> {
+            try {
+                consumer.accept(message);
+            } catch (Exception e) {
+                log.error("Lỗi khi gửi message tới subscriber: {}", e.getMessage());
+            }
+        });
     }
 
-    // Publish
-    public void publish(ChatMessage msg) {
-        String topic = getTopic(msg.getSenderId(), msg.getReceiverId());
-        redisTemplate.convertAndSend(topic, msg);
+    // Đăng ký callback khi có message mới trong room
+    public void subscribe(Long roomId, Consumer<ChatMessage> consumer) {
+        roomSubscribers.computeIfAbsent(roomId, id -> new CopyOnWriteArrayList<>())
+                .add(consumer);
     }
 
-    private String getTopic(Long user1, Long user2) {
-        return user1.compareTo(user2) < 0
-                ? "chat_" + user1 + "_" + user2
-                : "chat_" + user2 + "_" + user1;
+    // Hủy đăng ký
+    public void unsubscribe(Long roomId) {
+        List<Consumer<ChatMessage>> subscribers = roomSubscribers.remove(roomId);
+        if (subscribers != null) {
+            log.info("Room {} đã hủy đăng ký chat", roomId);
+        }
+    }
+
+    // Hủy đăng ký consumer cụ thể
+    public void unsubscribe(Long roomId, Consumer<ChatMessage> consumer) {
+        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
+        if (subscribers != null) {
+            boolean removed = subscribers.remove(consumer);
+            if (removed) {
+                // Nếu không còn subscriber nào, xóa key
+                if (subscribers.isEmpty()) {
+                    roomSubscribers.remove(roomId);
+                }
+            }
+        }
+    }
+
+    // Kiểm tra xem một room có đang subscribe không
+    public boolean isSubscribed(Long roomId) {
+        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
+        return subscribers != null && !subscribers.isEmpty();
     }
 }

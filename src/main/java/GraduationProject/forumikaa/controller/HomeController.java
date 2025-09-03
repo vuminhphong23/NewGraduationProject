@@ -5,13 +5,10 @@ import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 
 import java.util.List;
 
@@ -93,5 +90,22 @@ public class HomeController {
         return "user/recommendations";
     }
 
+    @GetMapping("/chat")
+    public String chat(Model model) {
+        String userName = "Khách";
+        Long userId = null;
+        GraduationProject.forumikaa.entity.User user = null;
+        try {
+            userName = securityUtil.getCurrentUsername();
+            userId = securityUtil.getCurrentUserId();
+            if (userId != null) {
+                user = securityUtil.getCurrentUser();
+            }
+        } catch (RuntimeException ignored) {}
+
+        model.addAttribute("userName", userName);
+        model.addAttribute("user", user);
+        return "user/chat";
+    }
 
 }

@@ -21,9 +21,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // Notification WebSocket
         registry.addHandler(notificationHandler, "/ws/notifications")
                 .setAllowedOriginPatterns("*");
 
+        // Chat WebSocket
         registry.addHandler(chatHandler, "/ws/chat")
                 .setAllowedOriginPatterns("*");
     }
