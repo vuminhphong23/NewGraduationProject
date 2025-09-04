@@ -122,23 +122,12 @@ class LogoutManager {
             loading.remove();
         }
 
-        // Hiển thị toast message
-        if (window.showToast) {
-            window.showToast(message, 'success');
+        // Hiển thị toast message using toastManager
+        if (window.toastManager) {
+            window.toastManager.success(message);
         } else {
-            // Fallback toast
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                position: fixed; top: 20px; right: 20px; 
-                background: #28a745; color: white; padding: 12px 20px; 
-                border-radius: 4px; z-index: 10000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            `;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            // Fallback: console log nếu không có toast
+            console.log(`Success: ${message}`);
         }
     }
 

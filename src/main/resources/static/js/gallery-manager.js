@@ -583,36 +583,14 @@ function downloadAllFilesFromModal(files) {
     downloadAllFiles(currentPostId);
 }
 
-// Show toast notification
+// Use toastManager for notifications
 function showToast(message, type = 'info') {
-    // Create toast element
-    const toastContainer = document.querySelector('.toast-container');
-    const toastId = 'toast-' + Date.now();
-    
-    const toastHtml = `
-        <div id="${toastId}" class="toast" role="alert">
-            <div class="toast-header bg-${type === 'info' ? 'primary' : type} text-white">
-                <i class="fa fa-${type === 'info' ? 'info-circle' : 'check-circle'} me-2"></i>
-                <strong class="me-auto">Thông báo</strong>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-            </div>
-            <div class="toast-body">
-                ${message}
-            </div>
-        </div>
-    `;
-    
-    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-    
-    // Show toast
-    const toastElement = document.getElementById(toastId);
-    const toast = new bootstrap.Toast(toastElement);
-    toast.show();
-    
-    // Remove toast element after it's hidden
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    if (window.toastManager) {
+        window.toastManager.show(message, type);
+    } else {
+        // Fallback to console if no toast system available
+        console.log(`Toast (${type}): ${message}`);
+    }
 }
 
 // Utility function to format file size

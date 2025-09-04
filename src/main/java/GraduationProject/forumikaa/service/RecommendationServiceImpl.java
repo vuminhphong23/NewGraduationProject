@@ -275,13 +275,9 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     
     private List<User> getFriends(Long userId) {
-        List<Friendship> friendships = friendshipDao.findByUserIdAndStatus(userId, FriendshipStatus.ACCEPTED);
-        System.out.println("Found " + friendships.size() + " accepted friendships for user " + userId);
-        
-        List<User> friends = friendships.stream()
-                .map(Friendship::getFriend)
-                .collect(Collectors.toList());
-        
+        // Sử dụng method đã có sẵn trong FriendshipDao để lấy tất cả bạn bè (cả 2 chiều)
+        List<User> friends = friendshipDao.findFriendsOfWithProfile(userId);
+        System.out.println("Found " + friends.size() + " accepted friendships for user " + userId);
         System.out.println("Friends list: " + friends.stream().map(User::getUsername).collect(Collectors.toList()));
         return friends;
     }

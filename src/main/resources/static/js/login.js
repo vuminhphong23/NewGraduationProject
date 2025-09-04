@@ -102,32 +102,44 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Helper functions
+// Helper functions - Use toastManager for notifications
 function showSuccessMessage(message) {
-    const successDiv = document.getElementById('success-message');
-    if (successDiv) {
-        successDiv.textContent = message;
-        successDiv.style.display = 'block';
-        successDiv.className = 'alert alert-success';
-        
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            successDiv.style.display = 'none';
-        }, 3000);
+    // Use toastManager if available
+    if (window.toastManager) {
+        window.toastManager.success(message);
+    } else {
+        // Fallback to existing alert system
+        const successDiv = document.getElementById('success-message');
+        if (successDiv) {
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            successDiv.className = 'alert alert-success';
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
     }
 }
 
 function showErrorMessage(message) {
-    const errorDiv = document.getElementById('error-message');
-    if (errorDiv) {
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        errorDiv.className = 'alert alert-danger';
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 5000);
+    // Use toastManager if available
+    if (window.toastManager) {
+        window.toastManager.error(message);
+    } else {
+        // Fallback to existing alert system
+        const errorDiv = document.getElementById('error-message');
+        if (errorDiv) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.className = 'alert alert-danger';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
     }
 }
 

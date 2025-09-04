@@ -30,6 +30,7 @@ public interface UserDao extends JpaRepository<User, Long>, JpaSpecificationExec
                  SELECT CASE WHEN f.user.id = :currentUserId THEN f.friend.id ELSE f.user.id END
                  FROM Friendship f
                  WHERE (f.user.id = :currentUserId OR f.friend.id = :currentUserId)
+                   AND f.status = 'ACCEPTED'
              )
            ORDER BY RAND()
            """)

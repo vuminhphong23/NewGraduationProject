@@ -35,14 +35,14 @@
             row.className = 'list-group-item d-flex align-items-center justify-content-between gap-2';
             
             // Xử lý avatar - sử dụng từ database hoặc ảnh mặc định
-            let avatarSrc = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMDkxIDEyIDE2IDEwLjIwOTEgMTYgOEMxNiA1Ljc5MDg2IDE0LjIwOTEgNCAxMiA0QzkuNzkwODYgNCA4IDUuNzkwODYgOCA4QzggMTAuMjA5MSA5Ljc5MDg2IDEyIDEyIDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNMTIgMTRDMTUuMzEzNyAxNCAxOCAxNi42ODYzIDE4IDIwSDFWMTZDMSAxNi42ODYzIDMuNjg2MyAxNCA3IDE0SDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'; // Ảnh placeholder trống
+            let avatarSrc = 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'; // Ảnh placeholder trống
             if (u.avatar && u.avatar.trim() !== '') {
                 avatarSrc = u.avatar; // Sử dụng avatar từ Cloudinary
             }
             row.innerHTML = `
                 <div class="d-flex align-items-center gap-2">
                     <img src="${avatarSrc}" width="28" height="28" class="rounded-circle"
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik0xMiAxMkMxNC4yMDkxIDEyIDE2IDEwLjIwOTEgMTYgOEMxNiA1Ljc5MDg2IDE0LjIwOTEgNCAxMiA0QzkuNzkwODYgNCA4IDUuNzkwODYgOCA4QzggMTAuMjA5MSA5Ljc5MDg2IDEyIDEyIDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8cGF0aCBkPSJNMTIgMTRDMTUuMzEzNyAxNCAxOCAxNi42ODYzIDE4IDIwSDFWMTZDMSAxNi42ODYzIDMuNjg2MyAxNCA3IDE0SDEyWiIgZmlsbD0iI0Q5RDlEOSIvPgo8L3N2Zz4K'"
+                         onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'"
                          alt="Avatar của ${escapeHtml(u.username || '')}"/>
                     <div>
                         <div class="fw-semibold">${escapeHtml(u.username || '')}</div>
@@ -101,7 +101,12 @@
                     await searchUsers(currentPage);
                 } catch (e) {
                     console.error(e);
-                    alert('Thao tác thất bại');
+                    // Use toastManager for error notifications
+                    if (window.toastManager) {
+                        window.toastManager.error('Thao tác thất bại');
+                    } else {
+                        alert('Thao tác thất bại');
+                    }
                 }
             });
         });

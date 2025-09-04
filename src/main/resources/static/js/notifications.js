@@ -427,8 +427,8 @@
         renderNotifications();
         
         // Chỉ hiển thị toast notification cho thông báo mới thực sự từ WebSocket
-        if (window.showToast && fromWebSocket && window.notificationsLoaded) {
-            window.showToast(notification.message, 'info');
+        if (window.toastManager && fromWebSocket && window.notificationsLoaded) {
+            window.toastManager.info(notification.message);
         }
     }
 
@@ -466,6 +466,18 @@
         // Cập nhật trạng thái friendship
         notification.friendshipStatus = friendshipStatus;
         notification.action = action;
+        
+        // Cập nhật notification type để hiển thị đúng UI
+        if (action === 'accepted') {
+            notification.notificationType = 'FRIENDSHIP_ACCEPTED';
+            notification.type = 'FRIENDSHIP_ACCEPTED';
+        } else if (action === 'rejected') {
+            notification.notificationType = 'FRIENDSHIP_REJECTED';
+            notification.type = 'FRIENDSHIP_REJECTED';
+        } else if (action === 'cancelled') {
+            notification.notificationType = 'FRIENDSHIP_CANCELLED';
+            notification.type = 'FRIENDSHIP_CANCELLED';
+        }
 
         // Re-render để cập nhật button
         renderNotifications();
@@ -541,13 +553,18 @@
     // Xử lý chấp nhận kết bạn
     async function handleAcceptFriend(senderId, notificationId) {
         try {
-            const response = await authenticatedFetch(`/api/friendships/accept/${senderId}`, {
+            const response = await authenticatedFetch(`/api/friends/accept/${senderId}`, {
                 method: 'POST'
             });
             
             if (response && response.ok) {
                 // Cập nhật ngay lập tức để UI responsive
                 updateNotificationStatus(notificationId, 'accepted', 'ACCEPTED');
+                
+                // Hiển thị thông báo thành công
+                if (window.toastManager) {
+                    window.toastManager.success('Đã chấp nhận yêu cầu kết bạn!');
+                }
                 
                 // Gửi thông báo qua WebSocket để đồng bộ với server
                 if (wsManager && wsManager.isConnected()) {
@@ -557,22 +574,36 @@
                         notificationId: notificationId
                     });
                 }
+            } else {
+                // Hiển thị thông báo lỗi
+                if (window.toastManager) {
+                    window.toastManager.error('Có lỗi xảy ra khi chấp nhận yêu cầu kết bạn');
+                }
             }
         } catch (error) {
             console.error('Error accepting friend:', error);
+            // Hiển thị thông báo lỗi
+            if (window.toastManager) {
+                window.toastManager.error('Có lỗi xảy ra khi chấp nhận yêu cầu kết bạn');
+            }
         }
     }
 
     // Xử lý từ chối kết bạn
     async function handleRejectFriend(senderId, notificationId) {
         try {
-            const response = await authenticatedFetch(`/api/friendships/reject/${senderId}`, {
+            const response = await authenticatedFetch(`/api/friends/decline/${senderId}`, {
                 method: 'POST'
             });
             
             if (response && response.ok) {
                 // Cập nhật ngay lập tức để UI responsive
                 updateNotificationStatus(notificationId, 'rejected', 'REJECTED');
+                
+                // Hiển thị thông báo thành công
+                if (window.toastManager) {
+                    window.toastManager.info('Đã từ chối yêu cầu kết bạn');
+                }
                 
                 // Gửi thông báo qua WebSocket để đồng bộ với server
                 if (wsManager && wsManager.isConnected()) {
@@ -582,17 +613,26 @@
                         notificationId: notificationId
                     });
                 }
+            } else {
+                // Hiển thị thông báo lỗi
+                if (window.toastManager) {
+                    window.toastManager.error('Có lỗi xảy ra khi từ chối yêu cầu kết bạn');
+                }
             }
         } catch (error) {
             console.error('Error rejecting friend:', error);
+            // Hiển thị thông báo lỗi
+            if (window.toastManager) {
+                window.toastManager.error('Có lỗi xảy ra khi từ chối yêu cầu kết bạn');
+            }
         }
     }
 
     // Xử lý hủy kết bạn
     async function handleUnfriend(senderId) {
         try {
-            const response = await authenticatedFetch(`/api/friendships/unfriend/${senderId}`, {
-                method: 'POST'
+            const response = await authenticatedFetch(`/api/friends/${senderId}`, {
+                method: 'DELETE'
             });
             
             if (response && response.ok) {
@@ -603,6 +643,11 @@
                     updateNotificationStatus(notification.id, 'cancelled', 'CANCELLED');
                 }
                 
+                // Hiển thị thông báo thành công
+                if (window.toastManager) {
+                    window.toastManager.info('Đã hủy kết bạn');
+                }
+                
                 // Gửi thông báo qua WebSocket để đồng bộ với server
                 if (wsManager && wsManager.isConnected()) {
                     wsManager.send({
@@ -610,9 +655,18 @@
                         senderId: senderId
                     });
                 }
+            } else {
+                // Hiển thị thông báo lỗi
+                if (window.toastManager) {
+                    window.toastManager.error('Có lỗi xảy ra khi hủy kết bạn');
+                }
             }
         } catch (error) {
             console.error('Error unfriending:', error);
+            // Hiển thị thông báo lỗi
+            if (window.toastManager) {
+                window.toastManager.error('Có lỗi xảy ra khi hủy kết bạn');
+            }
         }
     }
 

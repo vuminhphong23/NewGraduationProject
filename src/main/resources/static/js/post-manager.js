@@ -361,36 +361,7 @@ class PostManager {
             return window.toastManager.show(message, type);
         } else {
             // Fallback nếu ToastManager chưa load
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                container.className = 'toast-container position-fixed top-0 end-0 p-3';
-                container.style.zIndex = '1055';
-                document.body.appendChild(container);
-            }
-            
-            const toastId = 'toast-' + Date.now();
-            const bgClass = {
-                'error': 'bg-danger',
-                'success': 'bg-success', 
-                'warning': 'bg-warning'
-            }[type] || 'bg-info';
-            
-            container.insertAdjacentHTML('beforeend', `
-                <div id="${toastId}" class="toast align-items-center text-white ${bgClass} border-0">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                    </div>
-                </div>
-            `);
-            
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-            toast.show();
-            
-            toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+            console.log(`Toast (${type}): ${message}`);
         }
     }
     
@@ -436,7 +407,12 @@ window.deletePost = (element) => {
     if (postId && window.postManager) {
         window.postManager.deletePost(postId);
     } else {
-        alert('Không thể xóa bài viết. Vui lòng tải lại trang.');
+        // Use toastManager for error notifications
+        if (window.toastManager) {
+            window.toastManager.error('Không thể xóa bài viết. Vui lòng tải lại trang.');
+        } else {
+            alert('Không thể xóa bài viết. Vui lòng tải lại trang.');
+        }
     }
 };
 
@@ -445,7 +421,12 @@ window.editPost = (element) => {
     if (postId && window.postManager) {
         window.postManager.editPost(postId);
     } else {
-        alert('Không thể chỉnh sửa bài viết. Vui lòng tải lại trang.');
+        // Use toastManager for error notifications
+        if (window.toastManager) {
+            window.toastManager.error('Không thể chỉnh sửa bài viết. Vui lòng tải lại trang.');
+        } else {
+            alert('Không thể chỉnh sửa bài viết. Vui lòng tải lại trang.');
+        }
     }
 };
 
@@ -465,8 +446,6 @@ window.sharePost = (element) => {
 
 window.refreshPosts = () => window.location.reload();
 
-window.showSuccessToast = (msg) => window.postManager?.showToast(msg, 'success');
-window.showErrorToast = (msg) => window.postManager?.showToast(msg, 'error');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {

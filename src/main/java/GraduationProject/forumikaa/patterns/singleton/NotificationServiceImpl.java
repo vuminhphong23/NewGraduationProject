@@ -194,8 +194,12 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
         }
         
+        // Lấy tên thật của người thích từ database
+        Optional<User> liker = userDao.findById(likerId);
+        String likerName = liker.map(User::getUsername).orElse("Người dùng");
+        
         // Sử dụng Factory Manager thay vì Builder trực tiếp
-        var factory = NotificationFactoryManager.createPostLikeFactory(postId, postAuthorId, likerId, "Người dùng");
+        var factory = NotificationFactoryManager.createPostLikeFactory(postId, postAuthorId, likerId, likerName);
         
         Notification notification = factory.createNotification();
         Notification saved = notificationDao.save(notification);
@@ -289,8 +293,12 @@ public class NotificationServiceImpl implements NotificationService {
             throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
         }
         
+        // Lấy tên thật của người gửi yêu cầu từ database
+        Optional<User> sender = userDao.findById(senderId);
+        String senderName = sender.map(User::getUsername).orElse("Người dùng");
+        
         // Sử dụng Factory Manager thay vì Builder trực tiếp
-        var factory = NotificationFactoryManager.createFriendshipRequestFactory(recipientId, senderId, "Người dùng");
+        var factory = NotificationFactoryManager.createFriendshipRequestFactory(recipientId, senderId, senderName);
         
         Notification notification = factory.createNotification();
         Notification saved = notificationDao.save(notification);

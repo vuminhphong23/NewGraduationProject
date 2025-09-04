@@ -106,6 +106,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/jwt-utils.js"></script>
+<script src="/js/toast-manager.js"></script>
+<script src="/js/notifications.js"></script>
 <script src="/js/logout.js"></script>
 <script>
 class RecommendationPageManager {
@@ -173,6 +175,11 @@ class RecommendationPageManager {
         const commonTopicsText = user.commonTopics && user.commonTopics.length > 0 ? 
             `Sở thích: ${user.commonTopics.slice(0, 2).join(', ')}` : '';
 
+        // Hiển thị button kết bạn (sẽ xử lý trạng thái qua response từ server)
+        const buttonHtml = `<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(${user.userId})">
+            <i class="fa fa-user-plus"></i>
+        </button>`;
+
         return `
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center">
@@ -187,9 +194,9 @@ class RecommendationPageManager {
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary btn-sm" onclick="sendFriendRequest(${user.userId})">
-                    <i class="fa fa-user-plus"></i>
-                </button>
+                <div class="d-flex align-items-center">
+                    ${buttonHtml}
+                </div>
             </div>
         `;
     }
@@ -205,49 +212,39 @@ class RecommendationPageManager {
 
     async sendFriendRequest(userId) {
         try {
-            const response = await window.authenticatedFetch('/api/friendships/request', {
-                method: 'POST',
-                body: JSON.stringify({ targetUserId: userId })
+            const response = await window.authenticatedFetch(`/api/friends/request/${userId}`, {
+                method: 'POST'
             });
 
             if (response && response.ok) {
                 this.showToast('Đã gửi lời mời kết bạn!', 'success');
-                // Cập nhật UI
-                const button = document.querySelector(`[onclick="sendFriendRequest(${userId})"]`);
-                if (button) {
-                    button.innerHTML = '<i class="fa fa-check"></i>';
-                    button.classList.remove('btn-primary');
-                    button.classList.add('btn-success');
-                    button.disabled = true;
-                }
+                // Cập nhật button thành "Đã gửi yêu cầu"
+                this.updateButtonAfterRequest(userId);
             } else {
-                throw new Error('Failed to send friend request');
+                const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
+                this.showToast(error.message || 'Có lỗi xảy ra khi gửi yêu cầu kết bạn', 'error');
             }
         } catch (error) {
-            console.error('Error sending friend request:', error);
             this.showToast('Không thể gửi lời mời kết bạn', 'error');
         }
     }
 
-    showToast(message, type = 'info') {
-        const toastContainer = document.querySelector('.toast-container') || document.body;
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        toastContainer.appendChild(toast);
-        
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
+    updateButtonAfterRequest(userId) {
+        // Tìm button có onclick chứa userId này và cập nhật
+        const buttons = document.querySelectorAll(`button[onclick*="sendFriendRequest(${userId})"]`);
+        buttons.forEach(button => {
+            button.innerHTML = '<i class="fa fa-check"></i>';
+            button.classList.remove('btn-primary');
+            button.classList.add('btn-success');
+            button.disabled = true;
+            button.onclick = null; // Xóa onclick để tránh click lại
         });
+    }
+
+    showToast(message, type = 'info') {
+        if (window.toastManager) {
+            window.toastManager.show(message, type);
+        }
     }
 }
 
@@ -265,6 +262,7 @@ function sendFriendRequest(userId) {
         window.recommendationPageManager.sendFriendRequest(userId);
     }
 }
+
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {

@@ -338,38 +338,8 @@
     
     // Hàm hiển thị toast
     function showToast(message, type = 'info') {
-        let toastId;
-        let toastBody;
-        
-        switch (type) {
-            case 'success':
-                toastId = 'successToast';
-                break;
-            case 'error':
-                toastId = 'errorToast';
-                break;
-            default:
-                toastId = 'friendshipToast';
-                break;
-        }
-        
-        const toast = document.getElementById(toastId);
-        
-        if (toast) {
-            // Cập nhật nội dung toast
-            if (type === 'info') {
-                toastBody = toast.querySelector('#friendshipMessage');
-            } else {
-                toastBody = toast.querySelector('.toast-body');
-            }
-            
-            if (toastBody) {
-                toastBody.textContent = message;
-            }
-            
-            // Hiển thị toast
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
+        if (window.toastManager) {
+            window.toastManager.show(message, type);
         } else {
             // Fallback: alert nếu không có toast
             alert(message);

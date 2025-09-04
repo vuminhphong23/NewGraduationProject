@@ -247,9 +247,9 @@ class FileUploadManager {
     }
 
     showError(message) {
-        // Use existing toast system if available
-        if (window.showErrorToast) {
-            window.showErrorToast(message);
+        // Use toastManager for error notifications
+        if (window.toastManager) {
+            window.toastManager.error(message);
         } else {
             alert(message);
         }
