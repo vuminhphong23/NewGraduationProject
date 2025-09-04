@@ -5,6 +5,7 @@ import GraduationProject.forumikaa.entity.Like;
 import GraduationProject.forumikaa.entity.LikeableType;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,13 @@ public class LikeServiceImpl implements LikeService {
 
     @Autowired
     private UserService userService;
+    
+
 
     @Override
     @Transactional
     public boolean toggleLike(Long userId, Long likeableId, LikeableType likeableType) {
+        // Like/Unlike là quyền cơ bản của user đã đăng nhập - không cần kiểm tra quyền đặc biệt
         User user = userService.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
 
@@ -52,4 +56,6 @@ public class LikeServiceImpl implements LikeService {
     public boolean isLikedByUser(Long userId, Long likeableId, LikeableType likeableType) {
         return likeDao.existsByUserIdAndLikeableIdAndLikeableType(userId, likeableId, likeableType);
     }
+    
+
 }

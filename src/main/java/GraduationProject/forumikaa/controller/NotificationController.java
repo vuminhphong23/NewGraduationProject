@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,8 +40,28 @@ public class NotificationController {
 
     @PostMapping("/{notificationId}/read")
     public ResponseEntity<Map<String, String>> markAsRead(@PathVariable Long notificationId) {
-        notificationService.markAsRead(notificationId);
-        return ResponseEntity.ok(Map.of("message", "Đã đánh dấu đã đọc"));
+        try {
+            System.out.println("🔄 NotificationController: markAsRead(" + notificationId + ") được gọi");
+            
+            // Kiểm tra xem notification có tồn tại không
+            if (notificationId == null || notificationId <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Notification ID không hợp lệ"));
+            }
+            
+            notificationService.markAsRead(notificationId);
+            
+            System.out.println("✅ NotificationController: markAsRead(" + notificationId + ") thành công");
+            return ResponseEntity.ok(Map.of("message", "Đã đánh dấu đã đọc"));
+            
+        } catch (Exception e) {
+            System.err.println("❌ NotificationController: Lỗi trong markAsRead(" + notificationId + "): " + e.getMessage());
+            e.printStackTrace();
+            
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", "Lỗi khi đánh dấu đã đọc: " + e.getMessage(),
+                "notificationId", notificationId.toString()
+            ));
+        }
     }
 
     @PostMapping("/mark-all-read")
@@ -236,6 +257,44 @@ public class NotificationController {
             ));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "Lỗi: " + e.getMessage()));
+        }
+    }
+    
+    // Test endpoint để kiểm tra trạng thái của NotificationService
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getNotificationServiceStatus() {
+        try {
+            Map<String, Object> status = new HashMap<>();
+            
+            // Kiểm tra xem notificationService có được inject không
+            status.put("notificationServiceInjected", notificationService != null);
+            status.put("notificationServiceClass", notificationService != null ? notificationService.getClass().getName() : "null");
+            
+            // Nếu là NotificationServiceWrapper, kiểm tra trạng thái singleton
+            if (notificationService instanceof GraduationProject.forumikaa.patterns.adapter.NotificationServiceWrapper) {
+                GraduationProject.forumikaa.patterns.adapter.NotificationServiceWrapper wrapper = 
+                    (GraduationProject.forumikaa.patterns.adapter.NotificationServiceWrapper) notificationService;
+                
+                status.put("singletonInitialized", wrapper.isSingletonInitialized());
+                status.put("singletonClass", wrapper.getSingletonInstance().getClass().getName());
+            }
+            
+            // Test một số method cơ bản
+            try {
+                Long unreadCount = notificationService.getUnreadCount(1L);
+                status.put("getUnreadCountWorking", true);
+                status.put("unreadCountForUser1", unreadCount);
+            } catch (Exception e) {
+                status.put("getUnreadCountWorking", false);
+                status.put("getUnreadCountError", e.getMessage());
+            }
+            
+            return ResponseEntity.ok(status);
+            
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                "error", "Lỗi khi kiểm tra trạng thái: " + e.getMessage()
+            ));
         }
     }
 }

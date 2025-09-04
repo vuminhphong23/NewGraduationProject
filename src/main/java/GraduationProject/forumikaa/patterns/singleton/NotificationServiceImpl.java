@@ -1,14 +1,14 @@
-package GraduationProject.forumikaa.service;
+package GraduationProject.forumikaa.patterns.singleton;
 
 import GraduationProject.forumikaa.dao.NotificationDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.entity.Notification;
+import GraduationProject.forumikaa.patterns.builder.NotificationBuilder;
+import GraduationProject.forumikaa.patterns.factory.NotificationFactoryManager;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.handler.notification.NotificationBroadcaster;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import GraduationProject.forumikaa.service.NotificationService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,23 +17,83 @@ import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Optional;
 
-@Service
-@Transactional
+/**
+ * NotificationService sử dụng Singleton Pattern
+ * Đảm bảo chỉ có một instance duy nhất trong toàn bộ ứng dụng
+ */
 public class NotificationServiceImpl implements NotificationService {
 
-    @Autowired private NotificationBroadcaster notificationBroadcaster;
-    @Autowired private NotificationDao notificationDao;
-    @Autowired private UserDao userDao;
-    @Autowired private CommentDao commentDao;
+    // Private static instance - đây là instance duy nhất
+    private static NotificationServiceImpl instance;
+    
+    // Private constructor để ngăn tạo instance từ bên ngoài
+    private NotificationServiceImpl() {
+        // Constructor private để ngăn instantiation
+    }
+    
+    // Public static method để lấy instance duy nhất
+    public static NotificationServiceImpl getInstance() {
+        if (instance == null) {
+            // Thread-safe singleton với double-checked locking
+            synchronized (NotificationServiceImpl.class) {
+                if (instance == null) {
+                    instance = new NotificationServiceImpl();
+                }
+            }
+        }
+        return instance;
+    }
+    
+    // Private fields để lưu các dependencies
+    private NotificationBroadcaster notificationBroadcaster;
+    private NotificationDao notificationDao;
+    private UserDao userDao;
+    private CommentDao commentDao;
+    
+    // Method để set các dependencies (có thể gọi từ configuration)
+    public void setNotificationBroadcaster(NotificationBroadcaster notificationBroadcaster) {
+        this.notificationBroadcaster = notificationBroadcaster;
+    }
+    
+    public void setNotificationDao(NotificationDao notificationDao) {
+        this.notificationDao = notificationDao;
+    }
+    
+    public void setUserDao(UserDao userDao) {
+        this.userDao = userDao;
+    }
+    
+    public void setCommentDao(CommentDao commentDao) {
+        this.commentDao = commentDao;
+    }
+    
+    // Method để khởi tạo tất cả dependencies một lần
+    public void initialize(NotificationBroadcaster notificationBroadcaster, 
+                          NotificationDao notificationDao, 
+                          UserDao userDao, 
+                          CommentDao commentDao) {
+        this.notificationBroadcaster = notificationBroadcaster;
+        this.notificationDao = notificationDao;
+        this.userDao = userDao;
+        this.commentDao = commentDao;
+    }
+    
+    // Method để kiểm tra xem service đã được khởi tạo chưa
+    public boolean isInitialized() {
+        return notificationBroadcaster != null && notificationDao != null && 
+               userDao != null && commentDao != null;
+    }
 
     @Override
     public Notification createNotification(Long recipientId, Long senderId, String message, String link) {
-        Notification noti = Notification.builder()
-                .senderId(senderId)
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
+        Notification noti = NotificationBuilder.newNotification()
                 .recipientId(recipientId)
+                .senderId(senderId)
                 .message(message)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
                 .link(link)
                 .type(Notification.NotificationType.SYSTEM_MESSAGE)
                 .build();
@@ -45,12 +105,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createNotification(Long recipientId, Long senderId, String message) {
-        Notification noti = Notification.builder()
-                .senderId(senderId)
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
+        Notification noti = NotificationBuilder.newNotification()
                 .recipientId(recipientId)
+                .senderId(senderId)
                 .message(message)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
                 .type(Notification.NotificationType.SYSTEM_MESSAGE)
                 .build();
 
@@ -61,26 +123,46 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public List<Notification> getUserNotifications(Long userId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         return notificationDao.findByRecipientIdOrderByCreatedAtDesc(userId);
     }
 
     @Override
     public Long getUnreadCount(Long userId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         return notificationDao.countUnreadByRecipientId(userId);
     }
 
     @Override
     public void markAsRead(Long notificationId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         notificationDao.markAsReadById(notificationId);
     }
 
     @Override
     public void markAllAsRead(Long userId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         notificationDao.markAllAsReadByRecipientId(userId);
     }
 
     @Override
     public List<Map<String, Object>> getNotificationDtos(Long userId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         List<Notification> notifications = getUserNotifications(userId);
         return notifications.stream().map(n -> {
             Map<String, Object> dto = new HashMap<>();
@@ -98,45 +180,24 @@ public class NotificationServiceImpl implements NotificationService {
                 Optional<User> sender = userDao.findById(n.getSenderId());
                 if (sender.isPresent()) {
                     dto.put("senderId", n.getSenderId());
-                    dto.put("senderUsername", sender.get().getUsername());
-                    
-                    // Lấy avatar từ UserProfile
-                    String senderAvatar = null;
-                    if (sender.get().getUserProfile() != null && sender.get().getUserProfile().getAvatar() != null) {
-                        senderAvatar = sender.get().getUserProfile().getAvatar();
-                    }
-                    dto.put("senderAvatar", senderAvatar);
-                } else {
-                    dto.put("senderUsername", "Người dùng không tồn tại");
-                    dto.put("senderAvatar", null);
+                    dto.put("senderName", sender.get().getUsername());
                 }
-            } else {
-                dto.put("senderUsername", "Hệ thống");
-                dto.put("senderAvatar", null);
             }
             
             return dto;
         }).collect(Collectors.toList());
     }
 
-    // Các method tạo thông báo cụ thể
     @Override
     public Notification createPostLikeNotification(Long postId, Long postAuthorId, Long likerId) {
-        Optional<User> liker = userDao.findById(likerId);
-        String likerName = liker.map(User::getUsername).orElse("Người dùng");
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
         
-        Notification notification = Notification.builder()
-                .recipientId(postAuthorId)
-                .senderId(likerId)
-                .type(Notification.NotificationType.POST_LIKE)
-                .message(likerName + " đã thích bài viết của bạn")
-                .relatedEntityId(postId)
-                .relatedEntityType("POST")
-                .link("/posts/" + postId)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
+        // Sử dụng Factory Manager thay vì Builder trực tiếp
+        var factory = NotificationFactoryManager.createPostLikeFactory(postId, postAuthorId, likerId, "Người dùng");
+        
+        Notification notification = factory.createNotification();
         Notification saved = notificationDao.save(notification);
         notificationBroadcaster.publish(postAuthorId, saved);
         return saved;
@@ -144,19 +205,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createPostCommentNotification(Long postId, Long postAuthorId, Long commenterId, Long commentId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> commenter = userDao.findById(commenterId);
         String commenterName = commenter.map(User::getUsername).orElse("Người dùng");
         
-        Notification notification = Notification.builder()
-                .recipientId(postAuthorId)
-                .senderId(commenterId)
-                .type(Notification.NotificationType.POST_COMMENT)
+        Notification notification = NotificationBuilder.postCommentNotification(postId, postAuthorId, commenterId, commentId)
                 .message(commenterName + " đã bình luận bài viết của bạn")
-                .relatedEntityId(postId)
-                .relatedEntityType("POST")
-                .link("/posts/" + postId + "#comment-" + commentId)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Notification saved = notificationDao.save(notification);
@@ -166,10 +223,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createCommentLikeNotification(Long commentId, Long commentAuthorId, Long likerId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> liker = userDao.findById(likerId);
         String likerName = liker.map(User::getUsername).orElse("Người dùng");
         
-        // Lấy postId từ comment để tạo link đúng
+        // Tìm postId từ commentId để tạo link
         Optional<Long> postIdOpt = commentDao.findPostIdByCommentId(commentId);
         String link = postIdOpt.map(postId -> "/posts/" + postId + "#comment-" + commentId)
                                .orElse("/"); // Fallback về trang chủ nếu không tìm thấy
@@ -193,10 +254,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createCommentReplyNotification(Long parentCommentId, Long parentCommentAuthorId, Long replierId, Long replyId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> replier = userDao.findById(replierId);
         String replierName = replier.map(User::getUsername).orElse("Người dùng");
         
-        // Lấy postId từ comment để tạo link đúng
+        // Tìm postId từ commentId để tạo link
         Optional<Long> postIdOpt = commentDao.findPostIdByCommentId(parentCommentId);
         String link = postIdOpt.map(postId -> "/posts/" + postId + "#comment-" + parentCommentId)
                                .orElse("/"); // Fallback về trang chủ nếu không tìm thấy
@@ -220,21 +285,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createFriendshipRequestNotification(Long recipientId, Long senderId) {
-        Optional<User> sender = userDao.findById(senderId);
-        String senderName = sender.map(User::getUsername).orElse("Người dùng");
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
         
-        Notification notification = Notification.builder()
-                .recipientId(recipientId)
-                .senderId(senderId)
-                .type(Notification.NotificationType.FRIENDSHIP_REQUEST)
-                .message(senderName + " đã gửi lời mời kết bạn")
-                .relatedEntityId(senderId)
-                .relatedEntityType("USER")
-                .link("/profile/" + senderName)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
+        // Sử dụng Factory Manager thay vì Builder trực tiếp
+        var factory = NotificationFactoryManager.createFriendshipRequestFactory(recipientId, senderId, "Người dùng");
+        
+        Notification notification = factory.createNotification();
         Notification saved = notificationDao.save(notification);
         notificationBroadcaster.publish(recipientId, saved);
         return saved;
@@ -242,6 +300,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createFriendshipAcceptedNotification(Long recipientId, Long senderId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> sender = userDao.findById(senderId);
         String senderName = sender.map(User::getUsername).orElse("Người dùng");
         
@@ -264,6 +326,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createFriendshipRejectedNotification(Long recipientId, Long senderId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> sender = userDao.findById(senderId);
         String senderName = sender.map(User::getUsername).orElse("Người dùng");
         
@@ -286,6 +352,10 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createFriendshipCancelledNotification(Long recipientId, Long senderId) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> sender = userDao.findById(senderId);
         String senderName = sender.map(User::getUsername).orElse("Người dùng");
         
@@ -308,20 +378,23 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createMentionNotification(Long mentionedUserId, Long mentionerId, Long entityId, String entityType) {
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
         Optional<User> mentioner = userDao.findById(mentionerId);
         String mentionerName = mentioner.map(User::getUsername).orElse("Người dùng");
         
-        String message = mentionerName + " đã nhắc đến bạn trong " + 
-                        (entityType.equals("POST") ? "bài viết" : "bình luận");
+        String link = "/" + entityType.toLowerCase() + "s/" + entityId;
         
         Notification notification = Notification.builder()
                 .recipientId(mentionedUserId)
                 .senderId(mentionerId)
                 .type(Notification.NotificationType.MENTION)
-                .message(message)
+                .message(mentionerName + " đã nhắc đến bạn trong " + entityType.toLowerCase())
                 .relatedEntityId(entityId)
                 .relatedEntityType(entityType)
-                .link("/" + entityType.toLowerCase() + "s/" + entityId)
+                .link(link)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -333,18 +406,14 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createSystemNotification(Long userId, String message) {
-        Notification notification = Notification.builder()
-                .recipientId(userId)
-                .senderId(null)
-                .type(Notification.NotificationType.SYSTEM_MESSAGE)
-                .message(message)
-                .relatedEntityId(null)
-                .relatedEntityType(null)
-                .link(null)
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
+        // Sử dụng Factory Manager thay vì Builder trực tiếp
+        var factory = NotificationFactoryManager.createSystemMessageFactory(userId);
+        
+        Notification notification = factory.createNotification(message);
         Notification saved = notificationDao.save(notification);
         notificationBroadcaster.publish(userId, saved);
         return saved;
@@ -352,20 +421,19 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public Notification createWelcomeNotification(Long userId) {
-        Notification notification = Notification.builder()
-                .recipientId(userId)
-                .senderId(null)
-                .type(Notification.NotificationType.WELCOME)
-                .message("Chào mừng bạn đến với Forumikaa! 🎉")
-                .relatedEntityId(null)
-                .relatedEntityType(null)
-                .link("/profile")
-                .isRead(false)
-                .createdAt(LocalDateTime.now())
-                .build();
+        if (!isInitialized()) {
+            throw new IllegalStateException("NotificationService chưa được khởi tạo. Vui lòng gọi initialize() trước.");
+        }
+        
+        Notification notification = NotificationBuilder.welcomeNotification(userId).build();
 
         Notification saved = notificationDao.save(notification);
         notificationBroadcaster.publish(userId, saved);
         return saved;
+    }
+    
+    // Method để reset instance (chủ yếu dùng cho testing)
+    public static void resetInstance() {
+        instance = null;
     }
 }

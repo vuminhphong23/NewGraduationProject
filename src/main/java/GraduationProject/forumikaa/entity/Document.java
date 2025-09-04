@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Data
 @Entity
@@ -19,19 +17,31 @@ public class Document {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "post_topics",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "topic_id")
-    )
-    private Set<Topic> topics = new HashSet<>();
+    @Column(name = "file_name", nullable = false, length = 255)
+    private String fileName;
 
-    @Column(name = "file_type", nullable = false, columnDefinition = "NVARCHAR(50)")
-    private String fileType;
+    @Column(name = "original_name", nullable = false, length = 255)
+    private String originalName;
 
-    @Column(name = "file_path", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "file_path", nullable = false, length = 500)
     private String filePath;
+
+    @Column(name = "file_size", nullable = false)
+    private Long fileSize;
+
+    @Column(name = "mime_type", nullable = false, length = 100)
+    private String mimeType;
+
+    @Column(name = "file_extension", length = 20)
+    private String fileExtension;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @CreationTimestamp
     @Column(name = "uploaded_at", nullable = false, updatable = false)

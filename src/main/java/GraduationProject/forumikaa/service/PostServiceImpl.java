@@ -9,23 +9,29 @@ import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
-import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Comment;
-import GraduationProject.forumikaa.entity.Friendship;
+import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
+import GraduationProject.forumikaa.patterns.strategy.FileStorageStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-import jakarta.persistence.criteria.Subquery;
-import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.HashMap;
+import GraduationProject.forumikaa.dto.FileUploadResponse;
 
 @Service
 @Transactional
@@ -45,6 +52,8 @@ public class PostServiceImpl implements PostService {
     @Autowired private LikeService likeService;
     @Autowired private CommentDao commentDao;
     @Autowired private NotificationService notificationService;
+    @Autowired private FileUploadService fileUploadService;
+    @Autowired private FileStorageStrategyFactory strategyFactory;
 
     @Override
     public PostResponse createPost(CreatePostRequest request, Long userId) {
@@ -153,10 +162,118 @@ public class PostServiceImpl implements PostService {
             throw new UnauthorizedException("You can only delete your own posts");
         }
 
+        // Get documents before deleting post (for file cleanup)
+        List<Document> documents = new ArrayList<>(post.getDocuments());
+
+        // Decrement topic usage counts
         post.getTopics().forEach(topicService::decrementUsageCount);
 
+        // Delete the post first (documents will be deleted by cascade due to orphanRemoval=true)
         postDao.delete(post);
+
+        // Now delete physical files from storage (after database cleanup)
+        try {
+            for (Document document : documents) {
+                // Delete from storage using the appropriate strategy
+                if (strategyFactory.getCurrentStrategyType().equals("local")) {
+                    // For local storage, delete physical file
+                    Path filePath = Paths.get(System.getProperty("user.dir"), "uploads", document.getFilePath());
+                    if (Files.exists(filePath)) {
+                        Files.deleteIfExists(filePath);
+                    }
+                } else if (strategyFactory.getCurrentStrategyType().equals("cloudinary")) {
+                    // For Cloudinary, delete using the correct public_id
+                    try {
+                        deleteFromCloudinary(document.getFileName());
+                    } catch (Exception ex) {
+                        System.err.println("Failed to delete Cloudinary file: " + ex.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to delete physical files for post " + postId + ": " + e.getMessage());
+        }
     }
+
+    /**
+     * Delete file from Cloudinary using public_id
+     */
+    private void deleteFromCloudinary(String publicId) throws IOException, InterruptedException {
+        // Get Cloudinary credentials from application properties
+        String cloudName = "dsqkymrkm";
+        String apiKey = "769412498641216";
+        String apiSecret = "iCRSwCZ8p3j7NzIUm8pb3itcMB4";
+        
+        // Try different resource types
+        String[] resourceTypes = {"image", "video", "raw"};
+        
+        for (String resourceType : resourceTypes) {
+            try {
+                String deleteUrl = "https://api.cloudinary.com/v1_1/" + cloudName + "/" + resourceType + "/destroy";
+                
+                // Generate timestamp and signature
+                long timestamp = System.currentTimeMillis() / 1000;
+                String signature = generateSignature(publicId, timestamp, apiSecret);
+                
+                // URL encode the public_id
+                String encodedPublicId = java.net.URLEncoder.encode(publicId, "UTF-8");
+                String formData = "public_id=" + encodedPublicId + 
+                                "&api_key=" + apiKey + 
+                                "&timestamp=" + timestamp + 
+                                "&signature=" + signature;
+                
+                HttpClient httpClient = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(deleteUrl))
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .POST(HttpRequest.BodyPublishers.ofString(formData))
+                        .build();
+                
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                
+                if (response.statusCode() == 200) {
+                    return; // Success, exit the method
+                }
+            } catch (Exception e) {
+                // Continue to next resource type
+            }
+        }
+        
+        throw new IOException("Failed to delete file from Cloudinary with public_id: " + publicId);
+    }
+
+    /**
+     * Generate Cloudinary signature for API authentication
+     */
+    private String generateSignature(String publicId, long timestamp, String apiSecret) {
+        try {
+            // Create the string to sign in the format: key=value&key=value
+            String stringToSign = "public_id=" + publicId + "&timestamp=" + timestamp;
+            
+            // Append API secret to the string to sign
+            String stringToSignWithSecret = stringToSign + apiSecret;
+            
+            // Create SHA-1 hash
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            byte[] hash = md.digest(stringToSignWithSecret.getBytes("UTF-8"));
+            
+            // Convert to hex string
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException | java.io.UnsupportedEncodingException e) {
+            throw new RuntimeException("Failed to generate signature", e);
+        }
+    }
+
+    
 
     @Override
     public PostResponse getPostById(Long postId, Long userId) {
@@ -475,6 +592,16 @@ public class PostServiceImpl implements PostService {
         } else {
             // Set empty list if no topics
             dto.setTopicNames(new ArrayList<>());
+        }
+
+        // Set documents
+        try {
+            List<FileUploadResponse> documents = fileUploadService.getFilesByPostId(post.getId());
+            dto.setDocuments(documents != null ? documents : new ArrayList<>());
+        } catch (Exception e) {
+            // Log error but don't fail the entire post
+            System.err.println("Error loading documents for post " + post.getId() + ": " + e.getMessage());
+            dto.setDocuments(new ArrayList<>());
         }
 
         return dto;

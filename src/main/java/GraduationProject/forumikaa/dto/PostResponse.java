@@ -22,4 +22,6 @@ public class PostResponse {
     private Long likeCount;
     private Long commentCount;
     private Long shareCount;
+    private List<FileUploadResponse> documents;
+
 } 

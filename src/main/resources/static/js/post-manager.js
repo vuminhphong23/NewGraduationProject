@@ -142,6 +142,28 @@ class PostManager {
             if (response.ok) {
                 const result = await response.json();
                 
+                // Upload files if any are selected
+                console.log('Checking for files to upload...');
+                console.log('fileUploadManager exists:', !!window.fileUploadManager);
+                if (window.fileUploadManager) {
+                    console.log('Selected files count:', window.fileUploadManager.selectedFiles.length);
+                    console.log('Selected files:', window.fileUploadManager.selectedFiles.map(f => f.name));
+                }
+                
+                if (window.fileUploadManager && window.fileUploadManager.selectedFiles.length > 0) {
+                    try {
+                        console.log('Starting file upload for post ID:', result.id);
+                        await window.fileUploadManager.uploadFiles(result.id);
+                        console.log('File upload completed successfully');
+                        this.showToast('File đã được đính kèm thành công!', 'success');
+                    } catch (fileError) {
+                        console.warn('Failed to upload files:', fileError);
+                        this.showToast('Bài viết đã được đăng nhưng có lỗi khi đính kèm file', 'warning');
+                    }
+                } else {
+                    console.log('No files to upload');
+                }
+                
                 // Only save topics to HashtagManager after successful post creation
                 if (selectedTopics.length > 0 && window.HashtagManager && typeof window.HashtagManager.saveTopics === 'function') {
                     try {
@@ -318,6 +340,11 @@ class PostManager {
         // Reset hashtag selection but don't save to server
         if (window.HashtagManager) {
             window.HashtagManager.reset();
+        }
+        
+        // Reset file upload
+        if (window.fileUploadManager) {
+            window.fileUploadManager.clear();
         }
         
         this.validateForm();

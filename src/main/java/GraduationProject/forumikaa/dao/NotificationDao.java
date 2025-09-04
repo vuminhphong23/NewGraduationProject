@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,10 +21,12 @@ public interface NotificationDao extends JpaRepository<Notification, Long> {
     Long countUnreadByRecipientId(@Param("recipientId") Long recipientId);
 
     @Modifying
+    @Transactional
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.recipientId = :recipientId")
     void markAllAsReadByRecipientId(@Param("recipientId") Long recipientId);
 
     @Modifying
+    @Transactional
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.id = :notificationId")
     void markAsReadById(@Param("notificationId") Long notificationId);
 

@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -15,6 +16,14 @@ import java.util.Set;
 
 @SpringBootApplication
 @EnableScheduling
+@ComponentScan(basePackages = {
+    "GraduationProject.forumikaa",
+    "GraduationProject.forumikaa.patterns",
+    "GraduationProject.forumikaa.patterns.adapter",
+    "GraduationProject.forumikaa.patterns.singleton",
+    "GraduationProject.forumikaa.patterns.proxy",
+    "GraduationProject.forumikaa.patterns.decorator"
+})
 public class ForumikaaApplication {
 
 	public static void main(String[] args) {

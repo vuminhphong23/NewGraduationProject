@@ -178,14 +178,19 @@
 
 <script>
     const cloudName = "dsqkymrkm";
-    const uploadPreset = "forumikaa";
 
-    function uploadToCloudinary(file, callback) {
+    // Sử dụng preset riêng cho từng loại
+    const uploadPresets = {
+        avatar: "forumikaa-avatar",
+        cover: "forumikaa-cover"
+    };
+
+    // Upload function với preset riêng
+    function uploadToCloudinary(file, folder, callback) {
         const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", uploadPreset);
-        formData.append("folder", "forumikaa/images");
+        formData.append("upload_preset", uploadPresets[folder]);
 
         fetch(url, {
             method: "POST",
@@ -193,27 +198,58 @@
         })
             .then(res => res.json())
             .then(data => {
-                callback(data.secure_url);
+                if (data.secure_url) {
+                    callback(data.secure_url);
+                } else {
+                    throw new Error(data.error?.message || "Upload failed");
+                }
             })
             .catch(err => {
+                console.error("Upload error:", err);
                 alert("Lỗi upload ảnh: " + err.message);
             });
     }
 
+    // Avatar upload
     document.getElementById("avatarInput").addEventListener("change", function (e) {
         const file = e.target.files[0];
         if (file) {
-            uploadToCloudinary(file, function (url) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert("Vui lòng chọn file ảnh");
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("File ảnh không được vượt quá 5MB");
+                return;
+            }
+
+            uploadToCloudinary(file, "avatar", function (url) {
                 document.getElementById("avatarPreview").src = url;
                 document.getElementById("avatarUrlInput").value = url;
             });
         }
     });
 
+    // Cover upload
     document.getElementById("coverInput").addEventListener("change", function (e) {
         const file = e.target.files[0];
         if (file) {
-            uploadToCloudinary(file, function (url) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert("Vui lòng chọn file ảnh");
+                return;
+            }
+
+            // Validate file size (max 10MB for cover)
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File ảnh cover không được vượt quá 10MB");
+                return;
+            }
+
+            uploadToCloudinary(file, "cover", function (url) {
                 document.getElementById("coverPreview").src = url;
                 document.getElementById("coverUrlInput").value = url;
             });

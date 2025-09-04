@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/post-modal.css">
     <link rel="stylesheet" href="/css/post-interactions.css">
+    <link rel="stylesheet" href="/css/file-upload.css">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -198,6 +199,102 @@
 
                         <p class="card-text" style="white-space: pre-wrap;"
                            th:text="${post.content}">Nội dung bài viết...</p>
+
+                        <!-- Documents Display -->
+                        <div class="post-documents mt-3" th:if="${post.documents != null and !post.documents.isEmpty()}">
+                            <!-- Image Gallery -->
+                            <div th:if="${#lists.size(post.documents) > 0}" class="image-gallery-container">
+                                <!-- Gallery Header -->
+                                <div class="gallery-header d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0 fw-semibold">
+                                        <i class="fa fa-images text-primary me-2"></i>
+                                        <span th:text="${#lists.size(post.documents)} + ' tệp đính kèm'">Tệp đính kèm</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary" th:if="${#lists.size(post.documents) > 8}" 
+                                            th:attr="onclick='showAllFiles(\'' + ${post.id} + '\')'">
+                                        <i class="fa fa-th me-1"></i>Xem tất cả
+                                    </button>
+                                </div>
+                                
+                                <!-- Gallery Grid -->
+                                <div class="gallery-grid" th:attr="data-post-id=${post.id}">
+                                    <!-- First 8 items preview -->
+                                    <div th:each="doc, iterStat : ${post.documents}" 
+                                         th:if="${iterStat.index < 8}"
+                                         class="gallery-item" 
+                                         th:classappend="${iterStat.index == 7 and #lists.size(post.documents) > 8 ? 'more-items-overlay' : ''}">
+                                        
+                                        <!-- Image Preview -->
+                                        <div th:if="${doc.fileType == 'image'}" class="gallery-image" 
+                                             th:attr="onclick='openLightbox(\'' + ${post.id} + '\', ' + ${iterStat.index} + ')'">
+                                            <img th:src="${doc.previewUrl}" th:alt="${doc.originalName}" 
+                                                 class="img-fluid rounded lazy-load" 
+                                                 style="width: 100%; height: 120px; object-fit: cover; cursor: pointer;"
+                                                 loading="lazy">
+                                            <div class="gallery-overlay">
+                                                <i class="fa fa-search-plus"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Video Preview -->
+                                        <div th:if="${doc.fileType == 'video'}" class="gallery-video">
+                                            <video th:src="${doc.previewUrl}" th:alt="${doc.originalName}" 
+                                                   class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;" 
+                                                   controls preload="metadata">
+                                                <source th:src="${doc.previewUrl}" th:type="${doc.mimeType}">
+                                            </video>
+                                            <div class="video-overlay">
+                                                <i class="fa fa-play-circle"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Document Preview -->
+                                        <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
+                                             th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\')'">
+                                            <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
+                                                 style="width: 100%; height: 120px; cursor: pointer;">
+                                                <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
+                                                <small class="text-muted text-center px-2" th:text="${doc.originalName}">filename</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- More items indicator -->
+                                        <div th:if="${iterStat.index == 7 and #lists.size(post.documents) > 8}" 
+                                             class="more-items-indicator">
+                                            <span th:text="'+' + (${#lists.size(post.documents)} - 8)">+5</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- File Info Bar -->
+                                <div class="file-info-bar mt-2 p-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-3">
+                                            <small class="text-muted">
+                                                <i class="fa fa-images me-1"></i>
+                                                <span th:text="${#lists.size(post.documents)} + ' tệp'">0 tệp</span>
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="fa fa-download me-1"></i>
+                                                <span th:text="${#numbers.formatDecimal(#aggregates.sum(post.documents.![fileSize]) / 1024.0, 1, 1)} + ' KB'">0 KB</span>
+                                            </small>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    th:attr="onclick='downloadAllFiles(\'' + ${post.id} + '\')'"
+                                                    title="Tải tất cả">
+                                                <i class="fa fa-download"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    th:attr="onclick='showAllFiles(\'' + ${post.id} + '\')'"
+                                                    title="Xem tất cả">
+                                                <i class="fa fa-list"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Footer (like/comment/share placeholders) -->
@@ -387,13 +484,13 @@
 
                     <!-- Media Options -->
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2" onclick="document.getElementById('fileInput').click()">
                             <i class="fa-regular fa-image text-success"></i>
-                            <span>Ảnh</span>
+                            <span>Ảnh/Video</span>
                         </button>
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-video text-danger"></i>
-                            <span>Video</span>
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2" onclick="document.getElementById('documentInput').click()">
+                            <i class="fa-solid fa-file text-primary"></i>
+                            <span>Tài liệu</span>
                         </button>
                         <button type="button" class="btn btn-light d-flex align-items-center gap-2">
                             <i class="fa-solid fa-user-plus text-primary"></i>
@@ -403,6 +500,28 @@
                             <i class="fa-regular fa-calendar text-warning"></i>
                             <span>Sự kiện</span>
                         </button>
+                    </div>
+
+                    <!-- Hidden file inputs -->
+                    <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display: none;" onchange="handleFileSelect(this, 'media')">
+                    <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple style="display: none;" onchange="handleFileSelect(this, 'document')">
+
+                    <!-- File Upload Area -->
+                    <div id="fileUploadArea" class="mb-3 d-none">
+                        <div class="file-upload-area card border-2 border-dashed border-primary bg-light">
+                            <div class="card-body text-center p-4">
+                                <i class="fa fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <h6 class="text-primary">Kéo thả file vào đây hoặc click để chọn</h6>
+                                <p class="text-muted mb-0">Hỗ trợ: Ảnh, Video, PDF, Word, Excel, PowerPoint</p>
+                                <p class="text-muted small">Kích thước tối đa: 10MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Preview Area -->
+                    <div id="filePreviewArea" class="mb-3 d-none">
+                        <h6 class="fw-semibold mb-2">File đính kèm:</h6>
+                        <div id="filePreviewList" class="row g-2"></div>
                     </div>
 
                     <!-- Preview Area -->
@@ -454,15 +573,92 @@
     </div>
 </div>
 
+<!-- Lightbox Modal for Images -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <div class="d-flex align-items-center">
+                    <h5 class="modal-title text-white" id="lightboxTitle">Hình ảnh</h5>
+                    <span class="badge bg-primary ms-2" id="lightboxCounter">1 / 1</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="forceCloseModal()"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0" onclick="closeLightboxOnClick(event)">
+                <div class="lightbox-container position-relative">
+                    <img id="lightboxImage" class="img-fluid" style="max-height: 80vh; max-width: 100%;">
+                    <div class="lightbox-controls">
+                        <button class="btn btn-light btn-lg rounded-circle" id="prevBtn" onclick="changeLightboxImage(-1)">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-light btn-lg rounded-circle" id="nextBtn" onclick="changeLightboxImage(1)">
+                            <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light" id="downloadBtn" onclick="downloadCurrentImage()">
+                        <i class="fa fa-download me-1"></i>Tải về
+                    </button>
+                    <button class="btn btn-outline-light" id="fullscreenBtn" onclick="toggleFullscreen()">
+                        <i class="fa fa-expand me-1"></i>Toàn màn hình
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Files Modal -->
+<div class="modal fade" id="allFilesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-files-o me-2"></i>Tất cả tệp đính kèm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="allFilesGrid" class="row g-3">
+                    <!-- Files will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="downloadAllBtn" onclick="downloadAllFilesFromModal()">
+                    <i class="fa fa-download me-1"></i>Tải tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/topics.js"></script>
+<script src="/js/file-upload.js"></script>
 <script src="/js/post-manager.js"></script>
 <script src="/js/toast-manager.js"></script>
 <script src="/js/post-interactions.js"></script>
 <script src="/js/websocket-manager.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/gallery-manager.js"></script>
+
+<!-- Initialize global data storage -->
+<script>
+    // Initialize global data storage for post files
+    window.postFilesData = window.postFilesData || {};
+    
+    // Store post files data from server
+    document.addEventListener('DOMContentLoaded', function() {
+        // This will be populated when files are loaded from server
+        console.log('Gallery manager initialized');
+    });
+</script>
 
 </body>
 </html>

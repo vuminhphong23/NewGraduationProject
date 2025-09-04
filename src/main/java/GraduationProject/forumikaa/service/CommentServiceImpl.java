@@ -6,6 +6,7 @@ import GraduationProject.forumikaa.entity.LikeableType;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
+import GraduationProject.forumikaa.patterns.proxy.VirtualNotificationServiceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Autowired
     private NotificationService notificationService;
+
 
     @Override
     @Transactional
