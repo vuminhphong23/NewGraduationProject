@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -48,14 +49,5 @@ public class ChatMessage {
     public enum MessageType {
         TEXT, IMAGE, FILE, EMOJI
     }
-    
-    // Helper method để lấy senderId
-    public Long getSenderId() {
-        return sender != null ? sender.getId() : null;
-    }
-    
-    // Helper method để lấy roomId
-    public Long getRoomId() {
-        return room != null ? room.getId() : null;
-    }
+
 }

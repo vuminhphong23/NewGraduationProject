@@ -4,21 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat - Forumikaa</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{/css/user/layout.css}">
     <link rel="stylesheet" th:href="@{/css/chat.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+<!-- HEADER -->
+<div th:replace="~{fragments/user/header :: header}"></div>
+
     <div class="chat-container">
         <!-- Sidebar bên trái - Danh sách chat rooms -->
         <div class="chat-sidebar">
             <div class="sidebar-header">
-                <h3>Người liên hệ</h3>
+                <div class="header-title">
+                    <h3>Tin nhắn</h3>
+                    <span class="message-count" id="messageCount">0</span>
+                </div>
                 <div class="header-actions">
-                    <button class="search-btn" id="searchBtn">
+                    <button class="action-btn" id="searchBtn" title="Tìm kiếm">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button class="new-chat-btn" id="newChatBtn">
-                        <i class="fas fa-edit"></i>
+                    <button class="action-btn primary" id="newChatBtn" title="Tin nhắn mới">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search bar (ẩn mặc định) -->
+            <div class="search-container" id="searchContainer" style="display: none;">
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="chatSearchInput" placeholder="Tìm kiếm cuộc trò chuyện..." class="search-input">
+                    <button class="search-clear-btn" id="searchClearBtn" style="display: none;">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
@@ -41,20 +61,23 @@
             <div class="chat-window" id="chatWindow" style="display: none;">
                 <div class="chat-header">
                     <div class="chat-user-info">
-                        <img class="chat-avatar" id="chatAvatar" src="" alt="Avatar">
+                        <div class="avatar-container">
+                            <img class="chat-avatar" id="chatAvatar" src="" alt="Avatar">
+                            <div class="online-indicator" id="onlineIndicator"></div>
+                        </div>
                         <div class="chat-user-details">
                             <h4 id="chatUserName">Tên người dùng</h4>
                             <span class="online-status" id="onlineStatus">Trực tuyến</span>
                         </div>
                     </div>
                     <div class="chat-actions">
-                        <button class="action-btn" id="videoCallBtn">
+                        <button class="action-btn" id="videoCallBtn" title="Video call">
                             <i class="fas fa-video"></i>
                         </button>
-                        <button class="action-btn" id="voiceCallBtn">
+                        <button class="action-btn" id="voiceCallBtn" title="Voice call">
                             <i class="fas fa-phone"></i>
                         </button>
-                        <button class="action-btn" id="moreOptionsBtn">
+                        <button class="action-btn" id="moreOptionsBtn" title="Tùy chọn">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                     </div>
@@ -63,21 +86,24 @@
                 <div class="chat-messages" id="chatMessages">
                     <!-- Messages sẽ được load động -->
                 </div>
+                
 
                 <div class="chat-input-area">
-                    <div class="input-actions">
-                        <button class="input-action-btn">
-                            <i class="fas fa-smile"></i>
-                        </button>
-                        <button class="input-action-btn">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                    </div>
-                    <div class="message-input-container">
-                        <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." class="message-input">
-                        <button class="send-btn" id="sendBtn">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
+                    <div class="input-container">
+                        <div class="input-actions">
+                            <button class="input-action-btn" title="Emoji">
+                                <i class="fas fa-smile"></i>
+                            </button>
+                            <button class="input-action-btn" title="Đính kèm file">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                        </div>
+                        <div class="message-input-wrapper">
+                            <input type="text" id="messageInput" placeholder="Nhập tin nhắn..." class="message-input">
+                            <button class="send-btn" id="sendBtn" title="Gửi tin nhắn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,9 +112,13 @@
 
     <!-- Popup tìm kiếm người để nhắn tin -->
     <div class="new-chat-modal" id="newChatModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Tin nhắn mới</h3>
+                <div class="modal-title">
+                    <h3>Tin nhắn mới</h3>
+                    <p>Tìm kiếm và bắt đầu cuộc trò chuyện</p>
+                </div>
                 <button class="close-btn" id="closeModalBtn">
                     <i class="fas fa-times"></i>
                 </button>
@@ -112,7 +142,11 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/jwt-utils.js}"></script>
+    <script th:src="@{/js/chat-websocket.js}"></script>
+    <script th:src="@{/js/chat-simple.js}"></script>
 
 </body>
 </html>

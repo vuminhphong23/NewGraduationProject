@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ public class ChatRoom {
     private String roomName;
 
     @Column(name = "is_group", nullable = false)
+    @Builder.Default
     private boolean isGroup = false;
 
     @Column(name = "room_avatar")
@@ -50,44 +52,5 @@ public class ChatRoom {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<ChatMessage> messages = new HashSet<>();
     
-    // Helper methods để tính toán thông tin cuối cùng
-    public LocalDateTime getLastMessageAt() {
-        if (messages == null || messages.isEmpty()) {
-            return null;
-        }
-        return messages.stream()
-                .map(ChatMessage::getCreatedAt)
-                .max(LocalDateTime::compareTo)
-                .orElse(null);
-    }
-    
-    public String getLastMessageContent() {
-        if (messages == null || messages.isEmpty()) {
-            return null;
-        }
-        return messages.stream()
-                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
-                .map(ChatMessage::getContent)
-                .orElse(null);
-    }
-    
-    public Long getLastMessageSenderId() {
-        if (messages == null || messages.isEmpty()) {
-            return null;
-        }
-        return messages.stream()
-                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
-                .map(ChatMessage::getSenderId)
-                .orElse(null);
-    }
-    
-    public User getLastMessageSender() {
-        if (messages == null || messages.isEmpty()) {
-            return null;
-        }
-        return messages.stream()
-                .max((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()))
-                .map(ChatMessage::getSender)
-                .orElse(null);
-    }
+
 } 

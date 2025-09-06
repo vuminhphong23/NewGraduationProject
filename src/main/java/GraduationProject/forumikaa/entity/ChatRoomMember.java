@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -27,26 +28,14 @@ public class ChatRoomMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     private ChatRoom room;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     private User user;
 
     @CreationTimestamp
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
-    
-    // Helper methods
-    public Long getRoomId() {
-        return room != null ? room.getId() : null;
-    }
-    
-    public Long getUserId() {
-        return user != null ? user.getId() : null;
-    }
+
 } 

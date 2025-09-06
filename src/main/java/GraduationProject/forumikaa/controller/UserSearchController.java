@@ -116,7 +116,7 @@ public class UserSearchController {
                 System.out.println("User " + u.getUsername() + " has avatar: " + avatar);
             } else {
                 System.out.println("User " + u.getUsername() + " has no avatar or empty avatar");
-                // Sử dụng avatar mặc định CDN
+                // Sử dụng avatar mặc định từ Pixabay
                 avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
             }
             userMap.put("avatar", avatar);

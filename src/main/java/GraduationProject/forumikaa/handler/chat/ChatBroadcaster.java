@@ -1,6 +1,5 @@
 package GraduationProject.forumikaa.handler.chat;
 
-import GraduationProject.forumikaa.entity.ChatMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,20 +13,17 @@ import java.util.function.Consumer;
 @Component
 public class ChatBroadcaster {
 
-    // Lưu trữ các subscriber theo roomId
-    private final Map<Long, List<Consumer<ChatMessage>>> roomSubscribers = new ConcurrentHashMap<>();
+    private final Map<Long, List<Consumer<Map<String, Object>>>> roomSubscribers = new ConcurrentHashMap<>();
 
-    // Publish message tới tất cả subscriber của room
-    public void publish(ChatMessage message) {
-        Long roomId = message.getRoomId();
-        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
-        
-        if (subscribers == null || subscribers.isEmpty()) {
+    // Publish message tới tất cả subscriber trong room
+    public void publishMessage(Long roomId, Map<String, Object> message) {
+        List<Consumer<Map<String, Object>>> roomSubscribersList = roomSubscribers.get(roomId);
+        if (roomSubscribersList == null || roomSubscribersList.isEmpty()) {
             log.debug("Không có subscriber nào cho roomId: {}", roomId);
             return;
         }
 
-        subscribers.forEach(consumer -> {
+        roomSubscribersList.forEach(consumer -> {
             try {
                 consumer.accept(message);
             } catch (Exception e) {
@@ -36,37 +32,46 @@ public class ChatBroadcaster {
         });
     }
 
+    // Publish message read status tới tất cả subscriber trong room
+    public void publishMessageRead(Long roomId, Long userId) {
+        Map<String, Object> message = Map.of(
+            "type", "MESSAGE_READ",
+            "roomId", roomId,
+            "userId", userId,
+            "timestamp", System.currentTimeMillis()
+        );
+        publishMessage(roomId, message);
+    }
+
+
+    // Publish new message tới tất cả subscriber trong room
+    public void publishNewMessage(Long roomId, Map<String, Object> messageData) {
+        Map<String, Object> message = Map.of(
+            "type", "NEW_MESSAGE",
+            "roomId", roomId,
+            "message", messageData,
+            "timestamp", System.currentTimeMillis()
+        );
+        publishMessage(roomId, message);
+    }
+
     // Đăng ký callback khi có message mới trong room
-    public void subscribe(Long roomId, Consumer<ChatMessage> consumer) {
+    public void subscribe(Long roomId, Consumer<Map<String, Object>> consumer) {
         roomSubscribers.computeIfAbsent(roomId, id -> new CopyOnWriteArrayList<>())
                 .add(consumer);
     }
 
     // Hủy đăng ký
     public void unsubscribe(Long roomId) {
-        List<Consumer<ChatMessage>> subscribers = roomSubscribers.remove(roomId);
-        if (subscribers != null) {
+        List<Consumer<Map<String, Object>>> roomSubscribersList = roomSubscribers.remove(roomId);
+        if (roomSubscribersList != null) {
             log.info("Room {} đã hủy đăng ký chat", roomId);
-        }
-    }
-
-    // Hủy đăng ký consumer cụ thể
-    public void unsubscribe(Long roomId, Consumer<ChatMessage> consumer) {
-        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
-        if (subscribers != null) {
-            boolean removed = subscribers.remove(consumer);
-            if (removed) {
-                // Nếu không còn subscriber nào, xóa key
-                if (subscribers.isEmpty()) {
-                    roomSubscribers.remove(roomId);
-                }
-            }
         }
     }
 
     // Kiểm tra xem một room có đang subscribe không
     public boolean isSubscribed(Long roomId) {
-        List<Consumer<ChatMessage>> subscribers = roomSubscribers.get(roomId);
-        return subscribers != null && !subscribers.isEmpty();
+        List<Consumer<Map<String, Object>>> roomSubscribersList = roomSubscribers.get(roomId);
+        return roomSubscribersList != null && !roomSubscribersList.isEmpty();
     }
 }

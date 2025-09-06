@@ -30,3 +30,4 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 .setAllowedOriginPatterns("*");
     }
 }
+

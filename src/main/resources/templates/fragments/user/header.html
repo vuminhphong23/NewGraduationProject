@@ -11,7 +11,7 @@
     <div class="col-4 header-menu d-flex justify-content-end" data-user-id="${#authentication.principal.id}">
         <a th:href="@{/}"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>
         <a th:href="@{/recommendations}"><i class="fa-solid fa-magic"></i><span class="menu-text">Gợi ý thông minh</span></a>
-        <a href="#" onclick="chatManager.openChat(); return false;"><i class="fa-solid fa-comments"></i><span class="menu-text">Tin nhắn</span></a>
+        <a th:href="@{/chat}"><i class="fa-solid fa-comments"></i><span class="menu-text">Tin nhắn</span></a>
         
         <!-- Notification Bell -->
         <div class="notification-dropdown position-relative">
