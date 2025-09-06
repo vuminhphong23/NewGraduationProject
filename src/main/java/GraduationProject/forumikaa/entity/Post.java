@@ -25,7 +25,6 @@ public class Post {
     @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String title;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 

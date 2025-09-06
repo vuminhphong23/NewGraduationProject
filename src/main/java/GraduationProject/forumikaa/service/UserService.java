@@ -34,5 +34,8 @@ public interface UserService {
 
     boolean existsPhone(String phone, Long userId);
     boolean checkPassword(String password);
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    void updateUserPassword(Long userId, String newPassword);
 
 } 

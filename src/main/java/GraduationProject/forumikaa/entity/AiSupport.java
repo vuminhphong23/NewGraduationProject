@@ -25,8 +25,7 @@ public class AiSupport {
     @Column(length = 50)
     private AiSupportType type;
 
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @CreationTimestamp

@@ -24,7 +24,6 @@ public class Report {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
 

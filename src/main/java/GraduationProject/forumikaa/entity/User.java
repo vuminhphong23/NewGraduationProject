@@ -59,7 +59,7 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String profileInfo;
 
     @CreationTimestamp

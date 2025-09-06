@@ -19,7 +19,7 @@ public class UserGroup {
     @Column(nullable = false)
     private String name;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)

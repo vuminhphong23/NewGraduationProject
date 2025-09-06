@@ -113,12 +113,16 @@ public class UserServiceImpl implements UserService {
             existingUser.setAddress(user.getAddress());
             existingUser.setBirthDate(user.getBirthDate());
             existingUser.setProfileInfo(user.getProfileInfo());
-            // Chỉ mã hóa mật khẩu nếu nó chưa được mã hóa (không bắt đầu bằng $2a$)
-            if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().startsWith("$2a$")) {
-                existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-            } else if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                existingUser.setPassword(user.getPassword());
+            // Chỉ cập nhật mật khẩu nếu có nhập mật khẩu mới
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                // Chỉ mã hóa mật khẩu nếu nó chưa được mã hóa (không bắt đầu bằng $2a$)
+                if (!user.getPassword().startsWith("$2a$")) {
+                    existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+                } else {
+                    existingUser.setPassword(user.getPassword());
+                }
             }
+            // Nếu mật khẩu rỗng, giữ nguyên mật khẩu cũ (không cập nhật)
             if (user.getRoles() != null) {
                 existingUser.setRoles(user.getRoles());
             }
@@ -158,6 +162,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean checkPassword(String password) {
         return password != null && password.length() >= 6;
+    }
+    
+    @Override
+    public void updateUserPassword(Long userId, String newPassword) {
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userDao.save(user);
     }
 
 } 

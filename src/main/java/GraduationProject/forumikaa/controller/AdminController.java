@@ -105,11 +105,24 @@ public class AdminController {
             bindingResult.rejectValue("phone", "error.user", "Số điện thoại đã tồn tại");
             return "admin/user-form";
         }
-        if(!userService.checkPassword(user.getPassword())){
-            bindingResult.rejectValue("password", "error.user", "Mật khẩu phải nhiều hơn 6 ký tự");
-            return "admin/user-form";
+        // Xử lý mật khẩu riêng biệt
+        String newPassword = user.getPassword();
+        if(newPassword != null && !newPassword.trim().isEmpty()) {
+            // Validate mật khẩu mới
+            if(!userService.checkPassword(newPassword)){
+                bindingResult.rejectValue("password", "error.user", "Mật khẩu phải nhiều hơn 6 ký tự");
+                return "admin/user-form";
+            }
         }
+        
+        // Lưu thông tin user (không bao gồm mật khẩu)
+        user.setPassword(null); // Xóa mật khẩu khỏi object để tránh xử lý trong save()
         userService.save(user);
+        
+        // Cập nhật mật khẩu riêng biệt nếu có
+        if(newPassword != null && !newPassword.trim().isEmpty()) {
+            userService.updateUserPassword(user.getId(), newPassword);
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công.");
         return "redirect:/admin/users";
     }
