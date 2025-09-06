@@ -338,3 +338,4 @@ log.error("Error sending message: {}", e.getMessage(), e);
 8. **Message Threading**: Reply to specific messages
 9. **Presence System**: Advanced online/offline status
 10. **Message History**: Pagination và caching
+

@@ -30,7 +30,7 @@ public class Notification {
     @Column(name = "notification_type", nullable = false)
     private NotificationType type;
 
-    @Column(nullable = false, columnDefinition = "NVARCHAR(500)")
+    @Column(nullable = false, columnDefinition = "VARCHAR(500)")
     private String message;
 
     @Column(name = "related_entity_id")
@@ -39,7 +39,7 @@ public class Notification {
     @Column(name = "related_entity_type")
     private String relatedEntityType; // POST, COMMENT, USER, etc.
 
-    @Column(columnDefinition = "NVARCHAR(500)")
+    @Column(columnDefinition = "VARCHAR(500)")
     private String link;
 
     @Column(nullable = false)

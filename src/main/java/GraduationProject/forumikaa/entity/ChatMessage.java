@@ -29,7 +29,7 @@ public class ChatMessage {
     private ChatRoom room;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Enumerated(EnumType.STRING)

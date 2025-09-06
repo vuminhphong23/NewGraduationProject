@@ -36,10 +36,10 @@ public class User {
     @Email(message = "Invalid email format")
     private String email;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String firstName;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String lastName;
 
     @Column
@@ -49,7 +49,7 @@ public class User {
     @Length(max = 10, message = "Sai định dạng số điện thoại")
     private String phone;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String address;
 
     @Column(columnDefinition = "DATE")

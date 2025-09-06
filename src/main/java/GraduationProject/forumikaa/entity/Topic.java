@@ -18,7 +18,7 @@ public class Topic {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, columnDefinition = "NVARCHAR(255)")
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255)")
     private String name;
 
     @Column(name = "is_trending")

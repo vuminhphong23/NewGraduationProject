@@ -24,7 +24,7 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "room_name", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "room_name", nullable = false, columnDefinition = "VARCHAR(255)")
     private String roomName;
 
     @Column(name = "is_group", nullable = false)

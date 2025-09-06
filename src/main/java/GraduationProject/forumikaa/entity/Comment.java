@@ -25,7 +25,7 @@ public class Comment {
     private Post post;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    @Column(nullable = false)
     private String content;
 
     @CreationTimestamp

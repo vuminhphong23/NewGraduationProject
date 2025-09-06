@@ -20,3 +20,4 @@ public class WebSocketMessageDto {
     private Object data;
     private String timestamp;
 }
+

@@ -25,7 +25,7 @@ public class Report {
     private Post post;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "NVARCHAR(MAX)")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String reason;
 
     @Enumerated(EnumType.STRING)

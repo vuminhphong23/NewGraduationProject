@@ -193,3 +193,4 @@ src/main/resources/
 5. **Message Search**: Full-text search
 6. **Message Reactions**: Emoji reactions
 7. **Message Threading**: Reply to specific messages
+
