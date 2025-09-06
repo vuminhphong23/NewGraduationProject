@@ -2,6 +2,8 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
+import GraduationProject.forumikaa.dto.UserExample;
+
 import GraduationProject.forumikaa.entity.User;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -112,15 +114,19 @@ public class UserServiceImpl implements UserService {
             existingUser.setAddress(user.getAddress());
             existingUser.setBirthDate(user.getBirthDate());
             existingUser.setProfileInfo(user.getProfileInfo());
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            // Chỉ mã hóa mật khẩu nếu nó chưa được mã hóa (không bắt đầu bằng $2a$)
+            if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().startsWith("$2a$")) {
                 existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+            } else if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+                existingUser.setPassword(user.getPassword());
             }
             if (user.getRoles() != null) {
                 existingUser.setRoles(user.getRoles());
             }
             userDao.save(existingUser);
         } else {
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            // Chỉ mã hóa mật khẩu nếu nó chưa được mã hóa (không bắt đầu bằng $2a$)
+            if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().startsWith("$2a$")) {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             }
             userDao.save(user);
@@ -154,5 +160,30 @@ public class UserServiceImpl implements UserService {
     public boolean checkPassword(String password) {
         return password != null && password.length() >= 6;
     }
-
+    
+    // QBE Implementation
+    @Override
+    public List<User> findByExample(UserExample example) {
+        return userDao.findAll(example.toExample());
+    }
+    
+    @Override
+    public List<User> findByExampleExact(UserExample example) {
+        return userDao.findAll(example.toExactExample());
+    }
+    
+    @Override
+    public Page<User> findByExample(UserExample example, Pageable pageable) {
+        return userDao.findAll(example.toExample(), pageable);
+    }
+    
+    @Override
+    public long countByExample(UserExample example) {
+        return userDao.count(example.toExample());
+    }
+    
+    @Override
+    public boolean existsByExample(UserExample example) {
+        return userDao.exists(example.toExample());
+    }
 } 
