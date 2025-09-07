@@ -47,16 +47,138 @@ public class ChatController {
 
     // Tạo hoặc tìm chat room 1-1
     @PostMapping("/private-chat")
-    public ResponseEntity<Map<String, Object>> createOrFindPrivateChat(@RequestParam Long otherUserId) {
+    public ResponseEntity<Map<String, Object>> createOrFindPrivateChat(@RequestBody Map<String, Object> request) {
         try {
+            System.out.println("🔍 ChatController.createOrFindPrivateChat() - Request: " + request);
             Long currentUserId = securityUtil.getCurrentUserId();
+            System.out.println("🔍 ChatController.createOrFindPrivateChat() - Current User ID: " + currentUserId);
+            
+            // Validate request
+            if (!request.containsKey("userId") || request.get("userId") == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "userId is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            Long otherUserId;
+            try {
+                otherUserId = Long.valueOf(request.get("userId").toString());
+                System.out.println("🔍 ChatController.createOrFindPrivateChat() - Other User ID: " + otherUserId);
+            } catch (NumberFormatException e) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Invalid userId format");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Validate otherUserId
+            if (otherUserId.equals(currentUserId)) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Cannot create chat with yourself");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            System.out.println("🔍 ChatController.createOrFindPrivateChat() - Creating/finding private chat...");
             ChatRoomDto room = chatService.findOrCreatePrivateChat(currentUserId, otherUserId);
+            System.out.println("🔍 ChatController.createOrFindPrivateChat() - Room created/found: " + room.getId());
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("data", room);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            System.err.println("❌ ChatController.createOrFindPrivateChat() - Error: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // Tạo group chat
+    @PostMapping("/group-chat")
+    public ResponseEntity<Map<String, Object>> createGroupChat(@RequestBody Map<String, Object> request) {
+        try {
+            System.out.println("🔍 ChatController.createGroupChat() - Request: " + request);
+            Long currentUserId = securityUtil.getCurrentUserId();
+            System.out.println("🔍 ChatController.createGroupChat() - Current User ID: " + currentUserId);
+            
+            // Validate request
+            if (!request.containsKey("groupName") || request.get("groupName") == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "groupName is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            if (!request.containsKey("userIds") || request.get("userIds") == null) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "userIds is required");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            String groupName = request.get("groupName").toString();
+            @SuppressWarnings("unchecked")
+            List<Integer> userIds = (List<Integer>) request.get("userIds");
+            
+            System.out.println("🔍 ChatController.createGroupChat() - Group Name: " + groupName);
+            System.out.println("🔍 ChatController.createGroupChat() - User IDs: " + userIds);
+            
+            // Convert to Long list
+            List<Long> userIdsLong = userIds.stream().map(Integer::longValue).collect(java.util.stream.Collectors.toList());
+            
+            // Add current user to the list
+            if (!userIdsLong.contains(currentUserId)) {
+                userIdsLong.add(currentUserId);
+            }
+            
+            ChatRoomDto room = chatService.createGroupChat(groupName, currentUserId, userIdsLong);
+            System.out.println("🔍 ChatController.createGroupChat() - Room created: " + room.getId());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", room);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ ChatController.createGroupChat() - Error: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // Xóa chat room
+    @DeleteMapping("/rooms/{roomId}")
+    public ResponseEntity<Map<String, Object>> deleteChatRoom(@PathVariable Long roomId) {
+        try {
+            System.out.println("🔍 ChatController.deleteChatRoom() - Room ID: " + roomId);
+            Long currentUserId = securityUtil.getCurrentUserId();
+            System.out.println("🔍 ChatController.deleteChatRoom() - Current User ID: " + currentUserId);
+            
+            // Kiểm tra quyền truy cập
+            if (!chatService.hasAccessToRoom(roomId, currentUserId)) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Bạn không có quyền xóa cuộc trò chuyện này");
+                return ResponseEntity.status(403).body(response);
+            }
+            
+            chatService.deleteChatRoom(roomId, currentUserId);
+            System.out.println("🔍 ChatController.deleteChatRoom() - Room deleted successfully");
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Cuộc trò chuyện đã được xóa");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ ChatController.deleteChatRoom() - Error: " + e.getMessage());
+            e.printStackTrace();
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());

@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.dao;
 
 import GraduationProject.forumikaa.entity.ChatRoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,7 +28,10 @@ public interface ChatRoomMemberDao extends JpaRepository<ChatRoomMember, Long> {
     /**
      * Lấy danh sách thành viên của room
      */
-    @Query("SELECT c FROM ChatRoomMember c WHERE c.room.id = :roomId")
+    @Query("SELECT c FROM ChatRoomMember c " +
+           "JOIN FETCH c.user u " +
+           "LEFT JOIN FETCH u.userProfile up " +
+           "WHERE c.room.id = :roomId")
     List<ChatRoomMember> findByRoomId(@Param("roomId") Long roomId);
     
     /**
@@ -45,12 +49,14 @@ public interface ChatRoomMemberDao extends JpaRepository<ChatRoomMember, Long> {
     /**
      * Xóa tất cả thành viên của room
      */
+    @Modifying
     @Query("DELETE FROM ChatRoomMember c WHERE c.room.id = :roomId")
     void deleteByRoomId(@Param("roomId") Long roomId);
     
     /**
      * Xóa thành viên khỏi room
      */
+    @Modifying
     @Query("DELETE FROM ChatRoomMember c WHERE c.room.id = :roomId AND c.user.id = :userId")
     void deleteByRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 }

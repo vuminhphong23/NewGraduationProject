@@ -5,6 +5,7 @@ import GraduationProject.forumikaa.dao.ChatRoomDao;
 import GraduationProject.forumikaa.dao.ChatRoomMemberDao;
 import GraduationProject.forumikaa.dto.ChatMessageDto;
 import GraduationProject.forumikaa.dto.ChatRoomDto;
+import GraduationProject.forumikaa.dto.ChatRoomMemberDto;
 import GraduationProject.forumikaa.entity.ChatMessage;
 import GraduationProject.forumikaa.entity.ChatRoom;
 import GraduationProject.forumikaa.entity.ChatRoomMember;
@@ -42,7 +43,33 @@ public class ChatServiceImpl implements ChatService {
         List<ChatRoom> rooms = chatRoomDao.findByUserIdOrderByLastMessageDesc(userId);
         return rooms.stream()
                 .map(room -> {
+                    // Load members riêng cho mỗi room
+                    List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(room.getId());
+                    System.out.println("🔍 ChatServiceImpl - Room " + room.getId() + " has " + members.size() + " members");
+                    
+                    // Tạo DTO với members riêng biệt
                     ChatRoomDto dto = ChatMapper.toChatRoomDto(room);
+                    System.out.println("🔍 ChatServiceImpl.getUserChatRooms() - Room " + room.getId() + " Name: " + room.getRoomName() + ", IsGroup: " + room.isGroup() + ", DTO Name: " + dto.getRoomName() + ", DTO IsGroup: " + dto.isGroup());
+                    
+                    // Set members vào DTO
+                    if (members != null) {
+                        List<ChatRoomMemberDto> memberDtos = members.stream()
+                                .map(member -> ChatRoomMemberDto.builder()
+                                        .id(member.getId())
+                                        .roomId(member.getRoom().getId())
+                                        .userId(member.getUser().getId())
+                                        .username(member.getUser().getUsername())
+                                        .fullName(member.getUser().getFirstName() != null && member.getUser().getLastName() != null 
+                                                ? member.getUser().getFirstName() + " " + member.getUser().getLastName()
+                                                : member.getUser().getUsername())
+                                        .avatar(member.getUser().getUserProfile() != null ? member.getUser().getUserProfile().getAvatar() : null)
+                                        .isOnline(false) // TODO: implement online status
+                                        .joinedAt(member.getJoinedAt())
+                                        .build())
+                                .collect(Collectors.toList());
+                        dto.setMembers(memberDtos);
+                        dto.setMemberCount(memberDtos.size());
+                    }
                     
                     // Lấy tin nhắn cuối cùng chưa đọc
                     List<ChatMessage> unreadMessages = chatMessageDao.findUnreadMessages(room.getId(), userId);
@@ -68,12 +95,43 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomDto findOrCreatePrivateChat(Long userId1, Long userId2) {
+        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - User1: " + userId1 + ", User2: " + userId2);
+        
         // Tìm chat room 1-1 đã tồn tại
         Optional<ChatRoom> existingRoom = chatRoomDao.findPrivateChatBetweenUsers(userId1, userId2);
+        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - Existing room found: " + existingRoom.isPresent());
         
         if (existingRoom.isPresent()) {
-            return ChatMapper.toChatRoomDto(existingRoom.get());
+            // Load members để trả về đầy đủ thông tin
+            List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(existingRoom.get().getId());
+            
+            // Tạo DTO thủ công để tránh vòng lặp vô hạn
+            ChatRoomDto dto = ChatMapper.toChatRoomDto(existingRoom.get());
+            
+            // Map members thủ công
+            if (members != null) {
+                List<ChatRoomMemberDto> memberDtos = members.stream()
+                        .map(member -> ChatRoomMemberDto.builder()
+                                .id(member.getId())
+                                .roomId(existingRoom.get().getId())
+                                .userId(member.getUser().getId())
+                                .username(member.getUser().getUsername())
+                                .fullName(member.getUser().getFirstName() != null && member.getUser().getLastName() != null 
+                                        ? member.getUser().getFirstName() + " " + member.getUser().getLastName()
+                                        : member.getUser().getUsername())
+                                .avatar(member.getUser().getUserProfile() != null ? member.getUser().getUserProfile().getAvatar() : null)
+                                .isOnline(false) // TODO: implement online status
+                                .joinedAt(member.getJoinedAt())
+                                .build())
+                        .collect(Collectors.toList());
+                dto.setMembers(memberDtos);
+                dto.setMemberCount(memberDtos.size());
+            }
+            
+            return dto;
         }
+        
+        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - Creating new private chat room");
         
         // Tạo chat room mới
         ChatRoom room = new ChatRoom();
@@ -82,22 +140,125 @@ public class ChatServiceImpl implements ChatService {
         room.setCreatedAt(LocalDateTime.now());
         room.setUpdatedAt(LocalDateTime.now());
         
-        room = chatRoomDao.save(room);
+        ChatRoom savedRoom = chatRoomDao.save(room);
         
         // Thêm 2 user vào room
         ChatRoomMember member1 = new ChatRoomMember();
-        member1.setRoom(room);
+        member1.setRoom(savedRoom);
         member1.setUser(new User(userId1));
         member1.setJoinedAt(LocalDateTime.now());
         chatRoomMemberDao.save(member1);
         
         ChatRoomMember member2 = new ChatRoomMember();
-        member2.setRoom(room);
+        member2.setRoom(savedRoom);
         member2.setUser(new User(userId2));
         member2.setJoinedAt(LocalDateTime.now());
         chatRoomMemberDao.save(member2);
         
-        return ChatMapper.toChatRoomDto(room);
+        // Load members để trả về đầy đủ thông tin
+        List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(savedRoom.getId());
+        
+        // Tạo DTO thủ công để tránh vòng lặp vô hạn
+        ChatRoomDto dto = ChatMapper.toChatRoomDto(savedRoom);
+        
+        // Map members thủ công
+        if (members != null) {
+            List<ChatRoomMemberDto> memberDtos = members.stream()
+                    .map(member -> ChatRoomMemberDto.builder()
+                            .id(member.getId())
+                            .roomId(savedRoom.getId())
+                            .userId(member.getUser().getId())
+                            .username(member.getUser().getUsername())
+                            .fullName(member.getUser().getFirstName() != null && member.getUser().getLastName() != null 
+                                    ? member.getUser().getFirstName() + " " + member.getUser().getLastName()
+                                    : member.getUser().getUsername())
+                            .avatar(member.getUser().getUserProfile() != null ? member.getUser().getUserProfile().getAvatar() : null)
+                            .isOnline(false) // TODO: implement online status
+                            .joinedAt(member.getJoinedAt())
+                            .build())
+                    .collect(Collectors.toList());
+            dto.setMembers(memberDtos);
+            dto.setMemberCount(memberDtos.size());
+        }
+        
+        return dto;
+    }
+
+    @Override
+    public ChatRoomDto createGroupChat(String groupName, Long createdById, List<Long> userIds) {
+        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Group Name: " + groupName + ", Created By: " + createdById + ", User IDs: " + userIds);
+        
+        // Tạo chat room mới
+        ChatRoom room = new ChatRoom();
+        room.setRoomName(groupName);
+        room.setGroup(true);
+        room.setCreatedAt(LocalDateTime.now());
+        room.setUpdatedAt(LocalDateTime.now());
+        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Creating room with name: " + groupName + ", isGroup: true");
+        
+        ChatRoom savedRoom = chatRoomDao.save(room);
+        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Room saved with ID: " + savedRoom.getId());
+        
+        // Thêm tất cả user vào room
+        for (Long userId : userIds) {
+            ChatRoomMember member = new ChatRoomMember();
+            member.setRoom(savedRoom);
+            member.setUser(new User(userId));
+            member.setJoinedAt(LocalDateTime.now());
+            chatRoomMemberDao.save(member);
+            System.out.println("🔍 ChatServiceImpl.createGroupChat() - Added member: " + userId);
+        }
+        
+        // Load members để trả về đầy đủ thông tin
+        List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(savedRoom.getId());
+        
+        // Tạo DTO thủ công để tránh vòng lặp vô hạn
+        ChatRoomDto dto = ChatMapper.toChatRoomDto(savedRoom);
+        
+        // Map members thủ công
+        if (members != null) {
+            List<ChatRoomMemberDto> memberDtos = members.stream()
+                    .map(member -> ChatRoomMemberDto.builder()
+                            .id(member.getId())
+                            .roomId(savedRoom.getId())
+                            .userId(member.getUser().getId())
+                            .username(member.getUser().getUsername())
+                            .fullName(member.getUser().getFirstName() != null && member.getUser().getLastName() != null 
+                                    ? member.getUser().getFirstName() + " " + member.getUser().getLastName()
+                                    : member.getUser().getUsername())
+                            .avatar(member.getUser().getUserProfile() != null ? member.getUser().getUserProfile().getAvatar() : null)
+                            .isOnline(false) // TODO: implement online status
+                            .joinedAt(member.getJoinedAt())
+                            .build())
+                    .collect(Collectors.toList());
+            dto.setMembers(memberDtos);
+            dto.setMemberCount(memberDtos.size());
+        }
+        
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public void deleteChatRoom(Long roomId, Long userId) {
+        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Room ID: " + roomId + ", User ID: " + userId);
+        
+        // Kiểm tra quyền truy cập
+        if (!hasAccessToRoom(roomId, userId)) {
+            throw new RuntimeException("Bạn không có quyền xóa cuộc trò chuyện này");
+        }
+        
+        // Xóa tất cả tin nhắn trong room
+        chatMessageDao.deleteByRoomId(roomId);
+        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Messages deleted");
+        
+        // Xóa tất cả members
+        chatRoomMemberDao.deleteByRoomId(roomId);
+        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Members deleted");
+        
+        // Xóa room
+        chatRoomDao.deleteById(roomId);
+        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Room deleted");
     }
 
     @Override

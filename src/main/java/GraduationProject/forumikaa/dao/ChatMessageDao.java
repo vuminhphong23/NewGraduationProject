@@ -58,4 +58,9 @@ public interface ChatMessageDao extends JpaRepository<ChatMessage, Long> {
     default int countUnreadMessagesByRoomIdAndUserId(Long roomId, Long userId) {
         return (int) countUnreadMessages(roomId, userId);
     }
+    
+    /**
+     * Xóa tất cả tin nhắn trong room
+     */
+    void deleteByRoomId(Long roomId);
 }

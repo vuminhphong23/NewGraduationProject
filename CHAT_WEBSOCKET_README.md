@@ -291,3 +291,4 @@ stompClient.debug = function(str) {
 6. **Message Reactions**: React với emoji
 7. **Message Threading**: Reply to specific messages
 
+

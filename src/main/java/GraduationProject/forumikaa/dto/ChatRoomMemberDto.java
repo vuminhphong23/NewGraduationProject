@@ -25,3 +25,4 @@ public class ChatRoomMemberDto {
     private LocalDateTime joinedAt;
 }
 
+

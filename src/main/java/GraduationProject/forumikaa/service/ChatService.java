@@ -13,6 +13,12 @@ public interface ChatService {
     // Tạo hoặc tìm chat room 1-1
     ChatRoomDto findOrCreatePrivateChat(Long userId1, Long userId2);
     
+    // Tạo group chat
+    ChatRoomDto createGroupChat(String groupName, Long createdById, List<Long> userIds);
+    
+    // Xóa chat room
+    void deleteChatRoom(Long roomId, Long userId);
+    
     // Kiểm tra quyền truy cập room
     boolean hasAccessToRoom(Long roomId, Long userId);
     

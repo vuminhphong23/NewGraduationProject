@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.util;
 
 import GraduationProject.forumikaa.dto.ChatMessageDto;
 import GraduationProject.forumikaa.dto.ChatRoomDto;
+import GraduationProject.forumikaa.dto.ChatRoomMemberDto;
 import GraduationProject.forumikaa.entity.ChatMessage;
 import GraduationProject.forumikaa.entity.ChatRoom;
 import GraduationProject.forumikaa.entity.User;
@@ -20,6 +21,44 @@ public class ChatMapper {
                 .isGroup(room.isGroup())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
+                .build();
+    }
+    
+    public static ChatRoomDto toChatRoomDtoWithMembers(ChatRoom room) {
+        if (room == null) return null;
+        
+        System.out.println("🔍 ChatMapper.toChatRoomDtoWithMembers() - Room ID: " + room.getId() + ", Members: " + (room.getMembers() != null ? room.getMembers().size() : 0));
+        
+        // Convert members to DTOs
+        List<ChatRoomMemberDto> memberDtos = null;
+        if (room.getMembers() != null) {
+            memberDtos = room.getMembers().stream()
+                    .map(member -> {
+                        System.out.println("🔍 ChatMapper - Member: " + member.getUser().getUsername() + " (ID: " + member.getUser().getId() + ")");
+                        return ChatRoomMemberDto.builder()
+                                .id(member.getId())
+                                .roomId(room.getId()) // Sử dụng room.getId() thay vì member.getRoom().getId()
+                                .userId(member.getUser().getId())
+                                .username(member.getUser().getUsername())
+                                .fullName(member.getUser().getFirstName() != null && member.getUser().getLastName() != null 
+                                        ? member.getUser().getFirstName() + " " + member.getUser().getLastName()
+                                        : member.getUser().getUsername())
+                                .avatar(member.getUser().getUserProfile() != null ? member.getUser().getUserProfile().getAvatar() : null)
+                                .isOnline(false) // TODO: implement online status
+                                .joinedAt(member.getJoinedAt())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+        }
+        
+        return ChatRoomDto.builder()
+                .id(room.getId())
+                .roomName(room.getRoomName())
+                .isGroup(room.isGroup())
+                .createdAt(room.getCreatedAt())
+                .updatedAt(room.getUpdatedAt())
+                .members(memberDtos)
+                .memberCount(memberDtos != null ? memberDtos.size() : 0)
                 .build();
     }
 

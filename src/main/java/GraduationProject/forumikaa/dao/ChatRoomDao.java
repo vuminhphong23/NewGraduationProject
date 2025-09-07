@@ -16,9 +16,9 @@ public interface ChatRoomDao extends JpaRepository<ChatRoom, Long> {
      * Tìm chat room 1-1 giữa 2 user
      */
     @Query("SELECT DISTINCT cr FROM ChatRoom cr " +
-           "JOIN cr.members m1 ON m1.user.id = :user1Id " +
-           "JOIN cr.members m2 ON m2.user.id = :user2Id " +
-           "WHERE cr.isGroup = false")
+           "WHERE cr.isGroup = false " +
+           "AND cr.id IN (SELECT m1.room.id FROM ChatRoomMember m1 WHERE m1.user.id = :user1Id) " +
+           "AND cr.id IN (SELECT m2.room.id FROM ChatRoomMember m2 WHERE m2.user.id = :user2Id)")
     Optional<ChatRoom> findPrivateChatBetweenUsers(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
     
     /**
