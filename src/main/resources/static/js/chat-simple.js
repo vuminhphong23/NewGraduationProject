@@ -1994,16 +1994,13 @@ class SimpleChatManager {
     
     // Toggle chọn/bỏ chọn người dùng
     toggleUserSelection(userId) {
-        console.log('🔄 Toggle user selection for ID:', userId);
         const userIndex = this.selectedUsers.findIndex(user => user.id === userId);
         
         if (userIndex > -1) {
             // Bỏ chọn
-            console.log('🔄 Removing user from selection');
             this.selectedUsers.splice(userIndex, 1);
         } else {
             // Chọn thêm
-            console.log('🔄 Adding user to selection');
             // Tìm user từ kết quả tìm kiếm hiện tại
             const searchResults = document.getElementById('userSearchResults');
             const userElement = searchResults.querySelector(`[data-user-id="${userId}"]`);
@@ -2018,13 +2015,9 @@ class SimpleChatManager {
                     username: userUsername,
                     avatar: userAvatar
                 });
-                console.log('🔄 User added:', this.selectedUsers[this.selectedUsers.length - 1]);
-            } else {
-                console.log('🔄 User element not found for ID:', userId);
             }
         }
         
-        console.log('🔄 Current selected users:', this.selectedUsers);
         this.updateSelectedUsersDisplay();
         this.renderSearchResults(this.lastSearchResults || []); // Re-render để cập nhật UI
     }
