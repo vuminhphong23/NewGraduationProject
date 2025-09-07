@@ -11,7 +11,6 @@ import GraduationProject.forumikaa.entity.ChatRoom;
 import GraduationProject.forumikaa.entity.ChatRoomMember;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
-import GraduationProject.forumikaa.util.ChatMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,8 +47,15 @@ public class ChatServiceImpl implements ChatService {
                     System.out.println("🔍 ChatServiceImpl - Room " + room.getId() + " has " + members.size() + " members");
                     
                     // Tạo DTO với members riêng biệt
-                    ChatRoomDto dto = ChatMapper.toChatRoomDto(room);
-                    System.out.println("🔍 ChatServiceImpl.getUserChatRooms() - Room " + room.getId() + " Name: " + room.getRoomName() + ", IsGroup: " + room.isGroup() + ", DTO Name: " + dto.getRoomName() + ", DTO IsGroup: " + dto.isGroup());
+                    ChatRoomDto dto = ChatRoomDto.builder()
+                            .id(room.getId())
+                            .roomName(room.getRoomName())
+                            .isGroup(room.getIsGroup())
+                            .roomAvatar(room.getRoomAvatar())
+                            .createdAt(room.getCreatedAt())
+                            .updatedAt(room.getUpdatedAt())
+                            .build();
+                    System.out.println("🔍 ChatServiceImpl.getUserChatRooms() - Room " + room.getId() + " Name: " + room.getRoomName() + ", IsGroup: " + room.getIsGroup() + ", DTO Name: " + dto.getRoomName() + ", DTO IsGroup: " + dto.getIsGroup());
                     
                     // Set members vào DTO
                     if (members != null) {
@@ -84,7 +90,18 @@ public class ChatServiceImpl implements ChatService {
                     // Lấy tin nhắn cuối cùng
                     Page<ChatMessage> lastMessages = chatMessageDao.findByRoomIdOrderByCreatedAtDesc(room.getId(), PageRequest.of(0, 1));
                     if (!lastMessages.isEmpty()) {
-                        ChatMessageDto lastMessageDto = ChatMapper.toChatMessageDto(lastMessages.getContent().get(0));
+                        ChatMessage lastMsg = lastMessages.getContent().get(0);
+                        ChatMessageDto lastMessageDto = ChatMessageDto.builder()
+                                .id(lastMsg.getId())
+                                .roomId(lastMsg.getRoom() != null ? lastMsg.getRoom().getId() : null)
+                                .senderId(lastMsg.getSender() != null ? lastMsg.getSender().getId() : null)
+                                .senderUsername(lastMsg.getSender() != null ? lastMsg.getSender().getUsername() : null)
+                                .content(lastMsg.getContent())
+                                .messageType(lastMsg.getMessageType() != null ? lastMsg.getMessageType().name() : null)
+                                .isRead(lastMsg.isRead())
+                                .createdAt(lastMsg.getCreatedAt())
+                                .readAt(lastMsg.getReadAt())
+                                .build();
                         dto.setLastMessage(lastMessageDto);
                     }
                     
@@ -106,7 +123,14 @@ public class ChatServiceImpl implements ChatService {
             List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(existingRoom.get().getId());
             
             // Tạo DTO thủ công để tránh vòng lặp vô hạn
-            ChatRoomDto dto = ChatMapper.toChatRoomDto(existingRoom.get());
+            ChatRoomDto dto = ChatRoomDto.builder()
+                    .id(existingRoom.get().getId())
+                    .roomName(existingRoom.get().getRoomName())
+                    .isGroup(existingRoom.get().getIsGroup())
+                    .roomAvatar(existingRoom.get().getRoomAvatar())
+                    .createdAt(existingRoom.get().getCreatedAt())
+                    .updatedAt(existingRoom.get().getUpdatedAt())
+                    .build(); 
             
             // Map members thủ công
             if (members != null) {
@@ -136,7 +160,7 @@ public class ChatServiceImpl implements ChatService {
         // Tạo chat room mới
         ChatRoom room = new ChatRoom();
         room.setRoomName("Private Chat");
-        room.setGroup(false);
+        room.setIsGroup(false);
         room.setCreatedAt(LocalDateTime.now());
         room.setUpdatedAt(LocalDateTime.now());
         
@@ -159,7 +183,14 @@ public class ChatServiceImpl implements ChatService {
         List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(savedRoom.getId());
         
         // Tạo DTO thủ công để tránh vòng lặp vô hạn
-        ChatRoomDto dto = ChatMapper.toChatRoomDto(savedRoom);
+        ChatRoomDto dto = ChatRoomDto.builder()
+                .id(savedRoom.getId())
+                .roomName(savedRoom.getRoomName())
+                .isGroup(savedRoom.getIsGroup())
+                .roomAvatar(savedRoom.getRoomAvatar())
+                .createdAt(savedRoom.getCreatedAt())
+                .updatedAt(savedRoom.getUpdatedAt())
+                .build();
         
         // Map members thủ công
         if (members != null) {
@@ -191,7 +222,7 @@ public class ChatServiceImpl implements ChatService {
         // Tạo chat room mới
         ChatRoom room = new ChatRoom();
         room.setRoomName(groupName);
-        room.setGroup(true);
+        room.setIsGroup(true);
         room.setCreatedAt(LocalDateTime.now());
         room.setUpdatedAt(LocalDateTime.now());
         System.out.println("🔍 ChatServiceImpl.createGroupChat() - Creating room with name: " + groupName + ", isGroup: true");
@@ -213,7 +244,14 @@ public class ChatServiceImpl implements ChatService {
         List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(savedRoom.getId());
         
         // Tạo DTO thủ công để tránh vòng lặp vô hạn
-        ChatRoomDto dto = ChatMapper.toChatRoomDto(savedRoom);
+        ChatRoomDto dto = ChatRoomDto.builder()
+                .id(savedRoom.getId())
+                .roomName(savedRoom.getRoomName())
+                .isGroup(savedRoom.getIsGroup())
+                .roomAvatar(savedRoom.getRoomAvatar())
+                .createdAt(savedRoom.getCreatedAt())
+                .updatedAt(savedRoom.getUpdatedAt())
+                .build();
         
         // Map members thủ công
         if (members != null) {
@@ -274,7 +312,19 @@ public class ChatServiceImpl implements ChatService {
             System.out.println("ChatServiceImpl.getRoomMessages() - roomId: " + roomId);
             List<ChatMessage> messages = chatMessageDao.findByRoomIdOrderByCreatedAtAsc(roomId);
             System.out.println("ChatServiceImpl.getRoomMessages() - Found " + messages.size() + " messages");
-            return ChatMapper.toChatMessageDtoList(messages);
+            return messages.stream()
+                    .map(message -> ChatMessageDto.builder()
+                            .id(message.getId())
+                            .roomId(message.getRoom() != null ? message.getRoom().getId() : null)
+                            .senderId(message.getSender() != null ? message.getSender().getId() : null)
+                            .senderUsername(message.getSender() != null ? message.getSender().getUsername() : null)
+                            .content(message.getContent())
+                            .messageType(message.getMessageType() != null ? message.getMessageType().name() : null)
+                            .isRead(message.isRead())
+                            .createdAt(message.getCreatedAt())
+                            .readAt(message.getReadAt())
+                            .build())
+                    .collect(Collectors.toList());
         } catch (Exception e) {
             System.err.println("ChatServiceImpl.getRoomMessages() - Error: " + e.getMessage());
             e.printStackTrace();
@@ -296,7 +346,17 @@ public class ChatServiceImpl implements ChatService {
         message.setCreatedAt(LocalDateTime.now());
         
         message = chatMessageDao.save(message);
-        return ChatMapper.toChatMessageDto(message);
+        return ChatMessageDto.builder()
+                .id(message.getId())
+                .roomId(message.getRoom() != null ? message.getRoom().getId() : null)
+                .senderId(message.getSender() != null ? message.getSender().getId() : null)
+                .senderUsername(message.getSender() != null ? message.getSender().getUsername() : null)
+                .content(message.getContent())
+                .messageType(message.getMessageType() != null ? message.getMessageType().name() : null)
+                .isRead(message.isRead())
+                .createdAt(message.getCreatedAt())
+                .readAt(message.getReadAt())
+                .build();
     }
 
     @Override

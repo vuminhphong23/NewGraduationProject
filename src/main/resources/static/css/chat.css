@@ -3,6 +3,127 @@
 /* Import fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* Search highlight styles */
+.search-highlight {
+    background-color: #ffeb3b;
+    color: #333;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+/* User search enhancements */
+.user-details {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #28a745;
+    border: 2px solid #fff;
+    border-radius: 50%;
+}
+
+/* Recent searches */
+.recent-searches {
+    padding: 0.5rem 0;
+}
+
+.recent-searches-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
+}
+
+.recent-search-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.recent-search-item:hover {
+    background-color: #f8f9fa;
+}
+
+.recent-search-item i {
+    margin-right: 0.5rem;
+    color: #6c757d;
+    width: 16px;
+}
+
+.recent-search-item span {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+.btn-remove-recent {
+    background: none;
+    border: none;
+    color: #6c757d;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-remove-recent:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Search suggestions */
+.search-suggestions {
+    padding: 0.5rem 0;
+}
+
+.suggestions-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+    background-color: #f8f9fa;
+}
+
+.suggestion-item i {
+    margin-right: 0.5rem;
+    color: #ffc107;
+    width: 16px;
+}
+
+.suggestion-item span {
+    font-size: 0.875rem;
+}
+
+
 /* Chat specific styles - Sử dụng fragment header có sẵn */
 
 /* Override header menu để highlight chat */

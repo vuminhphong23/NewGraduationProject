@@ -16,7 +16,7 @@ import java.util.List;
 public class ChatRoomDto {
     private Long id;
     private String roomName;
-    private boolean isGroup;
+    private Boolean isGroup;
     private String roomAvatar;
     private Long createdById;
     private String createdByUsername;

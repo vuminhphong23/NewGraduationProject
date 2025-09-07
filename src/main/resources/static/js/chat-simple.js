@@ -12,6 +12,8 @@ class SimpleChatManager {
         this.searchQuery = '';
         this.markAsReadTimeout = null;
         this.selectedUsers = []; // Danh sách người được chọn cho group chat
+        this.recentSearches = []; // Lưu lịch sử tìm kiếm gần đây
+        this.lastSearchResults = []; // Lưu kết quả tìm kiếm cuối cùng
         
         this.init();
     }
@@ -82,6 +84,27 @@ class SimpleChatManager {
                     if (data.success) {
                         this.chatRooms = data.data || [];
                         this.filteredChatRooms = [...this.chatRooms];
+                    
+                    // Debug: Log room data structure
+                    console.log('🔍 Debug - Room data structure:');
+                    this.chatRooms.forEach((room, index) => {
+                        console.log(`Room ${index}:`, {
+                            id: room.id,
+                            roomName: room.roomName,
+                            isGroup: room.isGroup,
+                            isGroupType: typeof room.isGroup,
+                            roomAvatar: room.roomAvatar,
+                            memberCount: room.members ? room.members.length : 0,
+                            allKeys: Object.keys(room),
+                            rawData: room
+                        });
+                        
+                        // Debug: Check if group chat is being detected correctly
+                        if (room.members && room.members.length > 2) {
+                            console.log(`⚠️ Room ${room.id} has ${room.members.length} members but isGroup=${room.isGroup}`);
+                        }
+                    });
+                    
                         this.renderChatRooms();
                         this.updateMessageCount();
                     }
@@ -136,12 +159,24 @@ class SimpleChatManager {
             // Xác định tên hiển thị và avatar
             let displayName, displayAvatar, displayOnlineStatus;
             
-            if (room.isGroup) {
+            // Check if this is a group chat
+            const isGroupChat = room.isGroup === true || (room.members && room.members.length > 2);
+            
+            if (isGroupChat) {
                 // Group chat: hiển thị tên room
                 displayName = room.roomName || 'Group Chat';
                 displayAvatar = room.roomAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
                 displayOnlineStatus = false; // Group không có online status
-                console.log('🔍 renderChatRooms() - Group room:', room.id, 'Name:', room.roomName, 'Display:', displayName, 'IsGroup:', room.isGroup);
+                console.log('🔍 renderChatRooms() - Group room:', {
+                    id: room.id,
+                    roomName: room.roomName,
+                    displayName: displayName,
+                    isGroup: room.isGroup,
+                    isGroupType: typeof room.isGroup,
+                    isGroupValue: room.isGroup,
+                    memberCount: room.members ? room.members.length : 0,
+                    isGroupChat: isGroupChat
+                });
             } else {
                 // Private chat: hiển thị tên và avatar của người đối diện
                 const otherMember = room.members && room.members.find(member => member.userId !== this.currentUserId);
@@ -150,17 +185,21 @@ class SimpleChatManager {
                     displayAvatar = otherMember.avatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
                     displayOnlineStatus = otherMember.isOnline || false;
                 } else {
-                    displayName = room.roomName || 'Private Chat';
-                    displayAvatar = room.roomAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
+                    displayName = room.roomName || room.roomname || 'Private Chat';
+                    displayAvatar = room.roomAvatar || room.roomavatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
                     displayOnlineStatus = false;
                 }
             }
             
+            // Highlight search results
+            const highlightedName = this.searchQuery ? this.highlightText(displayName, this.searchQuery) : displayName;
+            const highlightedMessage = this.searchQuery ? this.highlightText(displayMessage, this.searchQuery) : displayMessage;
+            
             roomDiv.innerHTML = `
                 <img class="room-avatar" src="${displayAvatar}" alt="Avatar" onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                 <div class="room-info">
-                    <div class="room-name">${displayName}</div>
-                    <div class="${messageClass}">${displayMessage}</div>
+                    <div class="room-name">${highlightedName}</div>
+                    <div class="${messageClass}">${highlightedMessage}</div>
                 </div>
                 <div class="room-meta">
                     <div class="room-time">${this.getRoomDisplayTime(room)}</div>
@@ -291,10 +330,11 @@ class SimpleChatManager {
         const room = this.chatRooms.find(r => r.id === roomId);
         if (!room) return;
         
-        const roomName = room.isGroup ? room.roomName : 
-                        (room.members && room.members.find(m => m.userId !== this.currentUserId)?.fullName) || 'cuộc trò chuyện';
+        const isGroupChat = room.isGroup === true || (room.members && room.members.length > 2);
+        const roomName = isGroupChat ? room.roomName : 
+                         (room.members && room.members.find(m => m.userId !== this.currentUserId)?.fullName) || 'cuộc trò chuyện';
         
-        const confirmMessage = room.isGroup ? 
+        const confirmMessage = isGroupChat ? 
             `Bạn có chắc chắn muốn xóa nhóm "${roomName}"?` :
             `Bạn có chắc chắn muốn xóa cuộc trò chuyện với "${roomName}"?`;
         
@@ -551,10 +591,12 @@ class SimpleChatManager {
         // Xác định tên hiển thị và avatar cho header
         let headerDisplayName, headerDisplayAvatar;
         
-        if (room.isGroup) {
+        const isGroupChat = room.isGroup === true || (room.members && room.members.length > 2);
+        
+        if (isGroupChat) {
             // Group chat: hiển thị tên room
-            headerDisplayName = room.roomName || 'Group Chat';
-            headerDisplayAvatar = room.roomAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
+            headerDisplayName = room.roomName || room.roomname || 'Group Chat';
+            headerDisplayAvatar = room.roomAvatar || room.roomavatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
         } else {
             // Private chat: hiển thị tên và avatar của người đối diện
             const otherMember = room.members && room.members.find(member => member.userId !== this.currentUserId);
@@ -562,8 +604,8 @@ class SimpleChatManager {
                 headerDisplayName = otherMember.fullName || otherMember.username || 'Unknown User';
                 headerDisplayAvatar = otherMember.avatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
             } else {
-                headerDisplayName = room.roomName || 'Private Chat';
-                headerDisplayAvatar = room.roomAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
+                headerDisplayName = room.roomName || room.roomname || 'Private Chat';
+                headerDisplayAvatar = room.roomAvatar || room.roomavatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
             }
         }
         
@@ -979,34 +1021,175 @@ class SimpleChatManager {
         }
     }
 
-    // Tìm kiếm chat rooms
+    // Tìm kiếm chat rooms - Tối ưu không phân biệt hoa thường
     searchChatRooms(query) {
         this.searchQuery = query.toLowerCase().trim();
         
         if (!this.searchQuery) {
             this.filteredChatRooms = [...this.chatRooms];
         } else {
+            // Tách từ khóa thành các từ riêng biệt để tìm kiếm linh hoạt hơn
+            const searchTerms = this.searchQuery.split(/\s+/).filter(term => term.length > 0);
+            
             this.filteredChatRooms = this.chatRooms.filter(room => {
                 // Tìm kiếm theo tên room
-                const roomNameMatch = room.roomName.toLowerCase().includes(this.searchQuery);
+                const roomName = (room.roomName || room.roomname || '').toLowerCase();
+                const roomNameMatch = searchTerms.every(term => roomName.includes(term));
                 
-                // Tìm kiếm theo tên thành viên
-                const memberMatch = room.members && room.members.some(member => 
-                    (member.fullName && member.fullName.toLowerCase().includes(this.searchQuery)) ||
-                    (member.username && member.username.toLowerCase().includes(this.searchQuery))
-                );
+                // Tìm kiếm theo tên thành viên (fullName và username)
+                const memberMatch = room.members && room.members.some(member => {
+                    const fullName = (member.fullName || '').toLowerCase();
+                    const username = (member.username || '').toLowerCase();
+                    return searchTerms.every(term => 
+                        fullName.includes(term) || username.includes(term)
+                    );
+                });
                 
                 // Tìm kiếm theo tin nhắn cuối cùng
-                const lastMessageMatch = (room.lastMessage && room.lastMessage.content && 
-                    room.lastMessage.content.toLowerCase().includes(this.searchQuery)) ||
-                    (room.lastUnreadMessage && room.lastUnreadMessage.toLowerCase().includes(this.searchQuery));
+                const lastMessageContent = (room.lastMessage && room.lastMessage.content ? 
+                    room.lastMessage.content.toLowerCase() : '');
+                const lastUnreadContent = (room.lastUnreadMessage ? 
+                    room.lastUnreadMessage.toLowerCase() : '');
+                const lastMessageMatch = searchTerms.every(term => 
+                    lastMessageContent.includes(term) || lastUnreadContent.includes(term)
+                );
                 
-                return roomNameMatch || memberMatch || lastMessageMatch;
+                // Tìm kiếm theo email (nếu có)
+                const emailMatch = room.members && room.members.some(member => {
+                    const email = (member.email || '').toLowerCase();
+                    return searchTerms.every(term => email.includes(term));
+                });
+                
+                return roomNameMatch || memberMatch || lastMessageMatch || emailMatch;
             });
         }
         
         this.renderChatRooms();
     }
+    
+    // Hàm loại bỏ dấu tiếng Việt
+    removeVietnameseDiacritics(str) {
+        if (!str) return '';
+        
+        const diacriticsMap = {
+            'à': 'a', 'á': 'a', 'ạ': 'a', 'ả': 'a', 'ã': 'a', 'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ậ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ặ': 'a', 'ẳ': 'a', 'ẵ': 'a',
+            'è': 'e', 'é': 'e', 'ẹ': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ê': 'e', 'ề': 'e', 'ế': 'e', 'ệ': 'e', 'ể': 'e', 'ễ': 'e',
+            'ì': 'i', 'í': 'i', 'ị': 'i', 'ỉ': 'i', 'ĩ': 'i',
+            'ò': 'o', 'ó': 'o', 'ọ': 'o', 'ỏ': 'o', 'õ': 'o', 'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ộ': 'o', 'ổ': 'o', 'ỗ': 'o', 'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ợ': 'o', 'ở': 'o', 'ỡ': 'o',
+            'ù': 'u', 'ú': 'u', 'ụ': 'u', 'ủ': 'u', 'ũ': 'u', 'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ự': 'u', 'ử': 'u', 'ữ': 'u',
+            'ỳ': 'y', 'ý': 'y', 'ỵ': 'y', 'ỷ': 'y', 'ỹ': 'y',
+            'đ': 'd',
+            'À': 'A', 'Á': 'A', 'Ạ': 'A', 'Ả': 'A', 'Ã': 'A', 'Â': 'A', 'Ầ': 'A', 'Ấ': 'A', 'Ậ': 'A', 'Ẩ': 'A', 'Ẫ': 'A', 'Ă': 'A', 'Ằ': 'A', 'Ắ': 'A', 'Ặ': 'A', 'Ẳ': 'A', 'Ẵ': 'A',
+            'È': 'E', 'É': 'E', 'Ẹ': 'E', 'Ẻ': 'E', 'Ẽ': 'E', 'Ê': 'E', 'Ề': 'E', 'Ế': 'E', 'Ệ': 'E', 'Ể': 'E', 'Ễ': 'E',
+            'Ì': 'I', 'Í': 'I', 'Ị': 'I', 'Ỉ': 'I', 'Ĩ': 'I',
+            'Ò': 'O', 'Ó': 'O', 'Ọ': 'O', 'Ỏ': 'O', 'Õ': 'O', 'Ô': 'O', 'Ồ': 'O', 'Ố': 'O', 'Ộ': 'O', 'Ổ': 'O', 'Ỗ': 'O', 'Ơ': 'O', 'Ờ': 'O', 'Ớ': 'O', 'Ợ': 'O', 'Ở': 'O', 'Ỡ': 'O',
+            'Ù': 'U', 'Ú': 'U', 'Ụ': 'U', 'Ủ': 'U', 'Ũ': 'U', 'Ư': 'U', 'Ừ': 'U', 'Ứ': 'U', 'Ự': 'U', 'Ử': 'U', 'Ữ': 'U',
+            'Ỳ': 'Y', 'Ý': 'Y', 'Ỵ': 'Y', 'Ỷ': 'Y', 'Ỹ': 'Y',
+            'Đ': 'D'
+        };
+        
+        return str.replace(/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/g, function(match) {
+            return diacriticsMap[match] || match;
+        });
+    }
+    
+    // Hàm tìm kiếm nâng cao với fuzzy matching cho tiếng Việt (không phân biệt hoa thường)
+    fuzzySearch(text, query) {
+        if (!text || !query) return false;
+        
+        // Chuẩn hóa về lowercase
+        const textLower = text.toLowerCase().trim();
+        const queryLower = query.toLowerCase().trim();
+        
+        // Tìm kiếm chính xác trước
+        if (textLower.includes(queryLower)) return true;
+        
+        // Tìm kiếm không dấu
+        const textNoDiacritics = this.removeVietnameseDiacritics(textLower);
+        const queryNoDiacritics = this.removeVietnameseDiacritics(queryLower);
+        
+        if (textNoDiacritics.includes(queryNoDiacritics)) return true;
+        
+        // Tìm kiếm fuzzy (bỏ qua dấu, khoảng trắng)
+        const normalizeText = textNoDiacritics.replace(/[^\w]/g, '');
+        const normalizeQuery = queryNoDiacritics.replace(/[^\w]/g, '');
+        
+        if (normalizeText.includes(normalizeQuery)) return true;
+        
+        // Tìm kiếm theo từng ký tự (cho phép thiếu một vài ký tự)
+        let textIndex = 0;
+        let queryIndex = 0;
+        
+        while (textIndex < normalizeText.length && queryIndex < normalizeQuery.length) {
+            if (normalizeText[textIndex] === normalizeQuery[queryIndex]) {
+                queryIndex++;
+            }
+            textIndex++;
+        }
+        
+        return queryIndex === normalizeQuery.length;
+    }
+    
+    
+    // Hàm highlight text tìm kiếm
+    highlightText(text, query) {
+        if (!text || !query) return text;
+        
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+    
+    // Hàm highlight đơn giản và chính xác
+    highlightMultipleFields(text, query) {
+        if (!text || !query) return text;
+        
+        const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+        let highlightedText = text;
+        
+        searchTerms.forEach(term => {
+            // Highlight chính xác (case insensitive)
+            const exactRegex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            highlightedText = highlightedText.replace(exactRegex, '<mark class="search-highlight">$1</mark>');
+        });
+        
+        return highlightedText;
+    }
+    
+    // Hàm highlight đơn giản
+    highlightCombinedFields(user, query) {
+        const firstName = user.firstName || '';
+        const lastName = user.lastName || '';
+        const username = user.username || '';
+        const fullName = `${firstName} ${lastName}`.trim();
+        
+        return {
+            fullName: this.highlightMultipleFields(fullName, query),
+            username: this.highlightMultipleFields(username, query),
+            combined: this.highlightMultipleFields(fullName, query)
+        };
+    }
+    
+    // Hàm tìm vị trí gốc trong text có dấu từ vị trí trong text không dấu
+    findOriginalPosition(originalText, noDiacriticsText, position) {
+        let originalPos = 0;
+        let noDiacriticsPos = 0;
+        
+        while (originalPos < originalText.length && noDiacriticsPos < position) {
+            const originalChar = originalText[originalPos];
+            const noDiacriticsChar = this.removeVietnameseDiacritics(originalChar);
+            
+            if (noDiacriticsChar.length > 0) {
+                noDiacriticsPos++;
+            }
+            
+            if (noDiacriticsPos <= position) {
+                originalPos++;
+            }
+        }
+        
+        return originalPos;
+    }
+    
 
     // Hiển thị/ẩn search bar
     toggleSearch() {
@@ -1018,6 +1201,20 @@ class SimpleChatManager {
             searchContainer.style.display = 'block';
             searchInput.focus();
             searchBtn.classList.add('active');
+            
+            // Thêm event listener cho real-time search
+            searchInput.addEventListener('input', (e) => {
+                this.searchChatRooms(e.target.value);
+            });
+            
+            // Thêm event listener cho Enter key
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.searchChatRooms(e.target.value);
+                }
+            });
+            
         } else {
             searchContainer.style.display = 'none';
             searchInput.value = '';
@@ -1057,18 +1254,24 @@ class SimpleChatManager {
             });
         }
         
-        // User search input
+        // User search input với tính năng nâng cao
         const userSearchInput = document.getElementById('userSearchInput');
         if (userSearchInput) {
             let searchTimeout;
+            
             userSearchInput.addEventListener('input', (e) => {
                 clearTimeout(searchTimeout);
                 const query = e.target.value.trim();
+                this.searchQuery = query;
                 
                 if (query.length >= 2) {
                     searchTimeout = setTimeout(() => {
                         this.searchUsers(query);
+                        this.addToRecentSearches(query);
                     }, 300);
+                } else if (query.length === 1) {
+                    // Hiển thị gợi ý khi gõ 1 ký tự
+                    this.showSearchSuggestions(query);
                 } else if (query.length === 0) {
                     this.clearSearchResults();
                 }
@@ -1081,7 +1284,15 @@ class SimpleChatManager {
                     const query = e.target.value.trim();
                     if (query.length >= 2) {
                         this.searchUsers(query);
+                        this.addToRecentSearches(query);
                     }
+                }
+            });
+            
+            // Focus event - hiển thị lịch sử tìm kiếm
+            userSearchInput.addEventListener('focus', (e) => {
+                if (e.target.value.length === 0) {
+                    this.showRecentSearches();
                 }
             });
         }
@@ -1110,31 +1321,206 @@ class SimpleChatManager {
         }
     }
     
-    // Tìm kiếm user
+    // Tìm kiếm user - Tối ưu không phân biệt hoa thường với toán tử nâng cao
     async searchUsers(query) {
         const searchResults = document.getElementById('searchResults');
         if (!searchResults) return;
         
+        // Normalize query - loại bỏ khoảng trắng thừa và chuyển về lowercase
+        const normalizedQuery = query.toLowerCase().trim();
+        
+        if (normalizedQuery.length < 2) {
+            this.clearSearchResults();
+            return;
+        }
+        
         searchResults.innerHTML = '<div class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
         
         try {
-            const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&page=0&size=10`, {
+            // Phân tích query để tìm toán tử
+            const searchParams = this.parseSearchQuery(normalizedQuery);
+            console.log('🔍 Search params:', searchParams);
+            
+            // Tìm kiếm tất cả kết quả (không phân trang)
+            const apiUrl = `/api/users/search?q=${encodeURIComponent(searchParams.query)}`;
+            console.log('🔍 API URL:', apiUrl);
+            
+            const response = await fetch(apiUrl, {
                 method: 'GET',
                 credentials: 'include'
             });
             
+            console.log('🔍 Response status:', response.status);
+            
             if (response.ok) {
                 const data = await response.json();
+                console.log('🔍 API Response:', data);
                 this.lastSearchResults = data.items || [];
-                this.renderSearchResults(this.lastSearchResults);
+                
+                // Lọc kết quả phía client với toán tử nâng cao
+                console.log('🔍 Before filtering - Total users:', this.lastSearchResults.length);
+                const filteredResults = this.filterUserSearchResultsAdvanced(this.lastSearchResults, searchParams);
+                console.log('🔍 After filtering - Filtered users:', filteredResults.length);
+                console.log('🔍 Filtered results:', filteredResults);
+                this.renderSearchResults(filteredResults);
             } else {
-                searchResults.innerHTML = '<div class="text-center py-3 text-danger">Không thể tìm kiếm người dùng</div>';
+                const errorText = await response.text();
+                console.error('🔍 API Error:', response.status, errorText);
+                searchResults.innerHTML = '<div class="text-center py-3 text-danger">Không thể tìm kiếm người dùng (Status: ' + response.status + ')</div>';
             }
         } catch (error) {
-            console.error('Error searching users:', error);
-            searchResults.innerHTML = '<div class="text-center py-3 text-danger">Lỗi khi tìm kiếm</div>';
+            console.error('🔍 Error searching users:', error);
+            searchResults.innerHTML = '<div class="text-center py-3 text-danger">Lỗi khi tìm kiếm: ' + error.message + '</div>';
         }
     }
+    
+    // Phân tích query tìm kiếm để tìm toán tử
+    parseSearchQuery(query) {
+        const params = {
+            query: query,
+            fields: [],
+            exact: false,
+            startsWith: false,
+            contains: true
+        };
+        
+        // Kiểm tra toán tử
+        if (query.startsWith('"') && query.endsWith('"')) {
+            // Tìm kiếm chính xác: "nguyen van"
+            params.exact = true;
+            params.query = query.slice(1, -1);
+        } else if (query.startsWith('^')) {
+            // Tìm kiếm bắt đầu: ^nguyen
+            params.startsWith = true;
+            params.query = query.slice(1);
+        } else if (query.includes(':')) {
+            // Tìm kiếm theo trường: name:nguyen, email:gmail
+            const parts = query.split(':');
+            if (parts.length === 2) {
+                const field = parts[0].trim();
+                const value = parts[1].trim();
+                
+                switch (field) {
+                    case 'name':
+                    case 'n':
+                        params.fields = ['firstName', 'lastName', 'fullName'];
+                        break;
+                    case 'username':
+                    case 'u':
+                        params.fields = ['username'];
+                        break;
+                    case 'email':
+                    case 'e':
+                        params.fields = ['email'];
+                        break;
+                    default:
+                        params.fields = ['firstName', 'lastName', 'username', 'email'];
+                }
+                
+                params.query = value;
+            }
+        }
+        
+        return params;
+    }
+    
+    // Lọc kết quả đơn giản - chỉ cần có dấu hiệu khớp
+    filterUserSearchResultsAdvanced(users, searchParams) {
+        if (!searchParams.query) return users;
+        
+        const query = searchParams.query.toLowerCase().trim();
+        console.log('🔍 Filtering with query:', query);
+        
+        const filtered = users.filter(user => {
+            // Chuẩn hóa dữ liệu
+            const firstName = (user.firstName || '').toLowerCase().trim();
+            const lastName = (user.lastName || '').toLowerCase().trim();
+            const username = (user.username || '').toLowerCase().trim();
+            const email = (user.email || '').toLowerCase().trim();
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            // Tạo chuỗi tìm kiếm tổng hợp
+            const searchText = `${firstName} ${lastName} ${username} ${email}`.trim();
+            
+            // Tạo phiên bản không dấu
+            const searchTextNoDiacritics = this.removeVietnameseDiacritics(searchText);
+            const queryNoDiacritics = this.removeVietnameseDiacritics(query);
+            
+            // Tách từ khóa tìm kiếm
+            const searchTerms = query.split(/\s+/).filter(term => term.length > 0);
+            
+            // Kiểm tra từng từ khóa - chỉ cần 1 từ khớp là được
+            const matches = searchTerms.some(term => {
+                const termNoDiacritics = this.removeVietnameseDiacritics(term);
+                
+                // Kiểm tra có dấu
+                if (searchText.includes(term)) return true;
+                
+                // Kiểm tra không dấu
+                if (searchTextNoDiacritics.includes(termNoDiacritics)) return true;
+                
+                return false;
+            });
+            
+            console.log('🔍 User:', username, 'SearchText:', searchText, 'Matches:', matches);
+            return matches;
+        });
+        
+        console.log('🔍 Filtered count:', filtered.length);
+        return filtered;
+    }
+    
+    // Lọc kết quả tìm kiếm user phía client - Tối ưu đa trường
+    filterUserSearchResults(users, query) {
+        if (!query) return users;
+        
+        const searchTerms = query.split(/\s+/).filter(term => term.length > 0);
+        
+        return users.filter(user => {
+            // Chuẩn hóa dữ liệu
+            const firstName = (user.firstName || '').toLowerCase().trim();
+            const lastName = (user.lastName || '').toLowerCase().trim();
+            const username = (user.username || '').toLowerCase().trim();
+            const email = (user.email || '').toLowerCase().trim();
+            
+            // Tạo các biến thể tên
+            const fullName = `${firstName} ${lastName}`.trim();
+            const reverseFullName = `${lastName} ${firstName}`.trim();
+            const displayName = fullName || username;
+            
+            // Tạo mảng tất cả các trường để tìm kiếm
+            const searchFields = [
+                firstName,
+                lastName,
+                username,
+                email,
+                fullName,
+                reverseFullName,
+                displayName
+            ].filter(field => field.length > 0);
+            
+            // Tìm kiếm theo từng từ khóa
+            return searchTerms.some(term => {
+                // Tìm kiếm chính xác trước
+                const exactMatch = searchFields.some(field => field === term);
+                if (exactMatch) return true;
+                
+                // Tìm kiếm chứa từ khóa
+                const containsMatch = searchFields.some(field => field.includes(term));
+                if (containsMatch) return true;
+                
+                // Tìm kiếm fuzzy (bỏ qua dấu, khoảng trắng)
+                const fuzzyMatch = searchFields.some(field => {
+                    const normalizedField = field.replace(/[^\w]/g, '');
+                    const normalizedTerm = term.replace(/[^\w]/g, '');
+                    return normalizedField.includes(normalizedTerm);
+                });
+                
+                return fuzzyMatch;
+            });
+        });
+    }
+    
     
     // Hiển thị kết quả tìm kiếm
     renderSearchResults(users) {
@@ -1151,14 +1537,34 @@ class SimpleChatManager {
             const avatar = user.avatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
             const isSelected = this.selectedUsers.some(selected => selected.id === user.id);
             
+            // Highlight search terms với nhiều trường và kết hợp
+            const highlightedFields = this.searchQuery ? this.highlightCombinedFields(user, this.searchQuery) : {
+                fullName: fullName,
+                username: user.username,
+                combined: fullName
+            };
+            const highlightedName = highlightedFields.fullName;
+            const highlightedUsername = highlightedFields.username;
+            
+            // Thêm thông tin bổ sung với highlight
+            const userInfo = [];
+            if (user.email) {
+                const highlightedEmail = this.searchQuery ? this.highlightMultipleFields(user.email, this.searchQuery) : user.email;
+                userInfo.push(`📧 ${highlightedEmail}`);
+            }
+            if (user.isOnline !== undefined) userInfo.push(user.isOnline ? '🟢 Online' : '⚫ Offline');
+            
+            
             return `
                 <div class="user-result-item ${isSelected ? 'selected' : ''}" data-user-id="${user.id}">
                     <div class="user-avatar">
                         <img src="${avatar}" alt="${fullName}" onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                        ${user.isOnline ? '<div class="online-indicator"></div>' : ''}
                     </div>
                     <div class="user-info">
-                        <div class="user-name">${fullName}</div>
-                        <div class="user-username">@${user.username}</div>
+                        <div class="user-name">${highlightedName}</div>
+                        <div class="user-username">@${highlightedUsername}</div>
+                        ${userInfo.length > 0 ? `<div class="user-details">${userInfo.join(' • ')}</div>` : ''}
                     </div>
                     <div class="user-actions">
                         <button class="btn btn-outline-primary btn-sm select-user-btn" data-user-id="${user.id}">
@@ -1477,6 +1883,113 @@ class SimpleChatManager {
         if (window.chatWebSocketManager && window.chatWebSocketManager.isConnected() && this.currentRoomId) {
             window.chatWebSocketManager.sendMessageRead(this.currentRoomId);
         }
+    }
+    
+    // Thêm vào lịch sử tìm kiếm gần đây
+    addToRecentSearches(query) {
+        if (!query || query.length < 2) return;
+        
+        // Loại bỏ query cũ nếu đã tồn tại
+        this.recentSearches = this.recentSearches.filter(search => search !== query);
+        
+        // Thêm query mới vào đầu danh sách
+        this.recentSearches.unshift(query);
+        
+        // Giới hạn tối đa 10 lịch sử
+        if (this.recentSearches.length > 10) {
+            this.recentSearches = this.recentSearches.slice(0, 10);
+        }
+        
+        // Lưu vào localStorage
+        localStorage.setItem('chatRecentSearches', JSON.stringify(this.recentSearches));
+    }
+    
+    // Hiển thị lịch sử tìm kiếm gần đây
+    showRecentSearches() {
+        const searchResults = document.getElementById('searchResults');
+        if (!searchResults) return;
+        
+        // Load từ localStorage
+        const savedSearches = localStorage.getItem('chatRecentSearches');
+        if (savedSearches) {
+            this.recentSearches = JSON.parse(savedSearches);
+        }
+        
+        if (this.recentSearches.length === 0) {
+            searchResults.innerHTML = '<div class="text-center py-3 text-muted">Gõ tên để tìm kiếm người dùng</div>';
+            return;
+        }
+        
+        const recentHTML = `
+            <div class="recent-searches">
+                <div class="recent-searches-header">
+                    <i class="fas fa-clock"></i> Tìm kiếm gần đây
+                </div>
+                ${this.recentSearches.map(search => `
+                    <div class="recent-search-item" onclick="window.chatManager.searchUserFromRecent('${search}')">
+                        <i class="fas fa-search"></i>
+                        <span>${search}</span>
+                        <button class="btn-remove-recent" onclick="event.stopPropagation(); window.chatManager.removeRecentSearch('${search}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        searchResults.innerHTML = recentHTML;
+    }
+    
+    // Tìm kiếm từ lịch sử
+    searchUserFromRecent(query) {
+        console.log('🔍 searchUserFromRecent called with:', query);
+        const userSearchInput = document.getElementById('userSearchInput');
+        if (userSearchInput) {
+            userSearchInput.value = query;
+            this.searchQuery = query;
+            this.searchUsers(query);
+        } else {
+            console.error('🔍 userSearchInput not found');
+        }
+    }
+    
+    // Xóa lịch sử tìm kiếm
+    removeRecentSearch(query) {
+        this.recentSearches = this.recentSearches.filter(search => search !== query);
+        localStorage.setItem('chatRecentSearches', JSON.stringify(this.recentSearches));
+        this.showRecentSearches();
+    }
+    
+    // Hiển thị gợi ý tìm kiếm
+    showSearchSuggestions(query) {
+        const searchResults = document.getElementById('searchResults');
+        if (!searchResults) return;
+        
+        // Tạo gợi ý từ lịch sử tìm kiếm
+        const suggestions = this.recentSearches.filter(search => 
+            search.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 5);
+        
+        if (suggestions.length === 0) {
+            searchResults.innerHTML = '<div class="text-center py-3 text-muted">Gõ thêm để tìm kiếm...</div>';
+            return;
+        }
+        
+        const suggestionsHTML = `
+            <div class="search-suggestions">
+                <div class="suggestions-header">
+                    <i class="fas fa-lightbulb"></i> Gợi ý
+                </div>
+                ${suggestions.map(suggestion => `
+                    <div class="suggestion-item" onclick="window.chatManager.searchUserFromRecent('${suggestion}')">
+                        <i class="fas fa-search"></i>
+                        <span>${suggestion}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        
+        searchResults.innerHTML = suggestionsHTML;
     }
 }
 

@@ -6,7 +6,6 @@ import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.FriendshipService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,30 +27,39 @@ public class UserSearchController {
 
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> search(
-            @RequestParam(name = "q", required = false) String keyword,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(name = "q", required = false) String keyword
     ) {
         Long currentUserId = securityUtil.getCurrentUserId();
-        Pageable pageable = PageRequest.of(page, size);
+        
+        System.out.println("🔍 UserSearchController.search() - Keyword: " + keyword + ", CurrentUserId: " + currentUserId);
 
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (keyword != null && !keyword.trim().isEmpty()) {
             String like = "%" + keyword.trim() + "%";
+            System.out.println("🔍 UserSearchController.search() - Searching with LIKE: " + like);
             spec = spec.and((root, query, cb) -> cb.or(
-                    cb.like(root.get("username"), like),
-                    cb.like(root.get("email"), like),
-                    cb.like(root.get("firstName"), like),
-                    cb.like(root.get("lastName"), like)
+                    cb.like(cb.lower(root.get("username")), like.toLowerCase()),
+                    cb.like(cb.lower(root.get("email")), like.toLowerCase()),
+                    cb.like(cb.lower(root.get("firstName")), like.toLowerCase()),
+                    cb.like(cb.lower(root.get("lastName")), like.toLowerCase()),
+                    cb.like(cb.lower(cb.concat(cb.concat(root.get("firstName"), " "), root.get("lastName"))), like.toLowerCase())
             ));
         }
 
         // exclude self
         spec = spec.and((root, query, cb) -> cb.notEqual(root.get("id"), currentUserId));
 
-        Page<User> result = userDao.findAll(spec, pageable);
+        List<User> result = userDao.findAll(spec);
+        System.out.println("🔍 UserSearchController.search() - Found " + result.size() + " users total");
+        
+        // Debug: In ra tất cả users để kiểm tra
+        for (User u : result) {
+            System.out.println("🔍 User: " + u.getUsername() + " | " + u.getFirstName() + " " + u.getLastName() + " | " + u.getEmail());
+        }
 
-        List<Map<String, Object>> users = result.getContent().stream().map(u -> {
+        List<Map<String, Object>> users = result.stream().map(u -> {
+            System.out.println("🔍 UserSearchController.search() - Processing user: " + u.getUsername() + " (ID: " + u.getId() + ", FirstName: " + u.getFirstName() + ", LastName: " + u.getLastName() + ")");
+            
             Optional<Friendship> fs = friendshipService.getFriendshipBetween(currentUserId, u.getId());
             String friendshipStatus = fs.map(f -> f.getStatus().name()).orElse("NONE");
             Long requesterId = fs.map(f -> f.getUser().getId()).orElse(null);
@@ -74,10 +82,7 @@ public class UserSearchController {
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of(
-                "page", result.getNumber(),
-                "size", result.getSize(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages(),
+                "totalElements", users.size(),
                 "items", users
         ));
     }

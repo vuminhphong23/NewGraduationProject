@@ -29,7 +29,7 @@ public class ChatRoom {
 
     @Column(name = "is_group", nullable = false)
     @Builder.Default
-    private boolean isGroup = false;
+    private Boolean isGroup = false;
 
     @Column(name = "room_avatar")
     private String roomAvatar;
