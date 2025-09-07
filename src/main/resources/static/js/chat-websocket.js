@@ -11,7 +11,6 @@
     // Khởi tạo WebSocket connection
     async function initializeChatWebSocket() {
         if (chatWebSocket && chatWebSocket.readyState === WebSocket.OPEN) {
-            console.log('Chat WebSocket already connected');
             return;
         }
         
@@ -27,19 +26,15 @@
             }
             
             if (!userId) {
-                console.error('❌ Cannot get current user ID for WebSocket connection');
                 fallbackToPolling();
                 return;
             }
             
             const wsUrl = `${protocol}//${window.location.host}/ws/chat?userId=${userId}`;
             
-            console.log('🔗 Connecting to Chat WebSocket:', wsUrl);
-            
             chatWebSocket = new WebSocket(wsUrl);
             
             chatWebSocket.onopen = function(event) {
-                console.log('✅ Chat WebSocket connected');
                 isConnected = true;
                 reconnectAttempts = 0;
             };
@@ -49,12 +44,11 @@
                     const data = JSON.parse(event.data);
                     handleChatWebSocketMessage(data);
                 } catch (error) {
-                    console.error('❌ Error parsing chat WebSocket message:', error);
+                    // Error parsing message
                 }
             };
             
             chatWebSocket.onclose = function(event) {
-                console.log('🔌 Chat WebSocket disconnected:', event.code, event.reason);
                 isConnected = false;
                 chatWebSocket = null;
                 
@@ -62,23 +56,20 @@
                 if (reconnectAttempts < maxReconnectAttempts) {
                     reconnectAttempts++;
                     const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000); // Exponential backoff
-                    console.log(`🔄 Reconnecting chat WebSocket in ${delay}ms (attempt ${reconnectAttempts}/${maxReconnectAttempts})`);
                     
                     reconnectTimeout = setTimeout(async () => {
                         await initializeChatWebSocket();
                     }, delay);
                 } else {
-                    console.log('❌ Max reconnection attempts reached for chat WebSocket');
                     fallbackToPolling();
                 }
             };
             
             chatWebSocket.onerror = function(error) {
-                console.error('❌ Chat WebSocket error:', error);
+                // WebSocket error
             };
             
         } catch (error) {
-            console.error('❌ Error initializing chat WebSocket:', error);
             fallbackToPolling();
         }
     }
@@ -90,22 +81,18 @@
                 chatWebSocket.send(JSON.stringify(message));
                 return true;
             } catch (error) {
-                console.error('❌ Error sending chat WebSocket message:', error);
                 return false;
             }
         } else {
-            console.warn('⚠️ Chat WebSocket not connected, cannot send message');
             return false;
         }
     }
     
     // Xử lý message từ WebSocket
     function handleChatWebSocketMessage(data) {
-        console.log('📨 Chat WebSocket message received:', data);
             
             switch (data.type) {
             case 'CONNECTION_ESTABLISHED':
-                console.log('✅ Chat WebSocket connection confirmed');
                     break;
                 
             case 'NEW_MESSAGE':
@@ -125,25 +112,25 @@
                 handleUserOffline(data);
                 break;
                 
+            case 'FILE_UPLOADED':
+                handleFileUploaded(data);
+                break;
+                
+            case 'FILES_UPLOADED':
+                handleFilesUploaded(data);
+                break;
+                
             default:
-                console.log('❓ Unknown chat WebSocket message type:', data.type);
+                // Unknown message type
+                break;
         }
     }
     
     // Xử lý tin nhắn mới
     function handleNewMessage(messageData) {
-        console.log('💬 New message received:', messageData);
-        console.log('💬 Current room ID:', window.chatManager ? window.chatManager.currentRoomId : 'No chatManager');
-        console.log('💬 Message room ID:', messageData.roomId);
-        
         // Nếu đang ở room này, thêm message vào UI
         if (window.chatManager && window.chatManager.currentRoomId == messageData.roomId) {
-            console.log('💬 Adding message to UI');
             window.chatManager.addMessageToUI(messageData);
-        } else {
-            console.log('💬 Not in this room, skipping UI update');
-            console.log('💬 Current room ID type:', typeof window.chatManager.currentRoomId);
-            console.log('💬 Message room ID type:', typeof messageData.roomId);
         }
         
         // Cập nhật danh sách rooms để hiển thị tin nhắn mới nhất
@@ -160,8 +147,6 @@
     
     // Xử lý message read status
     function handleMessageRead(data) {
-        console.log('👁️ Message read status updated:', data);
-        
         // Cập nhật UI để hiển thị "đã xem" cho tin nhắn cuối cùng
         if (window.chatManager && window.chatManager.currentRoomId === data.roomId) {
             window.chatManager.updateMessageReadStatus(data.roomId);
@@ -171,8 +156,6 @@
     
     // Xử lý user online
     function handleUserOnline(data) {
-        console.log('🟢 User online:', data);
-        
         if (window.chatManager) {
             window.chatManager.updateUserOnlineStatus(data.userId, true);
         }
@@ -180,10 +163,70 @@
     
     // Xử lý user offline
     function handleUserOffline(data) {
-        console.log('🔴 User offline:', data);
-        
         if (window.chatManager) {
             window.chatManager.updateUserOnlineStatus(data.userId, false);
+        }
+    }
+    
+    // Xử lý file upload
+    function handleFileUploaded(data) {
+        // Nếu đang ở room này, hiển thị file trong chat
+        if (window.chatManager && window.chatManager.currentRoomId == data.roomId) {
+            // Tạo message giả để hiển thị file
+            const fileMessage = {
+                id: 'temp_' + Date.now(),
+                content: `📎 ${data.file.originalName}`, // Content text cho sidebar
+                senderId: data.userId,
+                senderName: 'Bạn',
+                createdAt: new Date().toISOString(),
+                isRead: true,
+                attachments: [data.file] // Sử dụng attachments thay vì file
+            };
+            
+            window.chatManager.addMessageToUI(fileMessage);
+        }
+        
+        // Cập nhật files sidebar nếu đang mở
+        if (window.chatFilesManager && window.chatFilesManager.currentRoomId == data.roomId) {
+            window.chatFilesManager.addFile(data.file);
+        }
+        
+        // Hiển thị notification nếu không phải file của mình
+        const currentUserId = getCurrentUserIdSync();
+        if (currentUserId && data.userId !== currentUserId) {
+            showFileNotification(data.file, data.userId);
+        }
+    }
+    
+    // Xử lý multiple files upload
+    function handleFilesUploaded(data) {
+        // Nếu đang ở room này, hiển thị files trong chat
+        if (window.chatManager && window.chatManager.currentRoomId == data.roomId) {
+            // Tạo message giả để hiển thị files
+            const filesMessage = {
+                id: 'temp_' + Date.now(),
+                content: `📎 Đã gửi ${data.files.length} file`, // Content text cho sidebar
+                senderId: data.userId,
+                senderName: 'Bạn',
+                createdAt: new Date().toISOString(),
+                isRead: true,
+                attachments: data.files // Sử dụng attachments thay vì files
+            };
+            
+            window.chatManager.addMessageToUI(filesMessage);
+        }
+        
+        // Cập nhật files sidebar nếu đang mở
+        if (window.chatFilesManager && window.chatFilesManager.currentRoomId == data.roomId) {
+            data.files.forEach(file => {
+                window.chatFilesManager.addFile(file);
+            });
+        }
+        
+        // Hiển thị notification nếu không phải files của mình
+        const currentUserId = getCurrentUserIdSync();
+        if (currentUserId && data.userId !== currentUserId) {
+            showFilesNotification(data.files, data.userId);
         }
     }
     
@@ -195,10 +238,24 @@
         }
     }
     
+    // Hiển thị notification cho file upload
+    function showFileNotification(file, userId) {
+        if (window.toastManager) {
+            const notificationText = `📎 ${file.originalName}`;
+            window.toastManager.info(notificationText);
+        }
+    }
+    
+    // Hiển thị notification cho multiple files upload
+    function showFilesNotification(files, userId) {
+        if (window.toastManager) {
+            const notificationText = `📎 Đã gửi ${files.length} file`;
+            window.toastManager.info(notificationText);
+        }
+    }
+    
     // Fallback về polling nếu WebSocket không hoạt động
     function fallbackToPolling() {
-        console.log('🔄 Falling back to polling for chat');
-        
         // Polling sẽ được thực hiện bởi chat-simple.js
         if (window.chatManager) {
             window.chatManager.startPolling();
@@ -230,7 +287,6 @@
             
             return null;
         } catch (error) {
-            console.error('Error getting current user ID:', error);
             return null;
         }
     }

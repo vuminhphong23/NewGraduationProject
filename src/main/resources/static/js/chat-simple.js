@@ -23,11 +23,8 @@ class SimpleChatManager {
             // Lấy user ID
             this.currentUserId = await this.getCurrentUserId();
             if (!this.currentUserId) {
-                console.error('Cannot get current user ID');
                 return;
             }
-            
-            console.log('SimpleChatManager initialized for user:', this.currentUserId);
             
             // Load chat rooms
             await this.loadChatRooms();
@@ -39,7 +36,7 @@ class SimpleChatManager {
             this.initializeWebSocket();
             
         } catch (error) {
-            console.error('Error initializing SimpleChatManager:', error);
+            // Error initializing
         }
     }
 
@@ -67,7 +64,6 @@ class SimpleChatManager {
             
             return null;
         } catch (error) {
-            console.error('Error getting current user ID:', error);
             return null;
         }
     }
@@ -85,32 +81,13 @@ class SimpleChatManager {
                         this.chatRooms = data.data || [];
                         this.filteredChatRooms = [...this.chatRooms];
                     
-                    // Debug: Log room data structure
-                    console.log('🔍 Debug - Room data structure:');
-                    this.chatRooms.forEach((room, index) => {
-                        console.log(`Room ${index}:`, {
-                            id: room.id,
-                            roomName: room.roomName,
-                            isGroup: room.isGroup,
-                            isGroupType: typeof room.isGroup,
-                            roomAvatar: room.roomAvatar,
-                            memberCount: room.members ? room.members.length : 0,
-                            allKeys: Object.keys(room),
-                            rawData: room
-                        });
-                        
-                        // Debug: Check if group chat is being detected correctly
-                        if (room.members && room.members.length > 2) {
-                            console.log(`⚠️ Room ${room.id} has ${room.members.length} members but isGroup=${room.isGroup}`);
-                        }
-                    });
                     
                         this.renderChatRooms();
                         this.updateMessageCount();
                     }
                 }
         } catch (error) {
-            console.error('Error loading chat rooms:', error);
+            // Error loading chat rooms
         }
     }
 
@@ -167,16 +144,6 @@ class SimpleChatManager {
                 displayName = room.roomName || 'Group Chat';
                 displayAvatar = room.roomAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
                 displayOnlineStatus = false; // Group không có online status
-                console.log('🔍 renderChatRooms() - Group room:', {
-                    id: room.id,
-                    roomName: room.roomName,
-                    displayName: displayName,
-                    isGroup: room.isGroup,
-                    isGroupType: typeof room.isGroup,
-                    isGroupValue: room.isGroup,
-                    memberCount: room.members ? room.members.length : 0,
-                    isGroupChat: isGroupChat
-                });
             } else {
                 // Private chat: hiển thị tên và avatar của người đối diện
                 const otherMember = room.members && room.members.find(member => member.userId !== this.currentUserId);
@@ -370,33 +337,27 @@ class SimpleChatManager {
                 // Re-render danh sách rooms
                 this.renderChatRooms();
                 
-                console.log('✅ Chat room deleted:', roomId);
             } else {
                 const errorData = await response.json();
-                console.error('❌ Failed to delete chat room:', errorData.message);
                 alert('Không thể xóa cuộc trò chuyện: ' + (errorData.message || 'Lỗi không xác định'));
             }
         } catch (error) {
-            console.error('❌ Error deleting chat room:', error);
             alert('Lỗi khi xóa cuộc trò chuyện: ' + error.message);
         }
     }
     
     // Thêm thành viên vào nhóm (placeholder)
     addMemberToGroup(roomId) {
-        console.log('Add member to group:', roomId);
         alert('Tính năng thêm thành viên sẽ được phát triển sau');
     }
     
     // Hiển thị thông tin nhóm (placeholder)
     showGroupInfo(roomId) {
-        console.log('Show group info:', roomId);
         alert('Tính năng thông tin nhóm sẽ được phát triển sau');
     }
     
     // Hiển thị thông tin người dùng (placeholder)
     showUserInfo(roomId) {
-        console.log('Show user info:', roomId);
         alert('Tính năng thông tin người dùng sẽ được phát triển sau');
     }
     
@@ -444,8 +405,11 @@ class SimpleChatManager {
             // Đánh dấu đã đọc khi chọn room
             this.markRoomAsReadIfNeeded();
             
+            // Auto open file management
+            this.autoOpenFileManagement();
+            
         } catch (error) {
-            console.error('Error selecting room:', error);
+            // Error selecting room
         }
     }
 
@@ -457,7 +421,6 @@ class SimpleChatManager {
             });
 
             if (response.ok) {
-                console.log('Room marked as read');
                 
                 // Cập nhật room data
                 const room = this.chatRooms.find(r => r.id === roomId);
@@ -476,7 +439,7 @@ class SimpleChatManager {
                 this.renderChatRooms();
             }
         } catch (error) {
-            console.error('Error marking room as read:', error);
+            // Error marking room as read
         }
     }
 
@@ -496,7 +459,6 @@ class SimpleChatManager {
             );
             
             if (hasUnreadReceivedMessages) {
-                console.log('📖 Marking room as read due to user interaction');
                 // Gọi API để đánh dấu đã đọc nhưng không reload messages
                 this.markRoomAsReadSilently(this.currentRoomId);
             }
@@ -512,7 +474,6 @@ class SimpleChatManager {
             });
 
             if (response.ok) {
-                console.log('Room marked as read silently');
                 
                 // Cập nhật room data
                 const room = this.chatRooms.find(r => r.id === roomId);
@@ -531,7 +492,7 @@ class SimpleChatManager {
                 this.renderChatRooms();
             }
         } catch (error) {
-            console.error('Error marking room as read silently:', error);
+            // Error marking room as read silently
         }
     }
 
@@ -647,48 +608,32 @@ class SimpleChatManager {
 
     async loadRoomMessages(roomId) {
         try {
-            console.log('Loading messages for room:', roomId);
             const response = await fetch(`/api/chat/rooms/${roomId}/messages`, {
                 method: 'GET',
                 credentials: 'include'
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response ok:', response.ok);
-
             if (response.ok) {
                 const data = await response.json();
-                console.log('Response data:', data);
                 if (data.success) {
                     this.messages = data.data || [];
-                    console.log('Messages loaded:', this.messages.length);
                     this.renderMessages();
-                } else {
-                    console.error('API returned success=false:', data.message);
                 }
-            } else {
-                console.error('HTTP error:', response.status, response.statusText);
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
             }
         } catch (error) {
-            console.error('Error loading room messages:', error);
+            // Error loading room messages
         }
     }
 
     renderMessages() {
-        console.log('Rendering messages:', this.messages.length);
         const chatMessages = document.getElementById('chatMessages');
         if (!chatMessages) {
-            console.error('chatMessages element not found');
             return;
         }
 
-        console.log('chatMessages element found:', chatMessages);
         chatMessages.innerHTML = '';
 
         if (this.messages.length === 0) {
-            console.log('No messages to render');
             chatMessages.innerHTML = '<div class="no-messages">Chưa có tin nhắn nào</div>';
             return;
         }
@@ -697,9 +642,9 @@ class SimpleChatManager {
         const lastSentMessageIndex = this.findLastSentMessageIndex();
         
         this.messages.forEach((message, index) => {
-            console.log(`Rendering message ${index}:`, message);
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${message.senderId === this.currentUserId ? 'sent' : 'received'}`;
+            messageDiv.setAttribute('data-message-id', message.id);
             
             // Chỉ hiển thị read status cho tin nhắn cuối cùng của người gửi
             let readStatus = '';
@@ -712,19 +657,35 @@ class SimpleChatManager {
                 }
             }
             
+            // Xử lý file messages
+            let messageContent = message.content || '';
+            if (message.attachments && message.attachments.length > 0) {
+                // Single attachment message - hiển thị ảnh trực tiếp
+                if (message.attachments.length === 1) {
+                    messageContent = this.createFileMessageHTML(message.attachments[0]);
+                } else {
+                    // Multiple attachments message - hiển thị ảnh trực tiếp
+                    messageContent = this.createFilesMessageHTML(message.attachments);
+                }
+            } else if (message.file) {
+                // Backward compatibility - Single file message
+                messageContent = this.createFileMessageHTML(message.file);
+            } else if (message.files && message.files.length > 0) {
+                // Backward compatibility - Multiple files message
+                messageContent = this.createFilesMessageHTML(message.files);
+            }
+            
             messageDiv.innerHTML = `
-                <div class="message-content">${message.content}</div>
+                <div class="message-content">${messageContent}</div>
                 <div class="message-time">${this.formatTime(message.createdAt)}</div>
                 ${readStatus}
             `;
 
             chatMessages.appendChild(messageDiv);
-            console.log(`Message ${index} appended to DOM`);
         });
 
         // Scroll to bottom
         this.scrollToBottom();
-        console.log('Messages rendered successfully, total messages in DOM:', chatMessages.children.length);
     }
 
     async sendMessage() {
@@ -752,19 +713,16 @@ class SimpleChatManager {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('📤 Message sent successfully:', data);
                 if (data.success) {
                     // Xóa tin nhắn tạm và thêm tin nhắn thật từ server
                     this.removeSendingMessage();
                     this.addMessageToUI(data.data);
                 }
             } else {
-                console.error('📤 Failed to send message:', response.status, response.statusText);
                 // Nếu gửi thất bại, xóa tin nhắn tạm
                 this.removeSendingMessage();
             }
         } catch (error) {
-            console.error('Error sending message:', error);
             this.removeSendingMessage();
         }
     }
@@ -882,6 +840,237 @@ class SimpleChatManager {
                 this.markRoomAsReadIfNeeded();
             });
         }
+
+        // Toggle files button
+        const toggleFilesBtn = document.getElementById('toggleFilesBtn');
+        if (toggleFilesBtn) {
+            toggleFilesBtn.addEventListener('click', () => {
+                this.toggleFileManagement();
+            });
+        }
+
+        // Search messages button
+        const searchMessagesBtn = document.getElementById('searchMessagesBtn');
+        if (searchMessagesBtn) {
+            searchMessagesBtn.addEventListener('click', () => {
+                this.toggleSearchBar();
+            });
+        }
+
+        // Close search button
+        const closeSearchBtn = document.getElementById('closeSearchBtn');
+        if (closeSearchBtn) {
+            closeSearchBtn.addEventListener('click', () => {
+                this.closeSearchBar();
+            });
+        }
+
+        // Search input
+        const messageSearchInput = document.getElementById('messageSearchInput');
+        if (messageSearchInput) {
+            messageSearchInput.addEventListener('input', (e) => {
+                this.searchMessages(e.target.value);
+            });
+        }
+    }
+
+    autoOpenFileManagement() {
+        if (!this.currentRoomId) {
+            return;
+        }
+
+        if (window.chatFileManagement) {
+            const chatMain = document.querySelector('.chat-main');
+            const filesIcon = document.getElementById('filesIcon');
+            
+            // Auto open file management
+            window.chatFileManagement.openSidebar(this.currentRoomId);
+            if (chatMain) chatMain.classList.add('with-files-sidebar');
+            if (filesIcon) filesIcon.className = 'fas fa-folder-open';
+        }
+    }
+
+    toggleFileManagement() {
+        if (!this.currentRoomId) {
+            console.log('No room selected');
+            return;
+        }
+
+        if (window.chatFileManagement) {
+            const sidebar = document.getElementById('chatFilesSidebar');
+            const chatMain = document.querySelector('.chat-main');
+            const filesIcon = document.getElementById('filesIcon');
+            
+            if (sidebar && sidebar.classList.contains('show')) {
+                // Close sidebar
+                window.chatFileManagement.closeSidebar();
+                if (chatMain) chatMain.classList.remove('with-files-sidebar');
+                if (filesIcon) filesIcon.className = 'fas fa-folder';
+            } else {
+                // Open sidebar
+                window.chatFileManagement.openSidebar(this.currentRoomId);
+                if (chatMain) chatMain.classList.add('with-files-sidebar');
+                if (filesIcon) filesIcon.className = 'fas fa-folder-open';
+            }
+        } else {
+            console.error('ChatFileManagement not initialized');
+        }
+    }
+
+    toggleSearchBar() {
+        const searchBar = document.getElementById('chatSearchBar');
+        const searchInput = document.getElementById('messageSearchInput');
+        
+        if (searchBar && searchInput) {
+            if (searchBar.style.display === 'none') {
+                searchBar.style.display = 'flex';
+                searchInput.focus();
+            } else {
+                this.closeSearchBar();
+            }
+        }
+    }
+
+    closeSearchBar() {
+        const searchBar = document.getElementById('chatSearchBar');
+        const searchInput = document.getElementById('messageSearchInput');
+        const searchResults = document.getElementById('searchResults');
+        
+        if (searchBar) {
+            searchBar.style.display = 'none';
+        }
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        if (searchResults) {
+            searchResults.innerHTML = '';
+        }
+    }
+
+    searchMessages(query) {
+        if (!query || query.trim() === '') {
+            this.clearSearchResults();
+            return;
+        }
+
+        const results = this.messages.filter(message => {
+            const content = message.content || '';
+            return content.toLowerCase().includes(query.toLowerCase());
+        });
+
+        console.log('Search results:', results);
+        console.log('Current messages:', this.messages);
+
+        this.displaySearchResults(results, query);
+    }
+
+    displaySearchResults(results, query) {
+        const searchResults = document.getElementById('searchResults');
+        if (!searchResults) return;
+
+        if (results.length === 0) {
+            searchResults.innerHTML = '<div class="no-search-results">Không tìm thấy tin nhắn nào</div>';
+            return;
+        }
+
+        const html = results.map(message => {
+            const highlightedContent = this.highlightSearchTerm(message.content || '', query);
+            const time = this.formatTime(message.createdAt);
+            const messageId = message.id || message.messageId; // Fallback for different ID fields
+            
+            return `
+                <div class="search-result-item" data-message-id="${messageId}">
+                    <div class="search-result-content">${highlightedContent}</div>
+                    <div class="search-result-meta">
+                        <span>${time}</span>
+                        <span>${message.senderName || 'Unknown'}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        searchResults.innerHTML = html;
+
+        // Add click handlers for search results
+        searchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const messageId = item.dataset.messageId;
+                console.log('Clicked search result for message ID:', messageId);
+                
+                // Close search bar first
+                this.closeSearchBar();
+                
+                // Then scroll to message
+                setTimeout(() => {
+                    this.scrollToMessage(messageId);
+                }, 100);
+            });
+        });
+    }
+
+    highlightSearchTerm(text, query) {
+        if (!text || !query) return text;
+        
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+
+    clearSearchResults() {
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.innerHTML = '';
+        }
+    }
+
+    scrollToMessage(messageId) {
+        console.log('Scrolling to message ID:', messageId);
+        
+        // Tìm message element trong chat messages
+        const messageElement = document.querySelector(`.chat-messages [data-message-id="${messageId}"]`);
+        
+        if (messageElement) {
+            console.log('Found message element:', messageElement);
+            
+            // Scroll đến message
+            messageElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+            });
+            
+            // Add highlight effect using CSS class
+            messageElement.classList.add('highlighted');
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                messageElement.classList.remove('highlighted');
+            }, 3000);
+        } else {
+            console.log('Message element not found for ID:', messageId);
+            
+            // Fallback: scroll to bottom and try again
+            this.scrollToBottom();
+            setTimeout(() => {
+                const retryElement = document.querySelector(`.chat-messages [data-message-id="${messageId}"]`);
+                if (retryElement) {
+                    retryElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+                    
+                    // Add highlight effect using CSS class
+                    retryElement.classList.add('highlighted');
+                    
+                    setTimeout(() => {
+                        retryElement.classList.remove('highlighted');
+                    }, 3000);
+                } else {
+                    console.log('Message still not found after retry');
+                }
+            }, 500);
+        }
     }
 
     formatTime(dateString) {
@@ -939,39 +1128,29 @@ class SimpleChatManager {
     initializeWebSocket() {
         if (window.chatWebSocketManager) {
             window.chatWebSocketManager.connect();
-            console.log('Chat WebSocket initialized');
             
             // Dừng polling nếu WebSocket hoạt động
             this.stopPolling();
         } else {
-            console.warn('Chat WebSocket manager not available, using polling fallback');
             this.startPolling();
         }
     }
     
     // Thêm message vào UI (được gọi từ WebSocket)
     addMessageToUI(messageData) {
-        console.log('🔄 addMessageToUI called with:', messageData);
-        
         // Kiểm tra xem message đã tồn tại chưa
         const existingMessage = this.messages.find(m => m.id === messageData.id);
         if (existingMessage) {
-            console.log('🔄 Message already exists, skipping');
             return; // Message đã tồn tại, không thêm lại
         }
         
-        console.log('🔄 Adding new message to array');
         // Thêm message mới
         this.messages.push(messageData);
         
-        console.log('🔄 Total messages now:', this.messages.length);
-        
         // Render lại messages
-        console.log('🔄 Calling renderMessages');
         this.renderMessages();
         
         // Scroll xuống cuối
-        console.log('🔄 Calling scrollToBottom');
         this.scrollToBottom();
     }
     
@@ -984,12 +1163,219 @@ class SimpleChatManager {
                 // Kiểm tra nếu có tin nhắn thì mới scroll
                 if (chatMessages.children.length > 0) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                    console.log('📜 Scrolled to bottom, scrollHeight:', chatMessages.scrollHeight);
-                } else {
-                    console.log('📜 No messages to scroll to');
                 }
             }, 100);
         }
+    }
+    
+    // Tạo HTML cho single file message
+    createFileMessageHTML(file) {
+        // Nếu là ảnh, hiển thị ảnh trực tiếp như Facebook
+        if (file.fileType === 'image' || file.attachmentType === 'IMAGE') {
+            return `
+                <div class="image-message">
+                    <img src="${file.previewUrl || file.downloadUrl}" 
+                         alt="${file.originalName}" 
+                         class="chat-image"
+                         onclick="window.open('${file.previewUrl || file.downloadUrl}', '_blank')"
+                         loading="lazy">
+                    <div class="image-overlay">
+                        <div class="image-actions">
+                            <a href="${file.downloadUrl}" target="_blank" class="image-download" title="Tải về">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <a href="${file.previewUrl || file.downloadUrl}" target="_blank" class="image-preview" title="Xem to">
+                                <i class="fas fa-expand"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Nếu là video, hiển thị video player
+        if (file.fileType === 'video' || file.attachmentType === 'VIDEO') {
+            return `
+                <div class="video-message">
+                    <video controls class="chat-video" preload="metadata">
+                        <source src="${file.previewUrl || file.downloadUrl}" type="${file.mimeType}">
+                        Trình duyệt không hỗ trợ video.
+                    </video>
+                    <div class="video-info">
+                        <div class="file-name">${file.originalName}</div>
+                        <div class="file-size">${this.formatFileSize(file.fileSize)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Nếu là audio, hiển thị audio player
+        if (file.fileType === 'audio' || file.attachmentType === 'AUDIO') {
+            return `
+                <div class="audio-message">
+                    <audio controls class="chat-audio">
+                        <source src="${file.previewUrl || file.downloadUrl}" type="${file.mimeType}">
+                        Trình duyệt không hỗ trợ audio.
+                    </audio>
+                    <div class="audio-info">
+                        <div class="file-name">${file.originalName}</div>
+                        <div class="file-size">${this.formatFileSize(file.fileSize)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Các file khác (document, etc.) - click để tải về
+        const fileIcon = this.getFileIcon(file.fileType || file.attachmentType);
+        const fileSize = this.formatFileSize(file.fileSize);
+        
+        return `
+            <div class="file-message clickable" onclick="window.open('${file.downloadUrl}', '_blank')">
+                <div class="file-icon">${fileIcon}</div>
+                <div class="file-info">
+                    <div class="file-name">${file.originalName}</div>
+                    <div class="file-size">${fileSize}</div>
+                </div>
+                <div class="file-actions">
+                    <a href="${file.downloadUrl}" target="_blank" class="file-download" title="Tải về" onclick="event.stopPropagation()">
+                        <i class="fas fa-download"></i>
+                    </a>
+                    <a href="${file.previewUrl}" target="_blank" class="file-preview" title="Xem" onclick="event.stopPropagation()">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Tạo HTML cho multiple files message
+    createFilesMessageHTML(files) {
+        // Phân loại files theo type
+        const images = files.filter(file => file.fileType === 'image' || file.attachmentType === 'IMAGE');
+        const videos = files.filter(file => file.fileType === 'video' || file.attachmentType === 'VIDEO');
+        const audios = files.filter(file => file.fileType === 'audio' || file.attachmentType === 'AUDIO');
+        const documents = files.filter(file => 
+            file.fileType === 'document' || 
+            file.attachmentType === 'DOCUMENT' || 
+            file.attachmentType === 'OTHER'
+        );
+        
+        let content = '';
+        
+        // Hiển thị ảnh như gallery
+        if (images.length > 0) {
+            const imagesHTML = images.map(file => `
+                <div class="gallery-item">
+                    <img src="${file.previewUrl || file.downloadUrl}" 
+                         alt="${file.originalName}" 
+                         class="gallery-image"
+                         onclick="window.open('${file.previewUrl || file.downloadUrl}', '_blank')"
+                         loading="lazy">
+                </div>
+            `).join('');
+            
+            content += `
+                <div class="images-gallery">
+                    ${imagesHTML}
+                </div>
+            `;
+        }
+        
+        // Hiển thị video
+        if (videos.length > 0) {
+            const videosHTML = videos.map(file => `
+                <div class="video-item">
+                    <video controls class="gallery-video" preload="metadata">
+                        <source src="${file.previewUrl || file.downloadUrl}" type="${file.mimeType}">
+                        Trình duyệt không hỗ trợ video.
+                    </video>
+                    <div class="video-name">${file.originalName}</div>
+                </div>
+            `).join('');
+            
+            content += `
+                <div class="videos-gallery">
+                    ${videosHTML}
+                </div>
+            `;
+        }
+        
+        // Hiển thị audio
+        if (audios.length > 0) {
+            const audiosHTML = audios.map(file => `
+                <div class="audio-item">
+                    <audio controls class="gallery-audio">
+                        <source src="${file.previewUrl || file.downloadUrl}" type="${file.mimeType}">
+                        Trình duyệt không hỗ trợ audio.
+                    </audio>
+                    <div class="audio-name">${file.originalName}</div>
+                </div>
+            `).join('');
+            
+            content += `
+                <div class="audios-gallery">
+                    ${audiosHTML}
+                </div>
+            `;
+        }
+        
+        // Hiển thị documents như cũ
+        if (documents.length > 0) {
+            const documentsHTML = documents.map(file => {
+                const fileIcon = this.getFileIcon(file.fileType || file.attachmentType);
+                const fileSize = this.formatFileSize(file.fileSize);
+                
+                return `
+                    <div class="file-item">
+                        <div class="file-icon">${fileIcon}</div>
+                        <div class="file-info">
+                            <div class="file-name">${file.originalName}</div>
+                            <div class="file-size">${fileSize}</div>
+                        </div>
+                        <div class="file-actions">
+                            <a href="${file.downloadUrl}" target="_blank" class="file-download" title="Tải về">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <a href="${file.previewUrl}" target="_blank" class="file-preview" title="Xem">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            content += `
+                <div class="documents-list">
+                    <div class="files-header">📄 Tài liệu (${documents.length}):</div>
+                    <div class="files-list">${documentsHTML}</div>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="files-message">
+                ${content}
+            </div>
+        `;
+    }
+    
+    // Lấy icon cho file type
+    getFileIcon(fileType) {
+        switch (fileType) {
+            case 'image': return '🖼️';
+            case 'video': return '🎥';
+            case 'document': return '📄';
+            default: return '📎';
+        }
+    }
+    
+    // Format file size
+    formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
     
     // Cập nhật last message của room (được gọi từ WebSocket)
@@ -1323,7 +1709,7 @@ class SimpleChatManager {
     
     // Tìm kiếm user - Tối ưu không phân biệt hoa thường với toán tử nâng cao
     async searchUsers(query) {
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('userSearchResults');
         if (!searchResults) return;
         
         // Normalize query - loại bỏ khoảng trắng thừa và chuyển về lowercase
@@ -1339,37 +1725,27 @@ class SimpleChatManager {
         try {
             // Phân tích query để tìm toán tử
             const searchParams = this.parseSearchQuery(normalizedQuery);
-            console.log('🔍 Search params:', searchParams);
             
             // Tìm kiếm tất cả kết quả (không phân trang)
             const apiUrl = `/api/users/search?q=${encodeURIComponent(searchParams.query)}`;
-            console.log('🔍 API URL:', apiUrl);
             
             const response = await fetch(apiUrl, {
                 method: 'GET',
                 credentials: 'include'
             });
             
-            console.log('🔍 Response status:', response.status);
-            
             if (response.ok) {
                 const data = await response.json();
-                console.log('🔍 API Response:', data);
                 this.lastSearchResults = data.items || [];
                 
                 // Lọc kết quả phía client với toán tử nâng cao
-                console.log('🔍 Before filtering - Total users:', this.lastSearchResults.length);
                 const filteredResults = this.filterUserSearchResultsAdvanced(this.lastSearchResults, searchParams);
-                console.log('🔍 After filtering - Filtered users:', filteredResults.length);
-                console.log('🔍 Filtered results:', filteredResults);
                 this.renderSearchResults(filteredResults);
             } else {
                 const errorText = await response.text();
-                console.error('🔍 API Error:', response.status, errorText);
                 searchResults.innerHTML = '<div class="text-center py-3 text-danger">Không thể tìm kiếm người dùng (Status: ' + response.status + ')</div>';
             }
         } catch (error) {
-            console.error('🔍 Error searching users:', error);
             searchResults.innerHTML = '<div class="text-center py-3 text-danger">Lỗi khi tìm kiếm: ' + error.message + '</div>';
         }
     }
@@ -1429,7 +1805,6 @@ class SimpleChatManager {
         if (!searchParams.query) return users;
         
         const query = searchParams.query.toLowerCase().trim();
-        console.log('🔍 Filtering with query:', query);
         
         const filtered = users.filter(user => {
             // Chuẩn hóa dữ liệu
@@ -1462,11 +1837,9 @@ class SimpleChatManager {
                 return false;
             });
             
-            console.log('🔍 User:', username, 'SearchText:', searchText, 'Matches:', matches);
             return matches;
         });
         
-        console.log('🔍 Filtered count:', filtered.length);
         return filtered;
     }
     
@@ -1524,15 +1897,17 @@ class SimpleChatManager {
     
     // Hiển thị kết quả tìm kiếm
     renderSearchResults(users) {
-        const searchResults = document.getElementById('searchResults');
-        if (!searchResults) return;
+        const searchResults = document.getElementById('userSearchResults');
+        if (!searchResults) {
+            return;
+        }
         
-        if (users.length === 0) {
+        if (!Array.isArray(users) || users.length === 0) {
             searchResults.innerHTML = '<div class="text-center py-3 text-muted">Không tìm thấy người dùng nào</div>';
             return;
         }
         
-        const resultsHTML = users.map(user => {
+        const resultsHTML = users.map((user, index) => {
             const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
             const avatar = user.avatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png';
             const isSelected = this.selectedUsers.some(selected => selected.id === user.id);
@@ -1619,15 +1994,18 @@ class SimpleChatManager {
     
     // Toggle chọn/bỏ chọn người dùng
     toggleUserSelection(userId) {
+        console.log('🔄 Toggle user selection for ID:', userId);
         const userIndex = this.selectedUsers.findIndex(user => user.id === userId);
         
         if (userIndex > -1) {
             // Bỏ chọn
+            console.log('🔄 Removing user from selection');
             this.selectedUsers.splice(userIndex, 1);
         } else {
             // Chọn thêm
+            console.log('🔄 Adding user to selection');
             // Tìm user từ kết quả tìm kiếm hiện tại
-            const searchResults = document.getElementById('searchResults');
+            const searchResults = document.getElementById('userSearchResults');
             const userElement = searchResults.querySelector(`[data-user-id="${userId}"]`);
             if (userElement) {
                 const userName = userElement.querySelector('.user-name').textContent;
@@ -1640,9 +2018,13 @@ class SimpleChatManager {
                     username: userUsername,
                     avatar: userAvatar
                 });
+                console.log('🔄 User added:', this.selectedUsers[this.selectedUsers.length - 1]);
+            } else {
+                console.log('🔄 User element not found for ID:', userId);
             }
         }
         
+        console.log('🔄 Current selected users:', this.selectedUsers);
         this.updateSelectedUsersDisplay();
         this.renderSearchResults(this.lastSearchResults || []); // Re-render để cập nhật UI
     }
@@ -1759,18 +2141,13 @@ class SimpleChatManager {
                     
                     // Mở chat room mới
                     this.selectRoom(data.data.id);
-                    
-                    console.log('Group chat created:', data.data);
                 } else {
-                    console.error('Failed to create group chat:', data.message);
                     alert('Không thể tạo nhóm chat: ' + data.message);
                 }
             } else {
-                console.error('Failed to create group chat');
                 alert('Không thể tạo nhóm chat');
             }
         } catch (error) {
-            console.error('Error creating group chat:', error);
             alert('Lỗi khi tạo nhóm chat');
         }
     }
@@ -1779,8 +2156,6 @@ class SimpleChatManager {
     // Bắt đầu chat với user
     async startChatWithUser(userId) {
         try {
-            console.log('🔍 startChatWithUser() - Starting chat with user ID:', userId);
-            
             const response = await fetch('/api/chat/private-chat', {
                 method: 'POST',
                 headers: {
@@ -1790,11 +2165,8 @@ class SimpleChatManager {
                 body: JSON.stringify({ userId: userId })
             });
             
-            console.log('🔍 startChatWithUser() - Response status:', response.status);
-            
             if (response.ok) {
                 const data = await response.json();
-                console.log('🔍 startChatWithUser() - Response data:', data);
                 
                 if (data.success) {
                     // Đóng modal
@@ -1805,26 +2177,20 @@ class SimpleChatManager {
                     
                     // Mở chat room mới
                     this.selectRoom(data.data.id);
-                    
-                    console.log('✅ Chat started with user:', userId, 'Room ID:', data.data.id);
                 } else {
-                    console.error('❌ Failed to start chat:', data.message);
                     alert('Không thể bắt đầu cuộc trò chuyện: ' + data.message);
                 }
             } else {
                 const errorText = await response.text();
-                console.error('❌ Failed to start chat - Status:', response.status, 'Error:', errorText);
                 alert('Không thể bắt đầu cuộc trò chuyện (Status: ' + response.status + ')');
             }
         } catch (error) {
-            console.error('❌ Error starting chat:', error);
             alert('Lỗi khi bắt đầu cuộc trò chuyện: ' + error.message);
         }
     }
 
     // Cập nhật online status của user
     updateUserOnlineStatus(userId, isOnline) {
-        console.log('🟢 User', userId, 'is', isOnline ? 'online' : 'offline');
         
         // Cập nhật trong current room
         if (this.currentRoomId) {
@@ -1863,8 +2229,6 @@ class SimpleChatManager {
                     this.loadRoomMessages(this.currentRoomId);
                 }
             }, 10000); // Poll mỗi 10 giây (chậm hơn để tránh spam)
-            
-            console.log('Started polling for chat messages (WebSocket not available)');
         }
     }
     
@@ -1873,7 +2237,6 @@ class SimpleChatManager {
         if (this.pollingInterval) {
             clearInterval(this.pollingInterval);
             this.pollingInterval = null;
-            console.log('Stopped polling for chat messages');
         }
     }
     
@@ -1942,14 +2305,11 @@ class SimpleChatManager {
     
     // Tìm kiếm từ lịch sử
     searchUserFromRecent(query) {
-        console.log('🔍 searchUserFromRecent called with:', query);
         const userSearchInput = document.getElementById('userSearchInput');
         if (userSearchInput) {
             userSearchInput.value = query;
             this.searchQuery = query;
             this.searchUsers(query);
-        } else {
-            console.error('🔍 userSearchInput not found');
         }
     }
     
@@ -1995,7 +2355,6 @@ class SimpleChatManager {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing Simple Chat Manager...');
     window.chatManager = new SimpleChatManager();
     window.simpleChatManager = window.chatManager; // Alias for compatibility
 });

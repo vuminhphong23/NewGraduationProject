@@ -1,11 +1,14 @@
 package GraduationProject.forumikaa.service;
 
+import GraduationProject.forumikaa.dao.ChatAttachmentRepository;
 import GraduationProject.forumikaa.dao.ChatMessageDao;
 import GraduationProject.forumikaa.dao.ChatRoomDao;
 import GraduationProject.forumikaa.dao.ChatRoomMemberDao;
+import GraduationProject.forumikaa.service.ChatAttachmentService;
 import GraduationProject.forumikaa.dto.ChatMessageDto;
 import GraduationProject.forumikaa.dto.ChatRoomDto;
 import GraduationProject.forumikaa.dto.ChatRoomMemberDto;
+import GraduationProject.forumikaa.dto.FileUploadResponse;
 import GraduationProject.forumikaa.entity.ChatMessage;
 import GraduationProject.forumikaa.entity.ChatRoom;
 import GraduationProject.forumikaa.entity.ChatRoomMember;
@@ -14,11 +17,11 @@ import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +39,12 @@ public class ChatServiceImpl implements ChatService {
     @Autowired
     private ChatRoomMemberDao chatRoomMemberDao;
     
+    @Autowired
+    private ChatAttachmentRepository chatAttachmentRepository;
+    
+    @Autowired
+    private ChatAttachmentService chatAttachmentService;
+    
     @Override
     @Transactional(readOnly = true)
     public List<ChatRoomDto> getUserChatRooms(Long userId) {
@@ -44,7 +53,6 @@ public class ChatServiceImpl implements ChatService {
                 .map(room -> {
                     // Load members riêng cho mỗi room
                     List<ChatRoomMember> members = chatRoomMemberDao.findByRoomId(room.getId());
-                    System.out.println("🔍 ChatServiceImpl - Room " + room.getId() + " has " + members.size() + " members");
                     
                     // Tạo DTO với members riêng biệt
                     ChatRoomDto dto = ChatRoomDto.builder()
@@ -55,7 +63,6 @@ public class ChatServiceImpl implements ChatService {
                             .createdAt(room.getCreatedAt())
                             .updatedAt(room.getUpdatedAt())
                             .build();
-                    System.out.println("🔍 ChatServiceImpl.getUserChatRooms() - Room " + room.getId() + " Name: " + room.getRoomName() + ", IsGroup: " + room.getIsGroup() + ", DTO Name: " + dto.getRoomName() + ", DTO IsGroup: " + dto.getIsGroup());
                     
                     // Set members vào DTO
                     if (members != null) {
@@ -112,11 +119,8 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomDto findOrCreatePrivateChat(Long userId1, Long userId2) {
-        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - User1: " + userId1 + ", User2: " + userId2);
-        
         // Tìm chat room 1-1 đã tồn tại
         Optional<ChatRoom> existingRoom = chatRoomDao.findPrivateChatBetweenUsers(userId1, userId2);
-        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - Existing room found: " + existingRoom.isPresent());
         
         if (existingRoom.isPresent()) {
             // Load members để trả về đầy đủ thông tin
@@ -155,7 +159,6 @@ public class ChatServiceImpl implements ChatService {
             return dto;
         }
         
-        System.out.println("🔍 ChatServiceImpl.findOrCreatePrivateChat() - Creating new private chat room");
         
         // Tạo chat room mới
         ChatRoom room = new ChatRoom();
@@ -217,18 +220,14 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomDto createGroupChat(String groupName, Long createdById, List<Long> userIds) {
-        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Group Name: " + groupName + ", Created By: " + createdById + ", User IDs: " + userIds);
-        
         // Tạo chat room mới
         ChatRoom room = new ChatRoom();
         room.setRoomName(groupName);
         room.setIsGroup(true);
         room.setCreatedAt(LocalDateTime.now());
         room.setUpdatedAt(LocalDateTime.now());
-        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Creating room with name: " + groupName + ", isGroup: true");
         
         ChatRoom savedRoom = chatRoomDao.save(room);
-        System.out.println("🔍 ChatServiceImpl.createGroupChat() - Room saved with ID: " + savedRoom.getId());
         
         // Thêm tất cả user vào room
         for (Long userId : userIds) {
@@ -237,7 +236,6 @@ public class ChatServiceImpl implements ChatService {
             member.setUser(new User(userId));
             member.setJoinedAt(LocalDateTime.now());
             chatRoomMemberDao.save(member);
-            System.out.println("🔍 ChatServiceImpl.createGroupChat() - Added member: " + userId);
         }
         
         // Load members để trả về đầy đủ thông tin
@@ -279,24 +277,22 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public void deleteChatRoom(Long roomId, Long userId) {
-        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Room ID: " + roomId + ", User ID: " + userId);
-        
         // Kiểm tra quyền truy cập
         if (!hasAccessToRoom(roomId, userId)) {
             throw new RuntimeException("Bạn không có quyền xóa cuộc trò chuyện này");
         }
         
+        // Xóa tất cả attachments trong room trước
+        chatAttachmentRepository.deleteByRoomId(roomId);
+        
         // Xóa tất cả tin nhắn trong room
         chatMessageDao.deleteByRoomId(roomId);
-        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Messages deleted");
         
         // Xóa tất cả members
         chatRoomMemberDao.deleteByRoomId(roomId);
-        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Members deleted");
         
         // Xóa room
         chatRoomDao.deleteById(roomId);
-        System.out.println("🔍 ChatServiceImpl.deleteChatRoom() - Room deleted");
     }
 
     @Override
@@ -309,25 +305,58 @@ public class ChatServiceImpl implements ChatService {
     @Transactional(readOnly = true)
     public List<ChatMessageDto> getRoomMessages(Long roomId, int page, int size) {
         try {
-            System.out.println("ChatServiceImpl.getRoomMessages() - roomId: " + roomId);
             List<ChatMessage> messages = chatMessageDao.findByRoomIdOrderByCreatedAtAsc(roomId);
-            System.out.println("ChatServiceImpl.getRoomMessages() - Found " + messages.size() + " messages");
             return messages.stream()
-                    .map(message -> ChatMessageDto.builder()
-                            .id(message.getId())
-                            .roomId(message.getRoom() != null ? message.getRoom().getId() : null)
-                            .senderId(message.getSender() != null ? message.getSender().getId() : null)
-                            .senderUsername(message.getSender() != null ? message.getSender().getUsername() : null)
-                            .content(message.getContent())
-                            .messageType(message.getMessageType() != null ? message.getMessageType().name() : null)
-                            .isRead(message.isRead())
-                            .createdAt(message.getCreatedAt())
-                            .readAt(message.getReadAt())
-                            .build())
+                    .<ChatMessageDto>map(message -> {
+                        // Load attachments cho message
+                        List<FileUploadResponse> attachments = new ArrayList<>();
+                        if (message.getAttachments() != null && !message.getAttachments().isEmpty()) {
+                            attachments = message.getAttachments().stream()
+                                    .map(attachment -> {
+                                        FileUploadResponse response = new FileUploadResponse();
+                                        response.setId(attachment.getId());
+                                        response.setFileName(attachment.getFileName());
+                                        response.setOriginalName(attachment.getOriginalName());
+                                        response.setFilePath(attachment.getFilePath());
+                                        response.setFileSize(attachment.getFileSize());
+                                        response.setMimeType(attachment.getMimeType());
+                                        // response.setFileExtension(attachment.getFileExtension()); // Method không tồn tại
+                                        // Set download URL - cho local storage cần URL đầy đủ
+                                        if (attachment.isCloudStorage()) {
+                                            response.setDownloadUrl(attachment.getDisplayUrl());
+                                            response.setPreviewUrl(attachment.getDisplayUrl());
+                                        } else {
+                                            // Local storage - cần URL đầy đủ
+                                            response.setDownloadUrl("/api/chat/files/download/" + attachment.getId());
+                                            response.setPreviewUrl("/files/" + attachment.getFilePath());
+                                        }
+                                        response.setThumbnailUrl(attachment.getDisplayThumbnailUrl());
+                                        response.setCloudinaryPublicId(attachment.getCloudinaryPublicId());
+                                        response.setCloudinaryUrl(attachment.getCloudinaryUrl());
+                                        response.setCloudStorage(attachment.isCloudStorage());
+                                        response.setFileType(attachment.getAttachmentType().name().toLowerCase());
+                                        return response;
+                                    })
+                                    .collect(Collectors.toList());
+                        }
+                        
+                        return ChatMessageDto.builder()
+                                .id(message.getId())
+                                .roomId(message.getRoom() != null ? message.getRoom().getId() : null)
+                                .senderId(message.getSender() != null ? message.getSender().getId() : null)
+                                .senderUsername(message.getSender() != null ? message.getSender().getUsername() : null)
+                                .senderFullName(message.getSender() != null ? message.getSender().getUsername() : null) // User không có getFullName
+                                .senderAvatar(null) // User không có getAvatar
+                                .content(message.getContent())
+                                .messageType(message.getMessageType() != null ? message.getMessageType().name() : null)
+                                .isRead(message.isRead())
+                                .createdAt(message.getCreatedAt())
+                                .readAt(message.getReadAt())
+                                .attachments(attachments)
+                                .build();
+                    })
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            System.err.println("ChatServiceImpl.getRoomMessages() - Error: " + e.getMessage());
-            e.printStackTrace();
             throw e;
         }
     }
@@ -346,7 +375,11 @@ public class ChatServiceImpl implements ChatService {
         message.setCreatedAt(LocalDateTime.now());
         
         message = chatMessageDao.save(message);
-        return ChatMessageDto.builder()
+        
+        // Lấy attachments của message nếu có
+        List<FileUploadResponse> attachments = chatAttachmentService.getAttachmentsByMessageId(message.getId());
+        
+        ChatMessageDto messageDto = ChatMessageDto.builder()
                 .id(message.getId())
                 .roomId(message.getRoom() != null ? message.getRoom().getId() : null)
                 .senderId(message.getSender() != null ? message.getSender().getId() : null)
@@ -357,6 +390,13 @@ public class ChatServiceImpl implements ChatService {
                 .createdAt(message.getCreatedAt())
                 .readAt(message.getReadAt())
                 .build();
+        
+        // Thêm attachments vào DTO nếu có
+        if (attachments != null && !attachments.isEmpty()) {
+            messageDto.setAttachments(attachments);
+        }
+        
+        return messageDto;
     }
 
     @Override

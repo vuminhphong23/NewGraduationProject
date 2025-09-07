@@ -30,16 +30,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println("🔗 Chat WebSocket connection established: " + session.getId());
-        System.out.println("🔗 Session URI: " + session.getUri());
-        System.out.println("🔗 Session attributes: " + session.getAttributes());
-        
         // Lấy userId từ query parameter (giống như NotificationWebSocketHandler)
         Long userId = extractUserId(session);
         if (userId != null) {
             userSessions.put(userId, session);
-            System.out.println("👤 User " + userId + " connected to chat WebSocket");
-            System.out.println("👤 Total connected users: " + userSessions.size());
             
             // Gửi thông báo kết nối thành công
             sendMessage(session, Map.of(
@@ -48,7 +42,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 "userId", userId
             ));
         } else {
-            System.out.println("❌ No userId found in query parameters");
             session.close(CloseStatus.BAD_DATA.withReason("No userId provided"));
         }
     }
@@ -57,7 +50,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) throws Exception {
         if (message instanceof TextMessage) {
             String payload = ((TextMessage) message).getPayload();
-            System.out.println("📨 Chat WebSocket message received: " + payload);
             
             try {
                 @SuppressWarnings("unchecked")
@@ -74,31 +66,24 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     case "MESSAGE_READ":
                         handleMessageRead(session, messageData);
                         break;
-                    default:
-                        System.out.println("❓ Unknown message type: " + type);
                 }
             } catch (Exception e) {
-                System.err.println("❌ Error processing chat WebSocket message: " + e.getMessage());
-                e.printStackTrace();
+                // Error processing message
             }
         }
     }
     
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        System.err.println("❌ Chat WebSocket transport error: " + exception.getMessage());
-        exception.printStackTrace();
+        // Handle transport error
     }
     
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
-        System.out.println("🔌 Chat WebSocket connection closed: " + session.getId() + " - " + closeStatus);
-        
         // Xóa session khỏi userSessions
         Long userId = extractUserId(session);
         if (userId != null) {
             userSessions.remove(userId);
-            System.out.println("👤 User " + userId + " disconnected from chat WebSocket");
         }
     }
     
@@ -112,8 +97,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Long userId = extractUserId(session);
         Long roomId = ((Number) messageData.get("roomId")).longValue();
         
-        System.out.println("🚪 User " + userId + " joining room " + roomId);
-        
         // Subscribe user to room events
         if (userId != null) {
             subscribeToRoom(userId, roomId);
@@ -125,8 +108,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Long userId = extractUserId(session);
         Long roomId = ((Number) messageData.get("roomId")).longValue();
         
-        System.out.println("🚪 User " + userId + " leaving room " + roomId);
-        
         // Unsubscribe user from room events
         if (userId != null) {
             unsubscribeFromRoom(roomId);
@@ -137,8 +118,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     private void handleMessageRead(WebSocketSession session, Map<String, Object> messageData) {
         Long userId = extractUserId(session);
         Long roomId = ((Number) messageData.get("roomId")).longValue();
-        
-        System.out.println("👁️ User " + userId + " read messages in room " + roomId);
         
         // Broadcast cho các user khác trong room rằng user này đã đọc tin nhắn
         if (userId != null) {
@@ -152,15 +131,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         try {
             if (session.isOpen()) {
                 String json = objectMapper.writeValueAsString(message);
-                System.out.println("📤 Sending WebSocket message: " + json);
                 session.sendMessage(new TextMessage(json));
-                System.out.println("✅ WebSocket message sent successfully");
-            } else {
-                System.err.println("❌ WebSocket session is not open");
             }
         } catch (Exception e) {
-            System.err.println("❌ Error sending chat WebSocket message: " + e.getMessage());
-            e.printStackTrace();
+            // Error sending message
         }
     }
     
@@ -174,8 +148,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     
     // Gửi message đến tất cả user trong room
     public void sendToRoom(Long roomId, Map<String, Object> messageData, Long excludeUserId) {
-        System.out.println("📢 Broadcasting to room " + roomId + ": " + messageData);
-        
         // Tạo message với format đúng
         Map<String, Object> message = Map.of(
             "type", "NEW_MESSAGE",
@@ -192,7 +164,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     try {
                         sendMessage(entry.getValue(), message);
                     } catch (Exception e) {
-                        System.err.println("❌ Error sending message to user " + entry.getKey() + ": " + e.getMessage());
+                        // Error sending message to user
                     }
                 });
     }
@@ -234,7 +206,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     try {
                         sendMessage(entry.getValue(), message);
                     } catch (Exception e) {
-                        System.err.println("❌ Error sending message to user " + entry.getKey() + ": " + e.getMessage());
+                        // Error sending message to user
                     }
                 });
     }
@@ -244,7 +216,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         try {
             String query = session.getUri() != null ? session.getUri().getQuery() : null;
             if (query == null || query.isEmpty()) {
-                System.err.println("Thiếu query parameters trong Chat WebSocket URI");
                 return null;
             }
 
@@ -255,16 +226,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                     try {
                         return Long.parseLong(kv[1]);
                     } catch (NumberFormatException e) {
-                        System.err.println("userId không hợp lệ: " + kv[1]);
                         return null;
                     }
                 }
             }
             
-            System.err.println("Không tìm thấy userId trong query parameters");
             return null;
         } catch (Exception e) {
-            System.err.println("Lỗi khi extract userId: " + e.getMessage());
             return null;
         }
     }

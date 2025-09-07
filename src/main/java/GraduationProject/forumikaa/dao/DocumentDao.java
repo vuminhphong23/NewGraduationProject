@@ -20,5 +20,6 @@ public interface DocumentDao extends JpaRepository<Document, Long> {
     
     @Query("SELECT COUNT(d) FROM Document d WHERE d.post.id = :postId")
     Long countDocumentsByPostId(@Param("postId") Long postId);
+    
 }
 

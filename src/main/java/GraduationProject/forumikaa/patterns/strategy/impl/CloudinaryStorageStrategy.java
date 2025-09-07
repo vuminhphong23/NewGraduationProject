@@ -161,7 +161,7 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
     // ========== Helper Methods ==========
 
     private String uploadToCloudinary(MultipartFile file) throws IOException, InterruptedException {
-        String uploadUrl = "https://api.cloudinary.com/v1_1/" + cloudName + "/image/upload";
+        String uploadUrl = "https://api.cloudinary.com/v1_1/" + cloudName + "/upload";
         
         // Create proper multipart form data with binary file content
         String boundary = "----WebKitFormBoundary" + UUID.randomUUID().toString();

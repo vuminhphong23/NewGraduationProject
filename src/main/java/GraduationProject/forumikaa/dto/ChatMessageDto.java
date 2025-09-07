@@ -7,6 +7,7 @@ import lombok.Builder;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -28,5 +29,7 @@ public class ChatMessageDto {
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime readAt;
+    
+    private List<FileUploadResponse> attachments;
 }
 

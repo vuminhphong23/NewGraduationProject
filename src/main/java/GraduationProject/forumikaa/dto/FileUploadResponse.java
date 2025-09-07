@@ -16,5 +16,9 @@ public class FileUploadResponse {
     private String mimeType;
     private String downloadUrl;
     private String previewUrl;
+    private String thumbnailUrl;
+    private String cloudinaryPublicId;
+    private String cloudinaryUrl;
+    private boolean cloudStorage;
     private String fileType; // image, video, document
 }

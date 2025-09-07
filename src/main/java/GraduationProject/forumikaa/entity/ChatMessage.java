@@ -8,6 +8,7 @@ import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -44,9 +45,13 @@ public class ChatMessage {
 
     @Column(name = "read_at")
     private LocalDateTime readAt;
+
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatAttachment> attachments;
     
     public enum MessageType {
-        TEXT, IMAGE, FILE, EMOJI
+        TEXT, IMAGE, FILE, VIDEO, AUDIO, EMOJI
     }
 
 }

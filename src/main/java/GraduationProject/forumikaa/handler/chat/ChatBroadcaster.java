@@ -19,7 +19,6 @@ public class ChatBroadcaster {
     public void publishMessage(Long roomId, Map<String, Object> message) {
         List<Consumer<Map<String, Object>>> roomSubscribersList = roomSubscribers.get(roomId);
         if (roomSubscribersList == null || roomSubscribersList.isEmpty()) {
-            log.debug("Không có subscriber nào cho roomId: {}", roomId);
             return;
         }
 
@@ -27,7 +26,7 @@ public class ChatBroadcaster {
             try {
                 consumer.accept(message);
             } catch (Exception e) {
-                log.error("Lỗi khi gửi message tới subscriber: {}", e.getMessage());
+                // Error sending message to subscriber
             }
         });
     }
@@ -63,10 +62,7 @@ public class ChatBroadcaster {
 
     // Hủy đăng ký
     public void unsubscribe(Long roomId) {
-        List<Consumer<Map<String, Object>>> roomSubscribersList = roomSubscribers.remove(roomId);
-        if (roomSubscribersList != null) {
-            log.info("Room {} đã hủy đăng ký chat", roomId);
-        }
+        roomSubscribers.remove(roomId);
     }
 
     // Kiểm tra xem một room có đang subscribe không
