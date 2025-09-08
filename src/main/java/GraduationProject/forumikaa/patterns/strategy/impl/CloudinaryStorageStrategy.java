@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Cloudinary file storage strategy implementation
  * Stores files on Cloudinary cloud storage with automatic optimization
  */
-@Component
+@Component("cloudinaryStorageStrategy")
 public class CloudinaryStorageStrategy implements FileStorageStrategy {
 
     @Value("${cloudinary.cloud-name}")

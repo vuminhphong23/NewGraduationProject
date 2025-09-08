@@ -9,8 +9,11 @@ import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.patterns.strategy.FileStorageStrategy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.concurrent.CompletableFuture;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,7 +29,7 @@ import java.util.stream.Collectors;
  * Local file storage strategy implementation
  * Stores files on local filesystem with organized directory structure
  */
-@Component
+@Component("localStorageStrategy")
 public class LocalStorageStrategy implements FileStorageStrategy {
 
     @Value("${app.file.upload.local.path:uploads}")
@@ -47,6 +50,43 @@ public class LocalStorageStrategy implements FileStorageStrategy {
 
     @Override
     public FileUploadResponse uploadFile(MultipartFile file, Long postId, Long userId) throws Exception {
+        // Synchronous fallback
+        return uploadFileSync(file, postId, userId);
+    }
+
+    @Async("fileUploadExecutor")
+    public CompletableFuture<FileUploadResponse> uploadFileAsync(MultipartFile file, Long postId, Long userId) {
+        try {
+            FileUploadResponse response = uploadFileSync(file, postId, userId);
+            return CompletableFuture.completedFuture(response);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Async("fileBatchExecutor")
+    public CompletableFuture<List<FileUploadResponse>> uploadMultipleFilesAsync(List<MultipartFile> files, Long postId, Long userId) {
+        try {
+            List<CompletableFuture<FileUploadResponse>> uploadFutures = files.stream()
+                .map(file -> uploadFileAsync(file, postId, userId))
+                .collect(Collectors.toList());
+
+            // Wait for all uploads to complete
+            CompletableFuture<Void> allUploads = CompletableFuture.allOf(
+                uploadFutures.toArray(new CompletableFuture[0])
+            );
+
+            return allUploads.thenApply(v -> 
+                uploadFutures.stream()
+                    .map(CompletableFuture::join)
+                    .toList()
+            );
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    private FileUploadResponse uploadFileSync(MultipartFile file, Long postId, Long userId) throws Exception {
         // Validate file
         if (file.isEmpty()) {
             throw new IllegalArgumentException("File không được để trống");
@@ -160,7 +200,7 @@ public class LocalStorageStrategy implements FileStorageStrategy {
 
     @Override
     public String getStorageType() {
-        return "local";
+        return "async-local";
     }
 
     // ========== Helper Methods ==========

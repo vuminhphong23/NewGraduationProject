@@ -1,8 +1,7 @@
 package GraduationProject.forumikaa.patterns.strategy;
 
-import GraduationProject.forumikaa.patterns.strategy.impl.CloudinaryStorageStrategy;
-import GraduationProject.forumikaa.patterns.strategy.impl.LocalStorageStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +16,12 @@ public class FileStorageStrategyFactory {
     private String storageStrategy;
 
     @Autowired
-    private LocalStorageStrategy localStorageStrategy;
+    @Qualifier("localStorageStrategy")
+    private FileStorageStrategy localStorageStrategy;
 
     @Autowired
-    private CloudinaryStorageStrategy cloudinaryStorageStrategy;
+    @Qualifier("cloudinaryStorageStrategy")
+    private FileStorageStrategy cloudinaryStorageStrategy;
 
     public FileStorageStrategy getStorageStrategy() {
         return getStorageStrategy(storageStrategy);
