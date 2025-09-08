@@ -1,6 +1,7 @@
 package GraduationProject.forumikaa.dao;
 
 import GraduationProject.forumikaa.entity.Post;
+import GraduationProject.forumikaa.entity.Topic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -62,6 +63,15 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     """)
     List<Post> findByTopicIdWithUserAccess(@Param("topicId") Long topicId, @Param("userId") Long userId);
 
+
+    // Tìm posts theo username của user
+    List<Post> findByUserUsername(String username);
+    
+    // Tìm posts theo topics và username
+    List<Post> findByTopicsAndUserUsername(Topic topic, String username);
+    
+    // Tìm posts theo user ID
+    List<Post> findByUserId(Long userId);
 
     default boolean canEdit(Post post, Long userId) {
         return post != null && post.getUser().getId().equals(userId);

@@ -30,6 +30,11 @@ public interface CommentDao extends JpaRepository<Comment, Long> {
     Optional<Long> findPostIdByCommentId(@Param("commentId") Long commentId);
     
     // Methods for recommendation system
-    List<Comment> findByUserId(Long userId);
+    @Query("SELECT c FROM Comment c WHERE c.user.id = :userId")
+    List<Comment> findByUserId(@Param("userId") Long userId);
+    
+    // Method to find posts commented by user
+    @Query("SELECT DISTINCT c.post FROM Comment c WHERE c.user.id = :userId")
+    List<GraduationProject.forumikaa.entity.Post> findPostsCommentedByUser(@Param("userId") Long userId);
 }
 

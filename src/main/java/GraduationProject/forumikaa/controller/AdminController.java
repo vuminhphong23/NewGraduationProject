@@ -68,8 +68,13 @@ public class AdminController {
     @PostMapping("/admin/users/{id}/delete")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         userService.deleteUser(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Xóa thành công.");
+        redirectAttributes.addFlashAttribute("successMessage", "Xóa user thành công.");
         return "redirect:/admin/users";
+    }
+
+    @GetMapping("/admin/crawling")
+    public String crawlingManagementPage() {
+        return "admin/crawling-management";
     }
 
     @GetMapping("/admin/users/add")

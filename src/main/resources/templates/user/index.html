@@ -155,7 +155,17 @@
                                  class="rounded-circle" width="40" height="40" alt="avatar"
                                  onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                             <div>
-                                <div class="fw-semibold" th:text="${post.userName}">User name</div>
+                                <div class="fw-semibold d-flex align-items-center gap-2">
+                                    <span th:text="${post.userName}">User name</span>
+                                    <!-- Crawled content indicator -->
+                                    <span th:if="${post.isCrawledContent}" class="badge bg-info text-white">
+                                        🤖 AI Content
+                                    </span>
+                                    <!-- Recommendation score -->
+                                    <span th:if="${post.recommendationScore != null}" class="badge bg-success text-white">
+                                        Score: <span th:text="${#numbers.formatDecimal(post.recommendationScore, 1, 1)}">0.0</span>
+                                    </span>
+                                </div>
                                 <div class="text-muted small">
                                     <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
                                     •

@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.*;
 import GraduationProject.forumikaa.service.RecommendationService;
+import GraduationProject.forumikaa.service.CrawledContentRecommendationService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,9 @@ public class RecommendationController {
 
     @Autowired
     private RecommendationService recommendationService;
+    
+    @Autowired
+    private CrawledContentRecommendationService crawledContentService;
 
     @Autowired
     private SecurityUtil securityUtil;
@@ -48,7 +52,57 @@ public class RecommendationController {
             return ResponseEntity.badRequest().build();
         }
     }
-
-
+    
+    /**
+     * Gợi ý crawled content dựa trên sở thích cá nhân
+     */
+    @GetMapping("/crawled-content")
+    public ResponseEntity<List<PostResponse>> getRecommendedCrawledContent(
+            @RequestParam(defaultValue = "20") Integer limit) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            List<PostResponse> recommendations = crawledContentService
+                    .getRecommendedCrawledContent(currentUserId, limit);
+            
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Gợi ý crawled content trending
+     */
+    @GetMapping("/crawled-content/trending")
+    public ResponseEntity<List<PostResponse>> getTrendingCrawledContent(
+            @RequestParam(defaultValue = "20") Integer limit) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            List<PostResponse> recommendations = crawledContentService
+                    .getTrendingCrawledContent(currentUserId, limit);
+            
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Gợi ý crawled content theo sở thích cụ thể
+     */
+    @GetMapping("/crawled-content/interest/{interest}")
+    public ResponseEntity<List<PostResponse>> getCrawledContentByInterest(
+            @PathVariable String interest,
+            @RequestParam(defaultValue = "20") Integer limit) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            List<PostResponse> recommendations = crawledContentService
+                    .getCrawledContentByInterest(currentUserId, interest, limit);
+            
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 }

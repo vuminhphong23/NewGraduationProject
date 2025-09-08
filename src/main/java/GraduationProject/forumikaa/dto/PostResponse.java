@@ -14,8 +14,8 @@ public class PostResponse {
     private String content;
     private Long userId;
     private String userName;
-    private String userAvatar;
-    private List<String> topicNames;
+    private String userAvatar; // Avatar của user đăng post
+    private List<String> topicNames; // Chỉ dùng tên topic thay vì Entity
     private PostStatus status;
     private PostPrivacy privacy;
     private LocalDateTime createdAt;
@@ -23,5 +23,9 @@ public class PostResponse {
     private Long commentCount;
     private Long shareCount;
     private List<FileUploadResponse> documents;
-
+    
+    // Thêm fields cho crawled content
+    private Double recommendationScore;
+    private Boolean isCrawledContent = false;
+    private UserResponse user;
 } 

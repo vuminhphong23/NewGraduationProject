@@ -10,15 +10,14 @@ import java.util.Optional;
 
 public interface UserService {
     
-    @PreAuthorize("hasRole('ADMIN')")
     Page<User> findPaginated(String keyword, String status, String roleName, Pageable pageable);
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
     
-    @PreAuthorize("hasRole('ADMIN')")
+
     void updateUserEnabledStatus(Long userId, boolean enabled);
     
-    @PreAuthorize("hasRole('ADMIN')")
+
     void deleteUser(Long userId);
     
     Optional<User> findById(Long userId);
@@ -35,7 +34,6 @@ public interface UserService {
     boolean existsPhone(String phone, Long userId);
     boolean checkPassword(String password);
     
-    @PreAuthorize("hasRole('ADMIN')")
     void updateUserPassword(Long userId, String newPassword);
 
 } 

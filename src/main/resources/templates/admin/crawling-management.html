@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Web Crawling - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/layout.css">
+    <style>
+        .config-card {
+            transition: all 0.3s ease;
+        }
+        .config-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.8em;
+        }
+        .selector-preview {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+        .config-form {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar fragment -->
+        <div th:replace="~{fragments/admin/sidebar :: sidebar}"></div>
+        <!-- Main Content -->
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+            <!-- Header fragment -->
+            <div th:replace="~{fragments/admin/header :: header(pageTitle='Quản lý Web Crawling')}"></div>
+            
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-spider text-primary me-2"></i>
+                        Quản lý Web Crawling
+                    </h2>
+                    <p class="text-muted mb-0">Cấu hình và quản lý các nguồn crawling tự động</p>
+                </div>
+                    <div>
+                        <button class="btn btn-outline-primary me-2" onclick="refreshData()">
+                            <i class="fa fa-refresh me-1"></i> Làm mới
+                        </button>
+                        <button class="btn btn-success me-2" onclick="crawlAllActive()">
+                            <i class="fa fa-play me-1"></i> Crawl Tất Cả
+                        </button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#configModal">
+                            <i class="fa fa-plus me-1"></i> Thêm Config
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fa fa-cogs fa-2x mb-2"></i>
+                                <h4 id="totalConfigs">0</h4>
+                                <p class="mb-0">Tổng Configs</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fa fa-play-circle fa-2x mb-2"></i>
+                                <h4 id="activeConfigs">0</h4>
+                                <p class="mb-0">Đang hoạt động</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fa fa-exclamation-triangle fa-2x mb-2"></i>
+                                <h4 id="errorConfigs">0</h4>
+                                <p class="mb-0">Có lỗi</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fa fa-file-alt fa-2x mb-2"></i>
+                                <h4 id="totalCrawled">0</h4>
+                                <p class="mb-0">Posts đã crawl</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Configs List -->
+            <div class="card-custom">
+                <div class="section-title d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list me-2"></i>
+                        Danh sách Configs
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="configsList" class="row">
+                        <!-- Configs will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+    <!-- Config Modal -->
+    <div class="modal fade" id="configModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fa fa-cog me-2"></i>
+                        <span id="modalTitle">Thêm Config Crawling</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body config-form">
+                    <form id="configForm">
+                        <input type="hidden" id="configId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configName" class="form-label">Tên Config *</label>
+                                    <input type="text" class="form-control" id="configName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configDescription" class="form-label">Mô tả</label>
+                                    <input type="text" class="form-control" id="configDescription">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="configBaseUrl" class="form-label">URL nguồn *</label>
+                            <input type="url" class="form-control" id="configBaseUrl" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configTopicName" class="form-label">Tên Topic *</label>
+                                    <input type="text" class="form-control" id="configTopicName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configMaxPosts" class="form-label">Số posts tối đa</label>
+                                    <input type="number" class="form-control" id="configMaxPosts" min="1" max="100" value="10">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="mt-4 mb-3">CSS Selectors</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configTitleSelector" class="form-label">Title Selector *</label>
+                                    <input type="text" class="form-control" id="configTitleSelector" required>
+                                    <div class="form-text">Ví dụ: h3 a, .title, article h2</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configContentSelector" class="form-label">Content Selector</label>
+                                    <input type="text" class="form-control" id="configContentSelector">
+                                    <div class="form-text">Ví dụ: .content, p, .description</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configLinkSelector" class="form-label">Link Selector</label>
+                                    <input type="text" class="form-control" id="configLinkSelector">
+                                    <div class="form-text">Ví dụ: a, .link</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configImageSelector" class="form-label">Image Selector</label>
+                                    <input type="text" class="form-control" id="configImageSelector">
+                                    <div class="form-text">Ví dụ: img, .image</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configAuthorSelector" class="form-label">Author Selector</label>
+                                    <input type="text" class="form-control" id="configAuthorSelector">
+                                    <div class="form-text">Ví dụ: .author, .byline</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configDateSelector" class="form-label">Date Selector</label>
+                                    <input type="text" class="form-control" id="configDateSelector">
+                                    <div class="form-text">Ví dụ: .date, time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configIntervalMinutes" class="form-label">Interval (phút)</label>
+                                    <input type="number" class="form-control" id="configIntervalMinutes" min="5" max="1440" value="60">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="configTimeout" class="form-label">Timeout (ms)</label>
+                                    <input type="number" class="form-control" id="configTimeout" min="1000" max="60000" value="10000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="configUserAgent" class="form-label">User Agent</label>
+                            <input type="text" class="form-control" id="configUserAgent" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="configAdditionalHeaders" class="form-label">Additional Headers</label>
+                            <textarea class="form-control" id="configAdditionalHeaders" rows="3" placeholder="Accept: text/html&#10;Accept-Language: en-US,en;q=0.9"></textarea>
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="configEnabled" checked>
+                            <label class="form-check-label" for="configEnabled">
+                                Kích hoạt config này
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveConfig()">
+                        <i class="fa fa-save me-1"></i> Lưu Config
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Result Modal -->
+    <div class="modal fade" id="testModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fa fa-flask me-2"></i>
+                        Kết quả Test
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="testResult" class="selector-preview"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jwt-utils.js"></script>
+    <script src="/js/logout.js"></script>
+    <script src="/js/toast-manager.js"></script>
+    <script src="/js/admin/crawling-management.js"></script>
+</body>
+</html>

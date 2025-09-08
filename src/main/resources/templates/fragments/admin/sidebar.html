@@ -30,6 +30,10 @@
                         <a class="nav-link" href="#"><i class="bi bi-question-circle"></i> Yêu cầu hỗ trợ</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/crawling}"
+                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/crawling') ? 'active' : ''}"><i class="bi bi-spider"></i> Quản lý Web Crawling</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-gear"></i> Cài đặt</a>
                     </li>
                 </ul>

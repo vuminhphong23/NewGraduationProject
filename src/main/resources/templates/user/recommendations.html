@@ -31,14 +31,105 @@
                 </button>
             </div>
 
-            <!-- Dynamic Filter System -->
-            <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-header bg-white border-0">
-                    <h6 class="mb-0 fw-bold">
-                        <i class="fa fa-sliders-h text-primary me-2"></i>
-                        Bộ lọc gợi ý thông minh
-                    </h6>
-                    <small class="text-muted">Tùy chỉnh gợi ý theo sở thích của bạn</small>
+            <!-- Tabs for different recommendation types -->
+            <ul class="nav nav-tabs mb-4" id="recommendationTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#personalized" onclick="loadPersonalizedContent()">
+                        <i class="fa fa-user me-1"></i> Personalized
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#trending" onclick="loadTrendingContent()">
+                        <i class="fa fa-fire me-1"></i> Trending
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#interests" onclick="loadInterestsContent()">
+                        <i class="fa fa-heart me-1"></i> By Interests
+                    </a>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Personalized Recommendations -->
+                <div class="tab-pane fade show active" id="personalized">
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="fa fa-magic text-primary me-2"></i>
+                                AI-Powered Content for You
+                            </h6>
+                            <small class="text-muted">Nội dung được gợi ý dựa trên sở thích cá nhân</small>
+                        </div>
+                        <div class="card-body">
+                            <div id="personalizedContent" class="posts-container">
+                                <div class="text-center text-muted">
+                                    <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
+                                    <p>Đang tải nội dung gợi ý...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trending Content -->
+                <div class="tab-pane fade" id="trending">
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="fa fa-fire text-danger me-2"></i>
+                                Trending Content
+                            </h6>
+                            <small class="text-muted">Nội dung đang hot và được quan tâm nhiều</small>
+                        </div>
+                        <div class="card-body">
+                            <div id="trendingContent" class="posts-container">
+                                <div class="text-center text-muted">
+                                    <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
+                                    <p>Đang tải nội dung trending...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- By Interests -->
+                <div class="tab-pane fade" id="interests">
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-white border-0">
+                            <h6 class="mb-0 fw-bold">
+                                <i class="fa fa-heart text-danger me-2"></i>
+                                Content by Your Interests
+                            </h6>
+                            <small class="text-muted">Nội dung theo từng chủ đề bạn quan tâm</small>
+                        </div>
+                        <div class="card-body">
+                            <div class="interests-filter mb-3">
+                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="technology" onclick="loadContentByInterest('technology')">
+                                    <i class="fa fa-laptop-code me-1"></i> Technology
+                                </button>
+                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="education" onclick="loadContentByInterest('education')">
+                                    <i class="fa fa-graduation-cap me-1"></i> Education
+                                </button>
+                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="science" onclick="loadContentByInterest('science')">
+                                    <i class="fa fa-flask me-1"></i> Science
+                                </button>
+                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="art" onclick="loadContentByInterest('art')">
+                                    <i class="fa fa-palette me-1"></i> Art
+                                </button>
+                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="sports" onclick="loadContentByInterest('sports')">
+                                    <i class="fa fa-futbol me-1"></i> Sports
+                                </button>
+                            </div>
+                            <div id="interestsContent" class="posts-container">
+                                <div class="text-center text-muted">
+                                    <i class="fa fa-hand-pointer fa-2x mb-3"></i>
+                                    <p>Chọn một chủ đề để xem nội dung gợi ý</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -269,5 +360,8 @@ document.addEventListener('DOMContentLoaded', function() {
     window.recommendationPageManager = new RecommendationPageManager();
 });
 </script>
+
+<!-- Include recommendations JavaScript -->
+<script src="/js/recommendations.js"></script>
 </body>
 </html>

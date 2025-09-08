@@ -35,5 +35,11 @@ public interface TopicDao extends JpaRepository<Topic, Long> {
     // Lấy tất cả hashtags
     @Query("SELECT t FROM Topic t")
     List<Topic> getAllTopics();
+    
+    // Tìm topic theo tên (case insensitive)
+    Optional<Topic> findByNameIgnoreCase(String name);
+    
+    // Lấy trending topics theo usage count
+    List<Topic> findByIsTrendingTrueOrderByUsageCountDesc();
 
 } 

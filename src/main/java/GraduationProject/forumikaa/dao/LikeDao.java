@@ -3,7 +3,6 @@ package GraduationProject.forumikaa.dao;
 import GraduationProject.forumikaa.entity.Like;
 import GraduationProject.forumikaa.entity.LikeableType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,5 +38,10 @@ public interface LikeDao extends JpaRepository<Like, Long> {
     }
     
     // Methods for recommendation system
-    List<Like> findByUserIdAndLikeableType(Long userId, LikeableType likeableType);
+    @Query("SELECT l FROM Like l WHERE l.user.id = :userId AND l.likeableType = :likeableType")
+    List<Like> findByUserIdAndLikeableType(@Param("userId") Long userId, @Param("likeableType") LikeableType likeableType);
+    
+    // Method to find posts liked by user
+    @Query("SELECT p FROM Post p JOIN Like l ON p.id = l.likeableId WHERE l.user.id = :userId AND l.likeableType = 'POST'")
+    List<GraduationProject.forumikaa.entity.Post> findPostsLikedByUser(@Param("userId") Long userId);
 }

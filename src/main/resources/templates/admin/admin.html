@@ -133,6 +133,38 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Crawling Stats Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Configs Crawling</div>
+                        <div class="stat-value" style="color: #0F2E6F" id="crawlingConfigs">0</div>
+                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> Đang hoạt động</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Posts đã Crawl</div>
+                        <div class="stat-value text-success" id="crawledPosts">0</div>
+                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> Tự động</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Configs Lỗi</div>
+                        <div class="stat-value text-warning" id="errorConfigs">0</div>
+                        <div class="stat-change negative"><i class="bi bi-exclamation-triangle"></i> Cần kiểm tra</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Tỷ lệ thành công</div>
+                        <div class="stat-value text-info" id="successRate">0%</div>
+                        <div class="stat-change positive"><i class="bi bi-check-circle"></i> Hiệu quả</div>
+                    </div>
+                </div>
+            </div>
             <!-- Charts and Activities -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-6">
@@ -319,6 +351,31 @@
             // Thêm lớp active vào link đã được click
             this.classList.add('active');
         });
+    });
+
+    // Load crawling statistics
+    async function loadCrawlingStats() {
+        try {
+            const response = await fetch('/api/crawling/statistics');
+            const stats = await response.json();
+            
+            document.getElementById('crawlingConfigs').textContent = stats.totalConfigs || 0;
+            document.getElementById('crawledPosts').textContent = stats.totalCrawledPosts || 0;
+            document.getElementById('errorConfigs').textContent = stats.errorConfigs || 0;
+            
+            // Calculate success rate
+            const totalConfigs = stats.totalConfigs || 0;
+            const errorConfigs = stats.errorConfigs || 0;
+            const successRate = totalConfigs > 0 ? Math.round(((totalConfigs - errorConfigs) / totalConfigs) * 100) : 0;
+            document.getElementById('successRate').textContent = successRate + '%';
+        } catch (error) {
+            console.error('Error loading crawling stats:', error);
+        }
+    }
+
+    // Load stats on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCrawlingStats();
     });
 
 </script>
