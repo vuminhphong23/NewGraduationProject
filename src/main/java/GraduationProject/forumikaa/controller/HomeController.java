@@ -56,12 +56,7 @@ public class HomeController {
                 : List.of();
 
         // Đơn giản hóa logic - chỉ lấy trending topics
-        List<Topic> trendingTopics = topicService.getTrendingTopics();
-
-        // Nếu không có trending topics, lấy top topics
-        if (trendingTopics.isEmpty()) {
-            trendingTopics = topicService.getTopTopics(10);
-        }
+        List<Topic> trendingTopics = topicService.getTopTopics(10);
 
         model.addAttribute("userName", userName);
         model.addAttribute("user", user);

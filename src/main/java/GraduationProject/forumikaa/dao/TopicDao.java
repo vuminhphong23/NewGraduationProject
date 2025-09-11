@@ -16,14 +16,6 @@ public interface TopicDao extends JpaRepository<Topic, Long> {
     // Tìm hashtag theo tên
     Optional<Topic> findByName(String name);
 
-    // Lấy top hashtags theo usage count
-    @Query("SELECT t FROM Topic t ORDER BY t.usageCount DESC")
-    List<Topic> findTopTopicsByUsage();
-
-    // Lấy trending hashtags
-    @Query("SELECT t FROM Topic t WHERE t.isTrending = true ORDER BY t.usageCount DESC")
-    List<Topic> findTrendingTopics();
-
     // Tìm hashtags có tên chứa keyword
     @Query("SELECT t FROM Topic t WHERE t.name LIKE %:keyword% ORDER BY t.usageCount DESC")
     List<Topic> findByNameContaining(@Param("keyword") String keyword);
@@ -32,14 +24,8 @@ public interface TopicDao extends JpaRepository<Topic, Long> {
     @Query("SELECT t FROM Topic t ORDER BY t.usageCount DESC")
     List<Topic> findTopTopics();
 
-    // Lấy tất cả hashtags
-    @Query("SELECT t FROM Topic t")
-    List<Topic> getAllTopics();
     
     // Tìm topic theo tên (case insensitive)
     Optional<Topic> findByNameIgnoreCase(String name);
-    
-    // Lấy trending topics theo usage count
-    List<Topic> findByIsTrendingTrueOrderByUsageCountDesc();
 
-} 
+}

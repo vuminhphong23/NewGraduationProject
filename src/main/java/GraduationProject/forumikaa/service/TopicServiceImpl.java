@@ -44,20 +44,6 @@ public class TopicServiceImpl implements TopicService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<Topic> getTrendingTopics() {
-        // Lấy trending topics, nếu không có thì lấy top topics
-        List<Topic> trendingTopics = topicDao.findTrendingTopics();
-        if (trendingTopics.isEmpty()) {
-            trendingTopics = getTopTopics(10);
-        }
-        
-        // Lọc chỉ lấy topics có usageCount > 0
-        return trendingTopics.stream()
-                .filter(topic -> topic.getUsageCount() != null && topic.getUsageCount() > 0)
-                .collect(Collectors.toList());
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -84,30 +70,6 @@ public class TopicServiceImpl implements TopicService {
         if (topic.getUsageCount() != null && topic.getUsageCount() > 0) {
             topic.setUsageCount(topic.getUsageCount() - 1);
             topicDao.save(topic);
-        }
-    }
-
-
-    @Override
-    public void updateTrendingStatus() {
-        List<Topic> topTopics = getTopTopics(10);
-        
-        List<Topic> allTopics = topicDao.findAll();
-        allTopics.forEach(topic -> topic.setTrending(false));
-
-        topTopics.forEach(topic -> topic.setTrending(true));
-
-        topicDao.saveAll(allTopics);
-    }
-    
-    @Scheduled(fixedRate = 3600000)
-    @Transactional
-    public void scheduledUpdateTrendingStatus() {
-        try {
-            updateTrendingStatus();
-            System.out.println("Đã cập nhật trending status cho topics");
-        } catch (Exception e) {
-            System.err.println("Lỗi khi cập nhật trending status: " + e.getMessage());
         }
     }
 

@@ -18,7 +18,9 @@ public class CrawledContentRecommendationService {
     @Autowired private LikeDao likeDao;
     @Autowired private CommentDao commentDao;
     @Autowired private TopicDao topicDao;
-    
+    @Autowired
+    private TopicService topicService;
+
     /**
      * Gợi ý crawled content dựa trên sở thích và tương tác của user
      */
@@ -65,7 +67,7 @@ public class CrawledContentRecommendationService {
      */
     public List<PostResponse> getTrendingCrawledContent(Long userId, Integer limit) {
         // Lấy trending topics
-        List<Topic> trendingTopics = topicDao.findByIsTrendingTrueOrderByUsageCountDesc();
+        List<Topic> trendingTopics = topicService.getTopTopics(10);
         
         // Lấy crawled posts thuộc trending topics (từ admin user)
         List<Post> trendingCrawledPosts = new ArrayList<>();

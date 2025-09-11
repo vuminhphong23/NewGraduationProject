@@ -13,9 +13,6 @@ public interface TopicService {
     // Xử lý danh sách hashtag từ string input
     List<Topic> processTopicsFromInput(List<String> topicNames, User createdBy);
     
-    // Lấy trending hashtags
-    List<Topic> getTrendingTopics();
-    
     // Lấy top hashtags
     List<Topic> getTopTopics(int limit);
     
@@ -24,8 +21,5 @@ public interface TopicService {
     
     // Giảm usage count cho hashtag
     void decrementUsageCount(Topic topic);
-    
-    // Cập nhật trending status
-    void updateTrendingStatus();
 
 }

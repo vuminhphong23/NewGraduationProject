@@ -21,9 +21,6 @@ public class Topic {
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "is_trending")
-    private boolean isTrending = false;
-
     @Column(name = "usage_count")
     private Integer usageCount = 0;
 

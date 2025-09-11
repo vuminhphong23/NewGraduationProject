@@ -192,59 +192,6 @@ class TopicServiceImplTest {
     }
 
     @Test
-    void getTrendingTopics_WhenTrendingTopicsExist_ShouldReturnTrendingTopics() {
-        // Given
-        List<Topic> trendingTopics = Arrays.asList(testTopic);
-        when(topicDao.findTrendingTopics()).thenReturn(trendingTopics);
-
-        // When
-        List<Topic> result = topicService.getTrendingTopics();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testTopic.getId(), result.get(0).getId());
-        verify(topicDao).findTrendingTopics();
-        verify(topicDao, never()).findTopTopics();
-    }
-
-    @Test
-    void getTrendingTopics_WhenNoTrendingTopics_ShouldReturnTopTopics() {
-        // Given
-        when(topicDao.findTrendingTopics()).thenReturn(Collections.emptyList());
-        when(topicDao.findTopTopics()).thenReturn(Arrays.asList(testTopic));
-
-        // When
-        List<Topic> result = topicService.getTrendingTopics();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        verify(topicDao).findTrendingTopics();
-        verify(topicDao).findTopTopics();
-    }
-
-    @Test
-    void getTrendingTopics_ShouldFilterTopicsWithZeroUsageCount() {
-        // Given
-        Topic topicWithZeroUsage = new Topic();
-        topicWithZeroUsage.setId(2L);
-        topicWithZeroUsage.setName("zero_usage");
-        topicWithZeroUsage.setUsageCount(0);
-
-        List<Topic> topics = Arrays.asList(testTopic, topicWithZeroUsage);
-        when(topicDao.findTrendingTopics()).thenReturn(topics);
-
-        // When
-        List<Topic> result = topicService.getTrendingTopics();
-
-        // Then
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(testTopic.getId(), result.get(0).getId());
-    }
-
-    @Test
     void getTopTopics_ShouldReturnLimitedTopics() {
         // Given
         Topic topic1 = new Topic();
@@ -355,37 +302,6 @@ class TopicServiceImplTest {
         // Then
         assertEquals(4, topic.getUsageCount());
         verify(topicDao).save(topic);
-    }
-
-    @Test
-    void updateTrendingStatus_ShouldUpdateAllTopics() {
-        // Given
-        Topic topic1 = new Topic();
-        topic1.setId(1L);
-        topic1.setName("topic1");
-        topic1.setUsageCount(10);
-        topic1.setTrending(false);
-
-        Topic topic2 = new Topic();
-        topic2.setId(2L);
-        topic2.setName("topic2");
-        topic2.setUsageCount(5);
-        topic2.setTrending(false);
-
-        List<Topic> allTopics = Arrays.asList(topic1, topic2);
-        when(topicDao.findTopTopics()).thenReturn(Arrays.asList(topic1));
-        when(topicDao.findAll()).thenReturn(allTopics);
-        when(topicDao.saveAll(anyList())).thenReturn(allTopics);
-
-        // When
-        topicService.updateTrendingStatus();
-
-        // Then
-        assertTrue(topic1.isTrending());
-        assertFalse(topic2.isTrending());
-        verify(topicDao).findTopTopics();
-        verify(topicDao).findAll();
-        verify(topicDao).saveAll(allTopics);
     }
 
     @Test

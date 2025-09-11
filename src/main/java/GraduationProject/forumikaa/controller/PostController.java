@@ -136,7 +136,6 @@ public class PostController {
                         map.put("id", topic.getId());
                         map.put("name", topic.getName());
                         map.put("usageCount", topic.getUsageCount());
-                        map.put("isTrending", topic.isTrending());
                         return map;
                     })
                     .collect(Collectors.toList());
