@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nhóm - Forumikaa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/admin/layout.css">
+    <link rel="stylesheet" href="/css/admin/group-management.css">
+
+    <style>
+        .admin-profile { border-top: 1px solid #1f2e5a; }
+        .admin-profile img { width: 40px; height: 40px; }
+        .table-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
+        .badge-role-admin { background: #e3f0ff; color: #1976d2; }
+        .badge-role-member { background: #f2f2f2; color: #555; }
+        .btn-add-group { background: #ff7a00; color: #fff; }
+        .btn-add-group:hover { background: #ff9900; color: #fff; }
+        .table thead { background: #f8fafc; }
+        .pagination .page-link.active, .pagination .active>.page-link { background: #0d1a44; color: #fff; border-color: #0d1a44; }
+        .search-bar input { background: #f2f4f8; border: none; }
+        .search-bar input:focus { box-shadow: none; border: 1px solid #1976d2; }
+        .filter-btn, .filter-btn:focus { background: #0d1a44; color: #fff; border: none; }
+        .filter-btn:hover { background: #1976d2; color: #fff; }
+        .group-description { 
+            max-width: 300px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+        .group-name { 
+            max-width: 250px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/admin/sidebar :: sidebar}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+             <!-- Header -->
+            <div th:replace="~{fragments/admin/header :: header(pageTitle='Quản lý nhóm')}"></div>
+
+            <div class="bg-white rounded-3 p-4 shadow-sm mb-4">
+                <form th:action="@{/admin/groups}" method="get" class="mb-3">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="flex-grow-1 search-bar">
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-0"><i class="bi bi-search"></i></span>
+                                <input type="text" name="keyword" th:value="${keyword}" class="form-control bg-transparent border-0" placeholder="Tìm kiếm theo tên nhóm, mô tả, người tạo...">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn filter-btn"><i class="bi bi-funnel"></i> Lọc</button>
+                        <a th:href="@{/admin/groups/add}" class="btn btn-add-group"><i class="bi bi-plus-lg"></i> Thêm nhóm</a>
+                    </div>
+                </form>
+
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th><input class="form-check-input" type="checkbox"></th>
+                            <th>Nhóm</th>
+                            <th>Người tạo</th>
+                            <th>Mô tả</th>
+                            <th>Ngày tạo</th>
+                            <th>Thành viên</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="group : ${groupPage.content}">
+                            <td><input class="form-check-input" type="checkbox"></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="${group.avatar != null ? group.avatar : 'https://via.placeholder.com/40x40/6c757d/ffffff?text=' + group.name.substring(0,1).toUpperCase()}" 
+                                         class="group-avatar me-3" alt="group avatar">
+                                    <div class="d-flex flex-column">
+                                        <div class="group-name fw-bold" th:text="${group.name}" title="${group.name}"></div>
+                                        <div class="text-muted small">ID: <span th:text="${group.id}"></span></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="${group.createdBy != null ? (group.createdBy.userProfile?.avatar != null ? group.createdBy.userProfile.avatar : 'https://i.pravatar.cc/36?u=' + group.createdBy.id) : 'https://i.pravatar.cc/36?u=0'}" 
+                                         class="table-avatar" alt="avatar">
+                                    <div>
+                                        <div th:text="${group.createdBy?.username ?: 'Unknown'}" class="fw-bold"></div>
+                                        <div th:text="${group.createdBy != null ? (group.createdBy.firstName + ' ' + group.createdBy.lastName) : 'Unknown User'}" class="text-muted small"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="group-description text-muted" th:text="${group.description}" title="${group.description}"></div>
+                            </td>
+                            <td>
+                                <div th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy HH:mm')}" class="small"></div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-people text-primary me-1"></i>
+                                    <span class="small" th:text="${group.memberCount != null ? group.memberCount : 0}">0</span>
+                                    <span class="text-muted small ms-1">thành viên</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/admin/groups/edit/{id}(id=${group.id})}" 
+                                       class="btn btn-sm btn-outline-primary border-0" 
+                                       title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                    
+                                    <button type="button" class="btn btn-sm btn-outline-info border-0" 
+                                            title="Xem thành viên" data-bs-toggle="modal" data-bs-target="#membersModal" th:data-group-id="${group.id}">
+                                        <i class="bi bi-people"></i>
+                                    </button>
+                                    
+                                    <form th:action="@{/admin/groups/{id}/delete(id=${group.id})}" method="post" class="d-inline" 
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa nhóm này?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0" 
+                                                title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div th:if="${groupPage.totalPages > 0}" class="d-flex justify-content-between align-items-center mt-3">
+                    <div>
+                        Hiển thị <strong><span th:text="${groupPage.number * groupPage.size + 1}"></span>-<span th:text="${groupPage.number * groupPage.size + groupPage.numberOfElements}"></span></strong> của <strong><span th:text="${groupPage.totalElements}"></span></strong> nhóm
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            <li class="page-item" th:classappend="${groupPage.first ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/groups(page=1, keyword=${keyword})}"><i class="bi bi-chevron-double-left"></i></a>
+                            </li>
+                            <li class="page-item" th:classappend="${groupPage.first ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/groups(page=${groupPage.number}, keyword=${keyword})}"><i class="bi bi-chevron-left"></i></a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence( T(java.lang.Math).max(1, groupPage.number), T(java.lang.Math).min(groupPage.totalPages, groupPage.number + 2) )}">
+                                <a class="page-link" th:href="@{/admin/groups(page=${i}, keyword=${keyword})}" th:text="${i}" th:classappend="${i == groupPage.number + 1 ? 'active' : ''}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${groupPage.last ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/groups(page=${groupPage.number + 2}, keyword=${keyword})}"><i class="bi bi-chevron-right"></i></a>
+                            </li>
+                            <li class="page-item" th:classappend="${groupPage.last ? 'disabled' : ''}">
+                                <a class="page-link" th:href="@{/admin/groups(page=${groupPage.totalPages}, keyword=${keyword})}"><i class="bi bi-chevron-double-right"></i></a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Members Modal -->
+<div class="modal fade" id="membersModal" tabindex="-1" aria-labelledby="membersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="membersModalLabel">Thành viên nhóm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Đang tải danh sách thành viên...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/jwt-utils.js"></script>
+<script src="/js/logout.js"></script>
+<script src="/js/admin/group-management.js"></script>
+</body>
+</html>

@@ -2,9 +2,14 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
+import GraduationProject.forumikaa.entity.Post;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface PostService {
     PostResponse createPost(CreatePostRequest request, Long userId);
@@ -36,5 +41,12 @@ public interface PostService {
     // Share functionality
     Map<String, Object> sharePost(Long postId, Long userId, String message);
     Long getPostShareCount(Long postId);
+
+    // Admin management methods
+    Page<Post> findPaginated(String keyword, String status, String privacy, Pageable pageable);
+    Optional<Post> findById(Long id);
+    Post save(Post post);
+    void deleteById(Long id);
+    List<Post> findAll();
 
 }

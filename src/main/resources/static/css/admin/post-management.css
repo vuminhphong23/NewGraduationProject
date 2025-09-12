@@ -1,0 +1,279 @@
+/* Post Management Styles */
+.post-management-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+}
+
+.post-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.post-title {
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.post-content-preview {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.post-meta {
+    font-size: 0.8rem;
+    color: #adb5bd;
+}
+
+.post-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.post-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+/* Status Badges */
+.badge-status-pending {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+    font-weight: 500;
+}
+
+.badge-status-approved {
+    background: linear-gradient(135deg, #d4edda, #a8e6cf);
+    color: #155724;
+    border: 1px solid #a8e6cf;
+    font-weight: 500;
+}
+
+.badge-status-rejected {
+    background: linear-gradient(135deg, #f8d7da, #ffb3ba);
+    color: #721c24;
+    border: 1px solid #ffb3ba;
+    font-weight: 500;
+}
+
+/* Privacy Badges */
+.badge-privacy-public {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+    font-weight: 500;
+}
+
+.badge-privacy-private {
+    background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+    color: #7b1fa2;
+    border: 1px solid #e1bee7;
+    font-weight: 500;
+}
+
+.badge-privacy-friends {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+    font-weight: 500;
+}
+
+/* Action Buttons */
+.btn-approve {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-approve:hover {
+    background: linear-gradient(135deg, #218838, #1ea085);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-reject {
+    background: linear-gradient(135deg, #dc3545, #e74c3c);
+    color: white;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-reject:hover {
+    background: linear-gradient(135deg, #c82333, #c0392b);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Table Enhancements */
+.table-post-management {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.table-post-management thead {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-post-management th {
+    font-weight: 600;
+    color: #495057;
+    border: none;
+    padding: 16px 12px;
+}
+
+.table-post-management td {
+    padding: 16px 12px;
+    vertical-align: middle;
+    border-top: 1px solid #f1f3f4;
+}
+
+.table-post-management tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Search and Filter */
+.search-bar {
+    position: relative;
+}
+
+.search-bar .input-group-text {
+    background: transparent;
+    border: none;
+    color: #6c757d;
+}
+
+.search-bar .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    padding: 12px 20px 12px 45px;
+    transition: all 0.3s ease;
+}
+
+.search-bar .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.filter-btn {
+    background: linear-gradient(135deg, #0d1a44, #1976d2);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(13, 26, 68, 0.3);
+}
+
+/* Pagination */
+.pagination .page-link {
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 8px 12px;
+    margin: 0 2px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+    color: #495057;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #0d1a44, #1976d2);
+    border-color: #0d1a44;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .post-actions {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .post-actions .btn {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    
+    .table-post-management {
+        font-size: 0.9rem;
+    }
+    
+    .post-title {
+        font-size: 0.9rem;
+    }
+    
+    .post-content-preview {
+        font-size: 0.8rem;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Success/Error Messages */
+.alert {
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}

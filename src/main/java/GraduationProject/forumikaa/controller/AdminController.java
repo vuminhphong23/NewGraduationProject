@@ -1,8 +1,17 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.Post;
+import GraduationProject.forumikaa.entity.PostStatus;
+import GraduationProject.forumikaa.entity.PostPrivacy;
+import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.GroupMember;
+import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.service.RoleService;
 import GraduationProject.forumikaa.service.UserService;
+import GraduationProject.forumikaa.service.PostService;
+import GraduationProject.forumikaa.service.GroupService;
+import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,7 +24,14 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.http.ResponseEntity;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class AdminController {
@@ -35,10 +51,44 @@ public class AdminController {
         this.roleService = roleService;
     }
 
+    private PostService postService;
+
+    @Autowired
+    public void setPostService(PostService postService) {
+        this.postService = postService;
+    }
+
+    private GroupService groupService;
+
+    @Autowired
+    public void setGroupService(GroupService groupService) {
+        this.groupService = groupService;
+    }
+
+    private SecurityUtil securityUtil;
+
+    @Autowired
+    public void setSecurityUtil(SecurityUtil securityUtil) {
+        this.securityUtil = securityUtil;
+    }
+
     @GetMapping("/admin")
     public String adminPage(Model model) {
         long totalUsers = userService.findAll().size();
+        long totalPosts = postService.findAll().size();
+        long totalGroups = groupService.findAll().size();
+        long pendingPosts = postService.findAll().stream()
+                .filter(post -> post.getStatus() == PostStatus.PENDING)
+                .count();
+        long approvedPosts = postService.findAll().stream()
+                .filter(post -> post.getStatus() == PostStatus.APPROVED)
+                .count();
+        
         model.addAttribute("totalUsers", totalUsers);
+        model.addAttribute("totalPosts", totalPosts);
+        model.addAttribute("totalGroups", totalGroups);
+        model.addAttribute("pendingPosts", pendingPosts);
+        model.addAttribute("approvedPosts", approvedPosts);
         return "admin/admin";
     }
 
@@ -130,5 +180,253 @@ public class AdminController {
         }
         redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công.");
         return "redirect:/admin/users";
+    }
+
+    // ========== POST MANAGEMENT ==========
+    
+    @GetMapping("/admin/posts")
+    public String postManagementPage(Model model,
+                                   @RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "10") int size,
+                                   @RequestParam(required = false) String keyword,
+                                   @RequestParam(required = false, defaultValue = "") String status,
+                                   @RequestParam(required = false, defaultValue = "") String privacy) {
+        // Tạo PageRequest với page-1 vì Spring Data sử dụng 0-based indexing
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        
+        // Lấy danh sách bài viết với phân trang và filter
+        Page<Post> postPage = postService.findPaginated(keyword, status, privacy, pageRequest);
+        
+        model.addAttribute("postPage", postPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("privacy", privacy);
+        model.addAttribute("allStatuses", PostStatus.values());
+        model.addAttribute("allPrivacies", PostPrivacy.values());
+        
+        return "admin/post-management";
+    }
+
+    @PostMapping("/admin/posts/{id}/toggle-status")
+    public String togglePostStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết với id " + id));
+            
+            // Toggle status: PENDING -> APPROVED, APPROVED -> PENDING, REJECTED -> PENDING
+            PostStatus newStatus;
+            if (post.getStatus() == PostStatus.PENDING) {
+                newStatus = PostStatus.APPROVED;
+            } else if (post.getStatus() == PostStatus.APPROVED) {
+                newStatus = PostStatus.PENDING;
+            } else { // REJECTED
+                newStatus = PostStatus.PENDING;
+            }
+            
+            post.setStatus(newStatus);
+            postService.save(post);
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi cập nhật trạng thái: " + e.getMessage());
+        }
+        
+        return "redirect:/admin/posts";
+    }
+
+    @PostMapping("/admin/posts/{id}/approve")
+    public String approvePost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết với id " + id));
+            post.setStatus(PostStatus.APPROVED);
+            postService.save(post);
+            redirectAttributes.addFlashAttribute("successMessage", "Duyệt bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi duyệt bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/posts";
+    }
+
+    @PostMapping("/admin/posts/{id}/reject")
+    public String rejectPost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết với id " + id));
+            post.setStatus(PostStatus.REJECTED);
+            postService.save(post);
+            redirectAttributes.addFlashAttribute("successMessage", "Từ chối bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi từ chối bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/posts";
+    }
+
+    @PostMapping("/admin/posts/{id}/delete")
+    public String deletePost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            postService.deleteById(id); // Admin có thể xóa bất kỳ bài viết nào
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/posts";
+    }
+
+    @GetMapping("/admin/posts/edit/{id}")
+    public String editPostForm(@PathVariable Long id, Model model) {
+        try {
+            Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết với id " + id));
+            model.addAttribute("post", post);
+            model.addAttribute("allStatuses", PostStatus.values());
+            model.addAttribute("allPrivacies", PostPrivacy.values());
+            return "admin/post-form";
+        } catch (Exception e) {
+            return "redirect:/admin/posts?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/admin/posts/save")
+    public String savePost(@ModelAttribute("post") @Valid Post post, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        model.addAttribute("allStatuses", PostStatus.values());
+        model.addAttribute("allPrivacies", PostPrivacy.values());
+        
+        if (bindingResult.hasErrors()) {
+            return "admin/post-form";
+        }
+        
+        try {
+            postService.save(post);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật bài viết thành công.");
+            return "redirect:/admin/posts";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi lưu bài viết: " + e.getMessage());
+            return "admin/post-form";
+        }
+    }
+
+    // ========== GROUP MANAGEMENT ==========
+    
+    @GetMapping("/admin/groups")
+    public String groupManagementPage(Model model,
+                                    @RequestParam(defaultValue = "1") int page,
+                                    @RequestParam(defaultValue = "10") int size,
+                                    @RequestParam(required = false) String keyword) {
+        // Tạo PageRequest với page-1 vì Spring Data sử dụng 0-based indexing
+        PageRequest pageRequest = PageRequest.of(page - 1, size);
+        
+        // Lấy danh sách nhóm với phân trang và filter
+        Page<UserGroup> groupPage = groupService.findPaginated(keyword, null, null, pageRequest);
+        
+        // Tính số thành viên cho mỗi nhóm
+        for (UserGroup group : groupPage.getContent()) {
+            Long memberCount = groupService.getMemberCount(group.getId());
+            group.setMemberCount(memberCount != null ? memberCount : 0L);
+        }
+        
+        model.addAttribute("groupPage", groupPage);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("allRoles", GroupMemberRole.values());
+        
+        return "admin/group-management";
+    }
+
+    @PostMapping("/admin/groups/{id}/delete")
+    public String deleteGroup(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            groupService.deleteById(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa nhóm thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa nhóm: " + e.getMessage());
+        }
+        return "redirect:/admin/groups";
+    }
+
+    @GetMapping("/admin/groups/edit/{id}")
+    public String editGroupForm(@PathVariable Long id, Model model) {
+        try {
+            UserGroup group = groupService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm với id " + id));
+            model.addAttribute("group", group);
+            model.addAttribute("allRoles", GroupMemberRole.values());
+            return "admin/group-form";
+        } catch (Exception e) {
+            return "redirect:/admin/groups?error=" + e.getMessage();
+        }
+    }
+
+    @PostMapping("/admin/groups/save")
+    public String saveGroup(@ModelAttribute("group") @Valid UserGroup group, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        model.addAttribute("allRoles", GroupMemberRole.values());
+        
+        if (bindingResult.hasErrors()) {
+            return "admin/group-form";
+        }
+        
+        try {
+            groupService.save(group);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật nhóm thành công.");
+            return "redirect:/admin/groups";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi lưu nhóm: " + e.getMessage());
+            return "admin/group-form";
+        }
+    }
+
+    @GetMapping("/admin/groups/add")
+    public String addGroupForm(Model model) {
+        model.addAttribute("group", new UserGroup());
+        model.addAttribute("allRoles", GroupMemberRole.values());
+        return "admin/group-form";
+    }
+
+    @PostMapping("/admin/groups/create")
+    public String createGroup(@RequestParam String name, 
+                            @RequestParam String description,
+                            @RequestParam(required = false) String avatar,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            if (currentUserId == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể xác định người dùng hiện tại.");
+                return "redirect:/admin/groups";
+            }
+            
+            UserGroup group = groupService.createGroup(name, description, currentUserId);
+            if (avatar != null && !avatar.trim().isEmpty()) {
+                group.setAvatar(avatar.trim());
+                groupService.save(group);
+            }
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo nhóm thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo nhóm: " + e.getMessage());
+        }
+        return "redirect:/admin/groups";
+    }
+
+    // ========== GROUP MEMBERS API ==========
+    
+    @GetMapping("/admin/groups/{id}/members")
+    @ResponseBody
+    public ResponseEntity<?> getGroupMembers(@PathVariable Long id) {
+        try {
+            List<GroupMember> members = groupService.getGroupMembers(id);
+            
+            List<Map<String, Object>> memberData = members.stream()
+                .map(member -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("id", member.getId());
+                    data.put("username", member.getUser().getUsername());
+                    data.put("firstName", member.getUser().getFirstName());
+                    data.put("lastName", member.getUser().getLastName());
+                    data.put("avatar", member.getUser().getUserProfile() != null ? 
+                        member.getUser().getUserProfile().getAvatar() : 
+                        "https://i.pravatar.cc/40?u=" + member.getUser().getId());
+                    data.put("role", member.getRole().name());
+                    data.put("joinedAt", member.getJoinedAt());
+                    return data;
+                })
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(memberData);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi khi lấy danh sách thành viên: " + e.getMessage()));
+        }
     }
 } 

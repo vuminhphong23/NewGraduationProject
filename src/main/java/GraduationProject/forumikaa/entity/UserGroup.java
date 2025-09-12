@@ -22,6 +22,9 @@ public class UserGroup {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "avatar")
+    private String avatar;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
@@ -29,4 +32,8 @@ public class UserGroup {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    
+    // Transient field for member count (not persisted to database)
+    @Transient
+    private Long memberCount;
 } 

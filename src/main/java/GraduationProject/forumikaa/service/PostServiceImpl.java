@@ -9,6 +9,7 @@ import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
+import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Comment;
@@ -17,6 +18,7 @@ import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
 import GraduationProject.forumikaa.patterns.strategy.FileStorageStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.HashMap;
+import java.util.Optional;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
 
 @Service
@@ -198,7 +202,7 @@ public class PostServiceImpl implements PostService {
     /**
      * Delete file from Cloudinary using public_id
      */
-    private void deleteFromCloudinary(String publicId) throws IOException, InterruptedException {
+    private void deleteFromCloudinary(String publicId) throws IOException {
         // Get Cloudinary credentials from application properties
         String cloudName = "dsqkymrkm";
         String apiKey = "769412498641216";
@@ -216,7 +220,7 @@ public class PostServiceImpl implements PostService {
                 String signature = generateSignature(publicId, timestamp, apiSecret);
                 
                 // URL encode the public_id
-                String encodedPublicId = java.net.URLEncoder.encode(publicId, "UTF-8");
+                String encodedPublicId = java.net.URLEncoder.encode(publicId, StandardCharsets.UTF_8);
                 String formData = "public_id=" + encodedPublicId + 
                                 "&api_key=" + apiKey + 
                                 "&timestamp=" + timestamp + 
@@ -605,6 +609,80 @@ public class PostServiceImpl implements PostService {
         }
 
         return dto;
+    }
+
+    // ========== ADMIN MANAGEMENT METHODS ==========
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Post> findPaginated(String keyword, String status, String privacy, Pageable pageable) {
+        // Convert String to enum
+        PostStatus statusEnum = null;
+        if (status != null && !status.trim().isEmpty()) {
+            try {
+                statusEnum = PostStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                // Invalid status, keep as null
+            }
+        }
+        
+        PostPrivacy privacyEnum = null;
+        if (privacy != null && !privacy.trim().isEmpty()) {
+            try {
+                privacyEnum = PostPrivacy.valueOf(privacy);
+            } catch (IllegalArgumentException e) {
+                // Invalid privacy, keep as null
+            }
+        }
+        
+        // Use different queries based on filters
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        
+        if (statusEnum != null && privacyEnum != null) {
+            if (hasKeyword) {
+                return postDao.findByKeywordAndStatusAndPrivacy(keyword, statusEnum, privacyEnum, pageable);
+            } else {
+                return postDao.findByStatusAndPrivacy(statusEnum, privacyEnum, pageable);
+            }
+        } else if (statusEnum != null) {
+            if (hasKeyword) {
+                return postDao.findByKeywordAndStatus(keyword, statusEnum, pageable);
+            } else {
+                return postDao.findByStatus(statusEnum, pageable);
+            }
+        } else if (privacyEnum != null) {
+            if (hasKeyword) {
+                return postDao.findByKeywordAndPrivacy(keyword, privacyEnum, pageable);
+            } else {
+                return postDao.findByPrivacy(privacyEnum, pageable);
+            }
+        } else {
+            return postDao.findPaginated(keyword, null, null, pageable);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Post> findById(Long id) {
+        return postDao.findById(id);
+    }
+
+    @Override
+    @Transactional
+    public Post save(Post post) {
+        return postDao.save(post);
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(Long id) {
+        postDao.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Post> findAll() {
+        return postDao.findAll();
     }
 
 }

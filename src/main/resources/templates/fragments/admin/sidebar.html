@@ -18,10 +18,12 @@
                            th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/users') ? 'active' : ''}"><i class="bi bi-people"></i> Quản lý người dùng</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-file-text"></i> Quản lý bài viết</a>
+                        <a class="nav-link" th:href="@{/admin/posts}"
+                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/posts') ? 'active' : ''}"><i class="bi bi-file-text"></i> Quản lý bài viết</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-briefcase"></i> Quản lý nhóm</a>
+                        <a class="nav-link" th:href="@{/admin/groups}"
+                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/groups') ? 'active' : ''}"><i class="bi bi-briefcase"></i> Quản lý nhóm</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-flag"></i> Báo cáo</a>
