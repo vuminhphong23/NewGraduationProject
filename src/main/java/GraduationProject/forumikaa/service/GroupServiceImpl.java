@@ -3,6 +3,8 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.dao.GroupDao;
 import GraduationProject.forumikaa.dao.GroupMemberDao;
 import GraduationProject.forumikaa.dao.UserDao;
+import GraduationProject.forumikaa.dto.DocumentDTO;
+import GraduationProject.forumikaa.dto.LinkDTO;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
@@ -212,5 +214,19 @@ public class GroupServiceImpl implements GroupService {
     @Transactional(readOnly = true)
     public List<GroupMember> getGroupMembers(Long groupId) {
         return groupMemberDao.findByGroupId(groupId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DocumentDTO> getGroupDocuments(Long groupId) {
+        // For now, return empty list - can be implemented later with actual document storage
+        return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<LinkDTO> getGroupLinks(Long groupId) {
+        // For now, return empty list - can be implemented later with group settings
+        return List.of();
     }
 }

@@ -4,6 +4,7 @@ import GraduationProject.forumikaa.dao.PostDao;
 import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dao.CommentDao;
+import GraduationProject.forumikaa.dao.GroupDao;
 import GraduationProject.forumikaa.dto.CreatePostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.UpdatePostRequest;
@@ -12,6 +13,7 @@ import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.Comment;
 import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
@@ -58,6 +60,7 @@ public class PostServiceImpl implements PostService {
     @Autowired private NotificationService notificationService;
     @Autowired private FileUploadService fileUploadService;
     @Autowired private FileStorageStrategyFactory strategyFactory;
+    @Autowired private GroupDao groupDao;
 
     @Override
     public PostResponse createPost(CreatePostRequest request, Long userId) {
@@ -70,6 +73,13 @@ public class PostServiceImpl implements PostService {
         post.setUser(user);
         post.setPrivacy(request.getPrivacy());
         post.setStatus(PostStatus.APPROVED);
+        
+        // Set group if groupId is provided
+        if (request.getGroupId() != null) {
+            UserGroup group = groupDao.findById(request.getGroupId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+            post.setGroup(group);
+        }
 
         // Process topics from topicNames (hashtags)
         Set<Topic> topics = new HashSet<>();
@@ -292,7 +302,7 @@ public class PostServiceImpl implements PostService {
     public List<PostResponse> getUserFeed(Long userId) {
         return postDao.findUserFeed(userId)
                 .stream()
-                .map(this::convertToDto)
+                .map(post -> convertToDto(post, userId))
                 .toList();
     }
 
@@ -300,7 +310,7 @@ public class PostServiceImpl implements PostService {
     public List<PostResponse> getUserPosts(Long userId) {
         return postDao.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
-                .map(this::convertToDto)
+                .map(post -> convertToDto(post, userId))
                 .toList();
     }
 
@@ -308,7 +318,15 @@ public class PostServiceImpl implements PostService {
     public List<PostResponse> getPostsByTopic(Long topicId, Long userId) {
         return postDao.findByTopicIdWithUserAccess(topicId, userId)
                 .stream()
-                .map(this::convertToDto)
+                .map(post -> convertToDto(post, userId))
+                .toList();
+    }
+
+    @Override
+    public List<PostResponse> getPostsByGroup(Long groupId, Long userId) {
+        return postDao.findByGroupIdWithUserAccess(groupId, userId)
+                .stream()
+                .map(post -> convertToDto(post, userId))
                 .toList();
     }
 
@@ -564,6 +582,13 @@ public class PostServiceImpl implements PostService {
      * Convert Post entity sang PostDto
      */
     private PostResponse convertToDto(Post post) {
+        return convertToDto(post, null);
+    }
+    
+    /**
+     * Convert Post entity sang PostDto with user context for isLiked
+     */
+    private PostResponse convertToDto(Post post, Long currentUserId) {
         PostResponse dto = new PostResponse();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -586,6 +611,17 @@ public class PostServiceImpl implements PostService {
         dto.setShareCount(post.getShareCount() != null ? post.getShareCount() : 0L);
         dto.setStatus(post.getStatus());
         dto.setPrivacy(post.getPrivacy());
+        
+        // Set isLiked if currentUserId is provided
+        if (currentUserId != null) {
+            try {
+                dto.setIsLiked(isPostLikedByUser(post.getId(), currentUserId));
+            } catch (Exception e) {
+                dto.setIsLiked(false);
+            }
+        } else {
+            dto.setIsLiked(false);
+        }
 
         // Set topic names for hashtag functionality 
         if (post.getTopics() != null && !post.getTopics().isEmpty()) {
@@ -683,6 +719,12 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public List<Post> findAll() {
         return postDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getPostCountByGroup(Long groupId) {
+        return postDao.countByGroupId(groupId);
     }
 
 }

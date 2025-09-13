@@ -67,6 +67,21 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     """)
     List<Post> findByTopicIdWithUserAccess(@Param("topicId") Long topicId, @Param("userId") Long userId);
 
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.user u
+        LEFT JOIN FETCH u.userProfile
+        LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
+        WHERE p.group.id = :groupId AND p.status = 'APPROVED' AND (
+            (p.privacy = 'PUBLIC') OR
+            (p.privacy = 'FRIENDS' AND p.user.id = :userId) OR
+            (p.privacy = 'PRIVATE' AND p.user.id = :userId)
+        )
+        ORDER BY p.createdAt DESC
+    """)
+    List<Post> findByGroupIdWithUserAccess(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
 
     // Tìm posts theo username của user
     List<Post> findByUserUsername(String username);
@@ -184,4 +199,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     default boolean canEdit(Post post, Long userId) {
         return post != null && post.getUser().getId().equals(userId);
     }
+    
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.group.id = :groupId")
+    Long countByGroupId(@Param("groupId") Long groupId);
 }

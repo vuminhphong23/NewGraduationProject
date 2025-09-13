@@ -22,6 +22,7 @@ public class PostResponse {
     private Long likeCount;
     private Long commentCount;
     private Long shareCount;
+    private Boolean isLiked = false; // Whether current user liked this post
     private List<FileUploadResponse> documents;
     
     // Thêm fields cho crawled content

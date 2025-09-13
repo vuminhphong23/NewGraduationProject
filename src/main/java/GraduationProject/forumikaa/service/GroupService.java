@@ -2,6 +2,8 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
+import GraduationProject.forumikaa.dto.DocumentDTO;
+import GraduationProject.forumikaa.dto.LinkDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -45,4 +47,10 @@ public interface GroupService {
     boolean canDeleteGroup(Long groupId, Long userId);
     boolean isGroupMember(Long groupId, Long userId);
     boolean isGroupAdmin(Long groupId, Long userId);
+    
+    // Document management
+    List<DocumentDTO> getGroupDocuments(Long groupId);
+    
+    // Link management
+    List<LinkDTO> getGroupLinks(Long groupId);
 }

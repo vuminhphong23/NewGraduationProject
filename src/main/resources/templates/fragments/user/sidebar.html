@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<!-- User Sidebar Fragment -->
+<div th:fragment="sidebar" class="col-md-2 d-none d-md-block sidebar">
+    <div class="sidebar-content">
+        <!-- User Profile Section -->
+        <div class="user-profile-section">
+            <div class="user-avatar">
+                <img src="https://i.pravatar.cc/60?u=1" alt="User Avatar" class="avatar-img">
+            </div>
+            <div class="user-info">
+                <h6 class="user-name">Nguyễn Văn A</h6>
+                <span class="user-role">Sinh viên</span>
+            </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">
+                        <i class="bi bi-house-door"></i>
+                        <span>Trang chủ</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/groups">
+                        <i class="bi bi-people"></i>
+                        <span>Nhóm</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/posts">
+                        <i class="bi bi-chat-dots"></i>
+                        <span>Bài viết</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/documents">
+                        <i class="bi bi-file-earmark"></i>
+                        <span>Tài liệu</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/events">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>Sự kiện</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/profile">
+                        <i class="bi bi-person"></i>
+                        <span>Hồ sơ</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">
+                        <i class="bi bi-gear"></i>
+                        <span>Cài đặt</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h6 class="section-title">Thao tác nhanh</h6>
+            <div class="action-buttons">
+                <button class="btn btn-primary btn-sm" onclick="createGroup()">
+                    <i class="bi bi-plus-circle"></i>
+                    Tạo nhóm
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="joinGroup()">
+                    <i class="bi bi-person-plus"></i>
+                    Tham gia nhóm
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h6 class="section-title">Hoạt động gần đây</h6>
+            <div class="activity-list">
+                <div class="activity-item">
+                    <i class="bi bi-chat-dots text-primary"></i>
+                    <div class="activity-content">
+                        <span class="activity-text">Đã bình luận trong nhóm Kinh tế lượng</span>
+                        <span class="activity-time">2 giờ trước</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="bi bi-file-earmark text-success"></i>
+                    <div class="activity-content">
+                        <span class="activity-text">Đã tải xuống tài liệu</span>
+                        <span class="activity-time">1 ngày trước</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="bi bi-people text-info"></i>
+                    <div class="activity-content">
+                        <span class="activity-text">Tham gia nhóm mới</span>
+                        <span class="activity-time">3 ngày trước</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sidebar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.sidebar-content {
+    padding: 2rem 1.5rem;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.user-profile-section {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-avatar {
+    margin-bottom: 1rem;
+}
+
+.avatar-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.user-name {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.user-role {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.sidebar-nav {
+    margin-bottom: 2rem;
+}
+
+.sidebar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.25rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sidebar-nav .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(4px);
+}
+
+.sidebar-nav .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+.section-title {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.quick-actions {
+    margin-bottom: 2rem;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.action-buttons .btn {
+    border-radius: 20px;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.recent-activity {
+    margin-bottom: 2rem;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.activity-item i {
+    font-size: 1rem;
+    margin-top: 0.25rem;
+}
+
+.activity-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.activity-text {
+    color: white;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.activity-time {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+}
+
+/* Custom scrollbar */
+.sidebar-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+}
+</style>
+
+<script>
+function createGroup() {
+    // Redirect to create group page
+    window.location.href = '/groups/create';
+}
+
+function joinGroup() {
+    // Show join group modal or redirect to groups list
+    window.location.href = '/groups';
+}
+</script>
+</body>
+</html>
+

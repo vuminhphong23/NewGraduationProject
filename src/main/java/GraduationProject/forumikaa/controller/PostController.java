@@ -67,6 +67,13 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
+    // 5. Lấy bài viết theo group
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<PostResponse>> getPostsByGroup(@PathVariable Long groupId) {
+        List<PostResponse> posts = postService.getPostsByGroup(groupId, getCurrentUserId());
+        return ResponseEntity.ok(posts);
+    }
+
     // 5. Lấy post theo ID (có kiểm tra quyền)
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {

@@ -4,7 +4,6 @@ import GraduationProject.forumikaa.entity.PostPrivacy;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
@@ -22,4 +21,7 @@ public class CreatePostRequest {
     private List<String> topicNames;
     
     private PostPrivacy privacy = PostPrivacy.PUBLIC; // Mặc định là public
+    
+    // Add groupId for group posts
+    private Long groupId;
 } 

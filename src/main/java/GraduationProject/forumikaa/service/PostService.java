@@ -20,6 +20,8 @@ public interface PostService {
     List<PostResponse> getUserFeed(Long userId);
     List<PostResponse> getUserPosts(Long userId);
     List<PostResponse> getPostsByTopic(Long topicId, Long userId);
+    List<PostResponse> getPostsByGroup(Long groupId, Long userId);
+    Long getPostCountByGroup(Long groupId);
     PostResponse approvePost(Long postId);
 
     PostResponse rejectPost(Long postId, String reason);
