@@ -2,13 +2,14 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
+import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.dto.DocumentDTO;
-import GraduationProject.forumikaa.dto.LinkDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface GroupService {
     
@@ -21,20 +22,11 @@ public interface GroupService {
     // Admin management methods
     Page<UserGroup> findPaginated(String keyword, String status, String privacy, Pageable pageable);
     
-    // Group management
-    UserGroup createGroup(String name, String description, Long createdById);
-    UserGroup updateGroup(Long groupId, String name, String description, Long userId);
-    void deleteGroup(Long groupId, Long userId);
-    
     // Member management
     void addMember(Long groupId, Long userId, String role);
     void removeMember(Long groupId, Long userId);
     void updateMemberRole(Long groupId, Long userId, String role);
-    
-    // Query methods
-    List<UserGroup> findByCreatedById(Long userId);
-    List<UserGroup> findByNameContaining(String name);
-    Long countByCreatedById(Long userId);
+
     
     // Member count
     Long getMemberCount(Long groupId);
@@ -51,6 +43,15 @@ public interface GroupService {
     // Document management
     List<DocumentDTO> getGroupDocuments(Long groupId);
     
-    // Link management
-    List<LinkDTO> getGroupLinks(Long groupId);
+    
+    // Topic management
+    List<Topic> getPopularTopicsInGroup(Long groupId, int limit);
+    
+    // Explore groups methods
+    Page<UserGroup> findGroupsForExplore(String keyword, String category, Pageable pageable);
+    List<Long> getUserJoinedGroupIds(Long userId);
+    List<Topic> getPopularTopics(int limit);
+    Long getTotalGroupCount();
+    Long getTotalMemberCount();
+    
 }

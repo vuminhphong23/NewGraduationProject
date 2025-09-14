@@ -9,6 +9,252 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/css/admin/layout.css">
     <link rel="stylesheet" href="/css/admin/group-management.css">
+    
+    <style>
+        /* Modern Form Styling */
+        .form-container {
+            background: linear-gradient(135deg, #0d1a44 0%, #1976d2 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .form-header h2 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .form-header p {
+            color: rgba(255,255,255,0.8);
+            margin: 0;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .form-control::placeholder {
+            color: #a0aec0;
+        }
+        
+        .creator-info {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .creator-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            object-fit: cover;
+            border: 3px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        
+        .upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #0d1a44;
+            background: rgba(13, 26, 68, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: #0d1a44;
+            background: rgba(13, 26, 68, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #0d1a44 0%, #1976d2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(13, 26, 68, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            color: #4a5568;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
+        }
+        
+        .btn-upload {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-upload:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+        }
+        
+        .btn-clear {
+            background: #fed7d7;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-clear:hover {
+            background: #feb2b2;
+            transform: translateY(-1px);
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-actions {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .preview-section {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .preview-title {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .group-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .group-preview-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 15px;
+            object-fit: cover;
+            border: 3px solid white;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .group-preview-info h6 {
+            color: #2d3748;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .group-preview-info p {
+            color: #718096;
+            font-size: 0.875rem;
+            margin: 0;
+        }
+        
+        /* Equal height for info cards */
+        .row .col-md-6 {
+            display: flex;
+        }
+        
+        .row .col-md-6 .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+    </style>
 </head>
 <body>
 <div class="container-fluid">
@@ -18,100 +264,130 @@
 
         <!-- Main Content -->
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
-            <!-- Header -->
-             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold mb-0" th:text="${group.id == null ? 'Thêm nhóm mới' : 'Chỉnh sửa nhóm'}"></h2>
-                <a th:href="@{/admin/groups}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
-                </a>
+            <!-- Form Container -->
+            <div class="form-container">
+                <div class="form-header">
+                    <h2 th:text="${group.id == null ? 'Thêm nhóm mới' : 'Chỉnh sửa nhóm'}"></h2>
+                    <p>Quản lý thông tin nhóm học tập</p>
             </div>
 
-            <div class="bg-white rounded-3 p-4 shadow-sm">
+                <div class="form-card">
                 <form th:action="${group.id == null ? '/admin/groups/create' : '/admin/groups/save'}" th:object="${group}" method="post">
                     <input type="hidden" th:field="*{id}" />
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Tên nhóm</label>
-                            <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                        <div class="col-12 mb-4">
+                            <label for="name" class="form-label">
+                                <i class="bi bi-people-fill me-2"></i>Tên nhóm
+                            </label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" 
+                                   placeholder="Nhập tên nhóm học tập..." required>
                             <span th:if="${#fields.hasErrors('name')}" class="text-danger small" th:errors="*{name}"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Người tạo</label>
-                            <div class="d-flex align-items-center">
-                                <img th:src="${group.createdBy != null ? (group.createdBy.userProfile?.avatar != null ? group.createdBy.userProfile.avatar : 'https://i.pravatar.cc/36?u=' + group.createdBy.id) : 'https://i.pravatar.cc/36?u=0'}" 
-                                     class="table-avatar me-2" alt="avatar">
-                                <div>
-                                    <div th:text="${group.createdBy?.username}" class="fw-bold"></div>
-                                    <div th:text="${group.createdBy?.firstName + ' ' + group.createdBy?.lastName}" class="text-muted small"></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="avatar" class="form-label">Avatar nhóm</label>
-                            <div class="input-group-upload">
-                                <input type="url" class="form-control" id="avatar" th:field="*{avatar}" placeholder="https://example.com/avatar.jpg">
-                                <button type="button" class="btn btn-outline-primary upload-button" onclick="document.getElementById('avatarInput').click()">
-                                    <i class="bi bi-cloud-upload"></i> Upload
-                                </button>
+                        <div class="col-md-8 mb-4">
+                            <label for="avatar" class="form-label">
+                                <i class="bi bi-image me-2"></i>Avatar nhóm
+                            </label>
+                            <div class="upload-area" onclick="document.getElementById('avatarInput').click()">
+                                <i class="bi bi-cloud-upload fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted">Kéo thả ảnh vào đây hoặc click để chọn</h6>
+                                <p class="text-muted small mb-0">Hỗ trợ: JPG, PNG, GIF (tối đa 5MB)</p>
                             </div>
+                            <input type="url" class="form-control mt-3" id="avatar" th:field="*{avatar}" 
+                                   placeholder="Hoặc nhập URL ảnh: https://example.com/avatar.jpg">
                             <input type="file" id="avatarInput" accept="image/*" class="d-none" onchange="uploadGroupAvatar(event)">
-                            <div class="form-text">Nhập URL hoặc upload ảnh từ máy tính</div>
                             <span th:if="${#fields.hasErrors('avatar')}" class="text-danger small" th:errors="*{avatar}"></span>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Preview Avatar</label>
-                            <div class="d-flex align-items-center">
-                                <img id="avatarPreview" 
-                                     th:src="${group.avatar != null ? group.avatar : 'https://via.placeholder.com/80x80/6c757d/ffffff?text=' + (group.name != null ? group.name.substring(0,1).toUpperCase() : 'G')}" 
-                                     class="avatar-preview me-3" alt="group avatar preview">
-                                <div>
-                                    <div class="text-muted small">Avatar hiện tại</div>
-                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAvatar()">Xóa avatar</button>
+                        <div class="col-md-4 mb-4">
+                            <div class="preview-section" style="height: 100%;">
+                                <div class="preview-title">
+                                    <i class="bi bi-eye me-2"></i>Preview Avatar
+                                </div>
+                                <div class="group-preview d-flex flex-column align-items-center text-center">
+                                    <img id="avatarPreview" 
+                                         th:src="${group.avatar != null ? group.avatar : 'https://via.placeholder.com/100x100/0d1a44/ffffff?text=' + (group.name != null ? group.name.substring(0,1).toUpperCase() : 'G')}" 
+                                         class="group-preview-avatar mb-3" alt="group avatar preview">
+                                    <div class="group-preview-info">
+                                        <h6 th:text="${group.name ?: 'Tên nhóm'}">Tên nhóm</h6>
+                                        <p class="text-muted small">Avatar preview</p>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="clearAvatar()">
+                                            <i class="bi bi-trash me-1"></i>Xóa avatar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="description" class="form-label">Mô tả nhóm</label>
-                        <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                    <div class="mb-4">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-card-text me-2"></i>Mô tả nhóm
+                        </label>
+                        <textarea class="form-control" id="description" th:field="*{description}" rows="4" 
+                                  placeholder="Mô tả chi tiết về nhóm học tập, mục tiêu, nội dung..."></textarea>
+                        <div class="form-text">Mô tả chi tiết sẽ giúp thành viên hiểu rõ về nhóm</div>
                         <span th:if="${#fields.hasErrors('description')}" class="text-danger small" th:errors="*{description}"></span>
                     </div>
 
+
                     <div class="row" th:if="${group.id != null}">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Thông tin thời gian</label>
-                            <div class="d-flex flex-column">
-                                <div class="d-flex justify-content-between">
-                                    <span>Ngày tạo:</span>
-                                    <span th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                        <div class="col-md-6 mb-4">
+                            <div class="preview-section">
+                                <div class="preview-title">
+                                    <i class="bi bi-clock me-2"></i>Thông tin thời gian
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">Ngày tạo:</span>
+                                        <span class="fw-bold" th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Thống kê</label>
-                            <div class="d-flex flex-column">
-                                <div class="d-flex justify-content-between">
-                                    <span><i class="bi bi-people text-primary"></i> Thành viên:</span>
-                                    <span>0</span>
+                        <div class="col-md-6 mb-4">
+                            <div class="preview-section">
+                                <div class="preview-title">
+                                    <i class="bi bi-graph-up me-2"></i>Thống kê
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">
+                                            <i class="bi bi-people text-primary me-1"></i>Thành viên:
+                                        </span>
+                                        <span class="fw-bold text-primary">0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted">
+                                            <i class="bi bi-file-text text-success me-1"></i>Bài viết:
+                                        </span>
+                                        <span class="fw-bold text-success">0</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2">
+                    <div class="form-actions">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a th:href="@{/admin/groups}" class="back-btn">
+                                <i class="bi bi-arrow-left me-2"></i>Quay lại danh sách
+                            </a>
+                            <div class="d-flex gap-3">
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-save"></i> Lưu thay đổi
+                                    <i class="bi bi-save me-2"></i>
+                                    <span th:text="${group.id == null ? 'Tạo nhóm' : 'Lưu thay đổi'}"></span>
                         </button>
                         <a th:href="@{/admin/groups}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Hủy
+                                    <i class="bi bi-x-circle me-2"></i>Hủy
                         </a>
+                            </div>
+                        </div>
                     </div>
                 </form>
+                </div>
             </div>
         </main>
     </div>
@@ -120,6 +396,123 @@
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script>
+// Modern form enhancements
+document.addEventListener('DOMContentLoaded', function() {
+    // Real-time avatar preview
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const nameInput = document.getElementById('name');
+    
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('input', function() {
+            if (this.value) {
+                avatarPreview.src = this.value;
+                avatarPreview.onerror = function() {
+                    this.src = 'https://via.placeholder.com/80x80/667eea/ffffff?text=G';
+                };
+            }
+        });
+    }
+    
+    // Update preview name
+    if (nameInput) {
+        const previewName = document.querySelector('.group-preview-info h6');
+        nameInput.addEventListener('input', function() {
+            if (previewName) {
+                previewName.textContent = this.value || 'Tên nhóm';
+            }
+        });
+    }
+    
+    // Drag and drop functionality
+    const uploadArea = document.querySelector('.upload-area');
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+    }
+    
+    // Form validation enhancement
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const nameField = document.getElementById('name');
+            if (!nameField.value.trim()) {
+                e.preventDefault();
+                nameField.focus();
+                showNotification('Vui lòng nhập tên nhóm', 'error');
+                return false;
+            }
+        });
+    }
+});
+
+function handleFileUpload(file) {
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarInput = document.getElementById('avatar');
+            const avatarPreview = document.getElementById('avatarPreview');
+            
+            if (avatarInput) avatarInput.value = e.target.result;
+            if (avatarPreview) avatarPreview.src = e.target.result;
+            
+            showNotification('Ảnh đã được tải lên thành công!', 'success');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        showNotification('Vui lòng chọn file ảnh hợp lệ', 'error');
+    }
+}
+
+function clearAvatar() {
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    
+    if (avatarInput) avatarInput.value = '';
+    if (avatarPreview) {
+        avatarPreview.src = 'https://via.placeholder.com/80x80/667eea/ffffff?text=G';
+    }
+    
+    showNotification('Avatar đã được xóa', 'info');
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 3000);
+}
+
 const cloudName = "dsqkymrkm";
 
 // Upload presets cho các loại khác nhau
@@ -208,55 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function uploadGroupAvatar(event) {
     const file = event.target.files[0];
     if (file) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            alert("Vui lòng chọn file ảnh");
-            return;
-        }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File ảnh không được vượt quá 5MB");
-            return;
-        }
-
-        // Show loading state
-        const avatarPreview = document.getElementById('avatarPreview');
-        const uploadButton = document.querySelector('.upload-button');
-        const avatarContainer = document.querySelector('.col-md-6').parentElement;
-        
-        // Store original state
-        const originalSrc = avatarPreview.src;
-        const originalButtonText = uploadButton.innerHTML;
-        
-        // Set loading state
-        avatarPreview.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZjhmOWZhIi8+CjxwYXRoIGQ9Ik00MCAyMEM0Ni42MjcgMjAgNTIgMjUuMzczIDUyIDMyQzUyIDM4LjYyNyA0Ni42MjcgNDQgNDAgNDRDMzMuMzczIDQ0IDI4IDM4LjYyNyAyOCAzMkMyOCAyNS4zNzMgMzMuMzczIDIwIDQwIDIwWiIgZmlsbD0iIzZkNzU3ZCIvPgo8cGF0aCBkPSJNNDAgNTJDNTEuMDQ2IDUyIDYwIDQzLjA0NiA2MCAzMkM2MCAyMC45NTQgNTEuMDQ2IDEyIDQwIDEyQzI4Ljk1NCAxMiAyMCAyMC45NTQgMjAgMzJDMjAgNDMuMDQ2IDI4Ljk1NCA1MiA0MCA1MloiIHN0cm9rZT0iIzZkNzU3ZCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+';
-        uploadButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
-        uploadButton.disabled = true;
-        avatarContainer.classList.add('upload-loading');
-        
-        uploadToCloudinary(file, "groups", function (url) {
-            // Success
-            document.getElementById('avatarPreview').src = url;
-            document.getElementById('avatar').value = url;
-            
-            // Reset button state
-            uploadButton.innerHTML = originalButtonText;
-            uploadButton.disabled = false;
-            avatarContainer.classList.remove('upload-loading');
-            
-            // Show success message
-            showNotification('Upload avatar thành công!', 'success');
-        }, function(error) {
-            // Error
-            avatarPreview.src = originalSrc;
-            uploadButton.innerHTML = originalButtonText;
-            uploadButton.disabled = false;
-            avatarContainer.classList.remove('upload-loading');
-            
-            // Show error message
-            showNotification('Lỗi upload: ' + error, 'error');
-        });
+        handleFileUpload(file);
     }
 }
 
@@ -286,7 +631,7 @@ function updateAvatarPreview() {
 function showPlaceholderAvatar(groupName) {
     const avatarPreview = document.getElementById('avatarPreview');
     const firstLetter = groupName ? groupName.substring(0, 1).toUpperCase() : 'G';
-    avatarPreview.src = `https://via.placeholder.com/80x80/6c757d/ffffff?text=${firstLetter}`;
+    avatarPreview.src = `https://via.placeholder.com/100x100/0d1a44/ffffff?text=${firstLetter}`;
 }
 
 function clearAvatar() {
@@ -300,6 +645,7 @@ function clearAvatar() {
     const groupName = nameInput ? nameInput.value.trim() : '';
     showPlaceholderAvatar(groupName);
 }
+
 </script>
 </body>
 </html>

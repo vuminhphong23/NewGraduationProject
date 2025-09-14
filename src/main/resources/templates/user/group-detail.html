@@ -6,6 +6,14 @@
     <title th:text="${group.name} + ' - Forumikaa'">Group Detail - Forumikaa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/user/group-detail.css">
@@ -79,7 +87,7 @@
         <!-- Main Content Area -->
         <main class="col-lg-8">
             <!-- Posts Tab Content -->
-            <div th:if="${currentTab == 'posts'}">
+            <div id="posts" class="tab-content" th:classappend="${currentTab == 'posts'} ? 'active' : ''">
                 <!-- Member Content -->
                 <div th:if="${isMember}">
                     <!-- Create Post Section -->
@@ -230,7 +238,8 @@
                                                     
                                                     <!-- Document Preview -->
                                                     <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
-                                                         th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\')'">
+                                                         th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\', ' + (${doc.id} ?: 0) + ')'"
+                                                         style="cursor: pointer;">
                                                         <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
                                                              style="width: 100%; height: 120px; cursor: pointer;">
                                                             <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
@@ -363,7 +372,7 @@
             </div>
 
             <!-- Other Tab Contents -->
-            <div th:if="${currentTab == 'info'}">
+            <div id="info" class="tab-content" th:classappend="${currentTab == 'info'} ? 'active' : ''">
                 <!-- Member Content -->
                 <div th:if="${isMember}">
                         <div class="info-card">
@@ -383,31 +392,6 @@
                             </div>
                             
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="info-section">
-                                        <h6 class="text-muted mb-3">
-                                            <i class="bi bi-info-circle me-2"></i>Thông tin cơ bản
-                                        </h6>
-                                <div class="info-details">
-                                    <div class="detail-item">
-                                                <i class="bi bi-book me-2 text-primary"></i>
-                                        <strong>Mã học phần:</strong> ECO3052
-                                    </div>
-                                    <div class="detail-item">
-                                                <i class="bi bi-building me-2 text-primary"></i>
-                                        <strong>Khoa:</strong> Kinh tế & Quản trị Kinh doanh
-                                    </div>
-                                    <div class="detail-item">
-                                                <i class="bi bi-person-badge me-2 text-primary"></i>
-                                        <strong>Giảng viên:</strong> Dr. Nguyễn Văn A
-                                    </div>
-                                    <div class="detail-item">
-                                                <i class="bi bi-calendar me-2 text-primary"></i>
-                                                <strong>Học kỳ:</strong> 2024-1
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                                 
                                 <div class="col-md-6">
                                     <div class="info-section">
@@ -417,15 +401,15 @@
                                         <div class="info-details">
                                             <div class="detail-item">
                                                 <i class="bi bi-people me-2 text-success"></i>
-                                                <strong>Thành viên:</strong> <span th:text="${memberCount}">256</span> người
+                                                <strong>Thành viên:</strong> <span th:text="${memberCount}">256</span>&nbsp;người
                                             </div>
                                             <div class="detail-item">
                                                 <i class="bi bi-chat-dots me-2 text-info"></i>
-                                                <strong>Bài viết:</strong> <span th:text="${postCount}">45</span> bài
+                                                <strong>Bài viết:</strong> <span th:text="${postCount}">45</span>&nbsp;bài
                                             </div>
                                             <div class="detail-item">
                                                 <i class="bi bi-file-earmark me-2 text-warning"></i>
-                                                <strong>Tài liệu:</strong> <span th:text="${documentCount}">12</span> file
+                                                <strong>Tài liệu:</strong> <span th:text="${documentCount}">12</span>&nbsp;file
                                             </div>
                                             <div class="detail-item">
                                                 <i class="bi bi-clock me-2 text-secondary"></i>
@@ -441,11 +425,18 @@
                                     <i class="bi bi-tags me-2"></i>Chủ đề quan tâm
                                 </h6>
                                 <div class="topic-tags">
-                                    <span class="badge bg-light text-dark me-2 mb-2">#KinhTếLượng</span>
-                                    <span class="badge bg-light text-dark me-2 mb-2">#ThốngKê</span>
-                                    <span class="badge bg-light text-dark me-2 mb-2">#PhânTíchDữLiệu</span>
-                                    <span class="badge bg-light text-dark me-2 mb-2">#ECON3052</span>
-                                    <span class="badge bg-light text-dark me-2 mb-2">#NghiênCứu</span>
+                                    <span th:each="topic : ${popularTopics}" 
+                                          th:text="'#' + ${topic.name}" 
+                                          class="badge bg-light text-dark me-2 mb-2"
+                                          th:data-topic-name="${topic.name}"
+                                          onclick="searchByHashtag(this.dataset.topicName)"
+                                          style="cursor: pointer;">
+                                        #TopicName
+                                    </span>
+                                    <span th:if="${#lists.isEmpty(popularTopics)}" 
+                                          class="text-muted">
+                                        Chưa có chủ đề nào được sử dụng
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -468,7 +459,7 @@
                         </div>
             </div>
 
-            <div th:if="${currentTab == 'members'}">
+            <div id="members" class="tab-content" th:classappend="${currentTab == 'members'} ? 'active' : ''">
                 <!-- Member Content -->
                 <div th:if="${isMember}">
                         <div class="members-card">
@@ -505,7 +496,7 @@
                                 <div class="col-md-3">
                                     <select class="form-select" id="memberSortFilter">
                                         <option value="name">Sắp xếp theo tên</option>
-                                        <option value="joinDate">Ngày tham gia</option>
+                                        <option value="joinedAt">Ngày tham gia</option>
                                         <option value="activity">Hoạt động gần đây</option>
                                     </select>
                                 </div>
@@ -537,16 +528,16 @@
                                  th:attr="data-name=${member.firstName + ' ' + member.lastName},
                                           data-username=${member.username},
                                           data-role=${member.role},
-                                          data-join-date=${member.joinDate}">
+                                          data-join-date=${member.joinedAt}">
                                 <div class="member-avatar-container">
                                     <img th:src="${member.avatar}" alt="Member Avatar" class="member-avatar">
-                                    <div class="online-indicator" th:classappend="${member.isOnline} ? 'online' : 'offline'"></div>
+                                    <div class="online-indicator offline"></div>
                                 </div>
                                     <div class="member-info">
                                         <div class="member-name" th:text="${member.firstName + ' ' + member.lastName}">Member Name</div>
                                         <div class="member-username" th:text="'@' + ${member.username}">@username</div>
                                     <div class="member-join-date text-muted small">
-                                        Tham gia: <span th:text="${#temporals.format(member.joinDate, 'dd/MM/yyyy')}">15/01/2024</span>
+                                        Tham gia: <span th:text="${member.joinedAt}">15/01/2024</span>
                                     </div>
                                 </div>
                                 <div class="member-actions">
@@ -555,10 +546,14 @@
                                               th:text="${member.role == 'ADMIN'} ? 'Quản trị' : 'Thành viên'">Thành viên</span>
                                     </div>
                                     <div class="action-buttons">
-                                        <button class="btn btn-sm btn-outline-primary" title="Xem hồ sơ">
+                                        <button class="btn btn-sm btn-outline-primary" title="Xem hồ sơ" 
+                                                th:data-username="${member.username}"
+                                                onclick="viewUserProfile(this.dataset.username)">
                                             <i class="bi bi-person"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-success" title="Nhắn tin">
+                                        <button class="btn btn-sm btn-outline-success" title="Nhắn tin" 
+                                                th:data-user-id="${member.id}"
+                                                onclick="startChatWithUser(this.dataset.userId)">
                                             <i class="bi bi-chat"></i>
                                         </button>
                                     </div>
@@ -592,7 +587,7 @@
             </div>
 
             <!-- Documents Tab Content -->
-            <div th:if="${currentTab == 'documents'}">
+            <div id="documents" class="tab-content" th:classappend="${currentTab == 'documents'} ? 'active' : ''">
                 <!-- Member Content -->
                 <div th:if="${isMember}">
                     <div class="documents-card">
@@ -633,7 +628,7 @@
                                 <div class="col-md-3">
                                     <select class="form-select" id="documentSortFilter">
                                         <option value="name">Sắp xếp theo tên</option>
-                                        <option value="date">Ngày tải lên</option>
+                                        <option value="date">Ngày tạo</option>
                                         <option value="size">Kích thước</option>
                                         <option value="downloads">Lượt tải</option>
                                     </select>
@@ -668,19 +663,31 @@
                         
                         <!-- Documents Grid -->
                         <div class="documents-grid" id="documentsList">
+                            <!-- No documents message -->
+                            <div th:if="${#lists.isEmpty(groupDocuments)}" class="no-documents text-center py-5">
+                                <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-3">Chưa có tài liệu nào trong nhóm này</p>
+                            </div>
+                            
+                            <!-- Document items -->
                             <div th:each="doc : ${groupDocuments}" class="document-item" 
                                  th:attr="data-name=${doc.originalName},
-                                          data-type=${doc.type},
-                                          data-size=${doc.fileSize},
-                                          data-date=${doc.uploadDate}">
+                                          data-type=${doc.type ?: 'unknown'},
+                                          data-size=${doc.fileSize ?: 0},
+                                          data-date=${doc.uploadDate ?: '01/01/2024'}">
                                 <div class="document-icon">
-                                    <i th:class="'bi bi-file-earmark-' + ${doc.type}"></i>
+                                    <i th:if="${doc.type == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
+                                    <i th:if="${doc.type == 'doc' || doc.type == 'docx'}" class="bi bi-file-earmark-word text-primary"></i>
+                                    <i th:if="${doc.type == 'xls' || doc.type == 'xlsx'}" class="bi bi-file-earmark-excel text-success"></i>
+                                    <i th:if="${doc.type == 'ppt' || doc.type == 'pptx'}" class="bi bi-file-earmark-ppt text-warning"></i>
+                                    <i th:if="${doc.type == 'jpg' || doc.type == 'jpeg' || doc.type == 'png' || doc.type == 'gif'}" class="bi bi-file-earmark-image text-info"></i>
+                                    <i th:if="${doc.type != 'pdf' && doc.type != 'doc' && doc.type != 'docx' && doc.type != 'xls' && doc.type != 'xlsx' && doc.type != 'ppt' && doc.type != 'pptx' && doc.type != 'jpg' && doc.type != 'jpeg' && doc.type != 'png' && doc.type != 'gif'}" class="bi bi-file-earmark text-secondary"></i>
                                 </div>
                                 <div class="document-info">
                                     <div class="document-name" th:text="${doc.originalName}">Document Name</div>
                                     <div class="document-meta">
                                         <span class="document-size" th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">1.2 MB</span>
-                                        <span class="document-date" th:text="${#temporals.format(doc.uploadDate, 'dd/MM/yyyy')}">15/01/2024</span>
+                                        <span class="document-date" th:text="${doc.uploadDate}">15/01/2024</span>
                                     </div>
                                     <div class="document-stats">
                                         <span class="downloads">
@@ -689,32 +696,23 @@
                                     </div>
                                 </div>
                                 <div class="document-actions">
-                                    <button class="btn btn-sm btn-outline-primary" th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\')'" title="Tải xuống">
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            th:data-download-url="${doc.downloadUrl}" 
+                                            th:data-document-id="${doc.id}" 
+                                            onclick="downloadFile(this.dataset.downloadUrl, this.dataset.documentId)" 
+                                            title="Tải xuống">
                                         <i class="bi bi-download"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-info" title="Xem trước">
+                                    <button class="btn btn-sm btn-outline-info" 
+                                            th:data-view-url="${doc.downloadUrl}" 
+                                            onclick="viewFile(this.dataset.viewUrl)" 
+                                            title="Xem trước">
                                         <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" title="Chia sẻ">
-                                        <i class="bi bi-share"></i>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Upload Section -->
-                        <div class="upload-section mt-4">
-                            <div class="card border-dashed">
-                                <div class="card-body text-center py-4">
-                                    <i class="bi bi-cloud-upload text-muted" style="font-size: 3rem;"></i>
-                                    <h5 class="mt-3 text-muted">Tải lên tài liệu mới</h5>
-                                    <p class="text-muted">Kéo thả file vào đây hoặc click để chọn file</p>
-                                    <button class="btn btn-primary">
-                                        <i class="bi bi-plus-circle me-1"></i>Chọn file
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -741,17 +739,6 @@
                     <div class="sidebar-card mb-4">
                         <h5>Giới thiệu nhóm</h5>
                         <p th:text="${group.description}">Nhóm dành cho sinh viên ngành Kinh tế học tham gia học phần Kinh tế lượng nâng cao. Đây là nơi trao đổi tài liệu, thảo luận bài tập và chia sẻ kiến thức liên quan đến môn học.</p>
-                        <div class="group-details">
-                            <div class="detail-item">
-                                <strong>Mã học phần:</strong> ECO3052
-                            </div>
-                            <div class="detail-item">
-                                <strong>Khoa:</strong> Kinh tế & Quản trị Kinh doanh
-                            </div>
-                            <div class="detail-item">
-                                <strong>Giảng viên:</strong> Dr. Nguyễn Văn A
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Recently Active Members -->
@@ -762,56 +749,40 @@
                                 <img th:src="${member.avatar}" alt="Member Avatar" class="recent-member-avatar">
                             </div>
                         </div>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Xem tất cả thành viên</a>
+                        <a href="#" class="btn btn-outline-primary btn-sm" onclick="switchToTab('members')">Xem tất cả thành viên</a>
                     </div>
 
                     <!-- Pinned Documents -->
                     <div class="sidebar-card mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5>Tài liệu được ghim</h5>
-                            <a href="#" class="text-decoration-none">Xem tất cả</a>
+                            <a href="#" class="text-decoration-none" onclick="switchToTab('documents')">Xem tất cả</a>
                         </div>
                         <div class="pinned-documents">
                             <div th:each="doc : ${pinnedDocuments}" class="document-item">
                                 <div class="document-icon">
-                                    <i th:class="'bi bi-file-earmark-' + ${doc.type}"></i>
+                                    <i th:if="${doc.type == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
+                                    <i th:if="${doc.type == 'doc' || doc.type == 'docx'}" class="bi bi-file-earmark-word text-primary"></i>
+                                    <i th:if="${doc.type == 'xls' || doc.type == 'xlsx'}" class="bi bi-file-earmark-excel text-success"></i>
+                                    <i th:if="${doc.type == 'ppt' || doc.type == 'pptx'}" class="bi bi-file-earmark-ppt text-warning"></i>
+                                    <i th:if="${doc.type == 'jpg' || doc.type == 'jpeg' || doc.type == 'png' || doc.type == 'gif'}" class="bi bi-file-earmark-image text-info"></i>
+                                    <i th:if="${doc.type != 'pdf' && doc.type != 'doc' && doc.type != 'docx' && doc.type != 'xls' && doc.type != 'xlsx' && doc.type != 'ppt' && doc.type != 'pptx' && doc.type != 'jpg' && doc.type != 'jpeg' && doc.type != 'png' && doc.type != 'gif'}" class="bi bi-file-earmark text-secondary"></i>
                                 </div>
                                 <div class="document-info">
                                     <div class="document-name" th:text="${doc.name}">Document Name</div>
                                     <div class="document-size" th:text="${doc.size}">2.4 MB</div>
                                 </div>
-                                <a th:href="${doc.url}" class="btn btn-sm btn-outline-primary">
+                                <button class="btn btn-sm btn-outline-primary" 
+                                        th:data-download-url="${doc.downloadUrl}"
+                                        th:data-document-id="${doc.id}"
+                                        onclick="downloadFile(this.dataset.downloadUrl, this.dataset.documentId)"
+                                        title="Tải xuống">
                                     <i class="bi bi-download"></i>
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Important Links -->
-                    <div class="sidebar-card mb-4">
-                        <h5>Liên kết quan trọng</h5>
-                        <div class="important-links">
-                            <a th:each="link : ${importantLinks}" th:href="${link.url}" class="link-item">
-                                <i th:class="'bi bi-' + ${link.icon}"></i>
-                                <span th:text="${link.name}">Link Name</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Group Information -->
-                    <div class="sidebar-card">
-                        <h5>Thông tin nhóm</h5>
-                        <div class="group-info-list">
-                            <div class="info-item">
-                                <span>Tạo ngày:</span>
-                                <span th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy')}">15/09/2023</span>
-                            </div>
-                            <div class="info-item">
-                                <span>Quản trị viên:</span>
-                                <span>Dr. Nguyễn Văn A, Trần Minh Đức</span>
-                            </div>
-                        </div>
-                    </div>
         </aside>
     </div>
 </div>
@@ -1057,6 +1028,7 @@
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/topics.js"></script>
+<script src="/js/download-utils.js"></script>
 <script src="/js/gallery-manager.js"></script>
 <script src="/js/post-interactions.js"></script>
 <script src="/js/post-manager.js"></script>

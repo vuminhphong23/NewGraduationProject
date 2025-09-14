@@ -12,11 +12,11 @@ window.HashtagManager = (function() {
     let suggestionBox = null;
 
     // Initialize DOM references
-    function initializeDOMReferences() {
-        hashtagInput = document.getElementById('topic');
-        hashtagList = document.getElementById('hashtag-list');
-        hashtagCounter = document.getElementById('hashtag-counter');
-        suggestionBox = document.getElementById('hashtag-suggestions');
+    function initializeDOMReferences(inputId = 'topic', listId = 'hashtag-list', counterId = 'hashtag-counter', suggestionsId = 'hashtag-suggestions') {
+        hashtagInput = document.getElementById(inputId);
+        hashtagList = document.getElementById(listId);
+        hashtagCounter = document.getElementById(counterId);
+        suggestionBox = document.getElementById(suggestionsId);
         
         if (!hashtagInput || !hashtagList || !hashtagCounter) {
             console.error('HashtagManager: Required DOM elements not found');
@@ -175,7 +175,9 @@ window.HashtagManager = (function() {
     }
 
     return {
-        init: function() { return initializeDOMReferences(); },
+        init: function(inputId, listId, counterId, suggestionsId) { 
+            return initializeDOMReferences(inputId, listId, counterId, suggestionsId); 
+        },
         reinit: function() { return initializeDOMReferences(); },
         add: function(hashtag) { return addHashtag(hashtag); },
         remove: function(hashtag) { removeHashtag(hashtag); },

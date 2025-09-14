@@ -88,8 +88,8 @@ public class LocalStorageStrategy implements FileStorageStrategy {
 
     private FileUploadResponse uploadFileSync(MultipartFile file, Long postId, Long userId) throws Exception {
         // Validate file
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("File không được để trống");
+        if (file.isEmpty() || file.getSize() == 0) {
+            throw new IllegalArgumentException("File không được để trống hoặc có kích thước 0 bytes");
         }
 
         // Get post and user
@@ -272,6 +272,7 @@ public class LocalStorageStrategy implements FileStorageStrategy {
         response.setDownloadUrl("/api/files/download/" + document.getId());
         response.setPreviewUrl(urlPrefix + "/" + document.getFilePath());
         response.setFileType(getFileType(document.getMimeType()));
+        response.setCloudStorage(false); // Mark as local storage
         return response;
     }
 

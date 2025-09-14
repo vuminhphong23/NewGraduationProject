@@ -1,10 +1,8 @@
 package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dto.UserRecommendationResponse;
-import GraduationProject.forumikaa.dto.SuggestedPostDto;
 
 import java.util.List;
-import java.util.Map;
 
 public interface RecommendationService {
     
@@ -19,7 +17,7 @@ public interface RecommendationService {
     List<UserRecommendationResponse> recommendUsersByMutualFriends(Long userId, Integer limit);
     
     /**
-     * Gợi ý người dùng dựa trên sở thích tương tự
+     * Gợi ý người dùng dựa trên mối quan tâm tương tự
      */
     List<UserRecommendationResponse> recommendUsersByInterests(Long userId, Integer limit);
     

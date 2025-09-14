@@ -10,18 +10,21 @@ let groupFileUploadManager = null;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Group Detail: Initializing...');
     
     // Get group ID from URL
     groupId = getGroupIdFromUrl();
-    console.log('Group ID:', groupId);
+    
+    // Check if we're on documents tab
+    const currentTab = new URLSearchParams(window.location.search).get('tab');
     
     // Initialize managers
     initializeGroupPostManager();
     initializeGroupFileUploadManager();
     initializeGroupDetail();
     
-    console.log('Group Detail: Initialization complete');
+    // Initialize smart filters
+    initializeSmartFilters();
+    
 });
 
 /**
@@ -38,16 +41,13 @@ function getGroupIdFromUrl() {
  * Override PostManager để thêm groupId vào post data
  */
 function initializeGroupPostManager() {
-    console.log('Initializing Group Post Manager...');
     
     // Wait for PostManager to be available
     if (window.postManager) {
         groupPostManager = window.postManager;
-        console.log('Using existing PostManager');
     } else {
         // Create new PostManager instance
         groupPostManager = new PostManager();
-        console.log('Created new PostManager');
     }
     
     // Override submitPost method to include groupId
@@ -55,13 +55,11 @@ function initializeGroupPostManager() {
         const originalSubmitPost = groupPostManager.submitPost.bind(groupPostManager);
         
         groupPostManager.submitPost = async function() {
-            console.log('Group Post Manager: Overriding submitPost');
             
             if (this.publishBtn.disabled) return;
             
             // Get selected topics
             const selectedTopics = window.HashtagManager?.getSelected() || [];
-            console.log('Selected topics:', selectedTopics);
             
             const postData = {
                 title: this.titleInput.value.trim(),
@@ -71,7 +69,6 @@ function initializeGroupPostManager() {
                 groupId: groupId  // Add groupId here
             };
             
-            console.log('Post data with groupId:', postData);
             
             const url = this.editingPostId ? `/api/posts/${this.editingPostId}` : '/api/posts';
             const method = this.editingPostId ? 'PUT' : 'POST';
@@ -90,17 +87,13 @@ function initializeGroupPostManager() {
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('Post created successfully:', result);
                     
                     // Upload files if any are selected
                     if (window.fileUploadManager && window.fileUploadManager.selectedFiles.length > 0) {
                         try {
-                            console.log('Uploading files for post ID:', result.id);
                             await window.fileUploadManager.uploadFiles(result.id);
-                            console.log('File upload completed successfully');
                             this.showToast('File đã được đính kèm thành công!', 'success');
                         } catch (fileError) {
-                            console.warn('Failed to upload files:', fileError);
                             this.showToast('Bài viết đã được đăng nhưng có lỗi khi đính kèm file', 'warning');
                         }
                     }
@@ -110,7 +103,6 @@ function initializeGroupPostManager() {
                         try {
                             await window.HashtagManager.saveTopics(selectedTopics);
                         } catch (topicError) {
-                            console.warn('Failed to save topics:', topicError);
                         }
                     }
                     
@@ -123,14 +115,12 @@ function initializeGroupPostManager() {
                     this.showToast(error.message || 'Có lỗi xảy ra khi xử lý bài viết', 'error');
                 }
             } catch (error) {
-                console.error('Error submitting post:', error);
                 this.showToast('Không thể kết nối đến máy chủ', 'error');
             } finally {
                 this.setLoading(false);
             }
         };
         
-        console.log('Group Post Manager: submitPost method overridden');
     }
 }
 
@@ -139,13 +129,10 @@ function initializeGroupPostManager() {
  * Sử dụng FileUploadManager global
  */
 function initializeGroupFileUploadManager() {
-    console.log('Initializing Group File Upload Manager...');
     
     if (window.fileUploadManager) {
         groupFileUploadManager = window.fileUploadManager;
-        console.log('Using existing FileUploadManager');
     } else {
-        console.warn('FileUploadManager not available');
     }
 }
 
@@ -153,18 +140,16 @@ function initializeGroupFileUploadManager() {
  * Initialize Group Detail specific functionality
  */
 function initializeGroupDetail() {
-    console.log('Initializing Group Detail...');
     
     // Initialize post interactions
     initializePostInteractions();
     
-    // Initialize gallery
+    // Gallery functionality is handled by gallery-manager.js
     initializeGallery();
     
     // Initialize group actions
     initializeGroupActions();
     
-    console.log('Group Detail: All components initialized');
 }
 
 /**
@@ -172,98 +157,30 @@ function initializeGroupDetail() {
  * Sử dụng PostInteractions class
  */
 function initializePostInteractions() {
-    console.log('Initializing Post Interactions...');
     
     if (window.postInteractions) {
-        console.log('Using existing PostInteractions');
     } else {
-        console.warn('PostInteractions not available');
     }
 }
 
 /**
  * Initialize Gallery
- * Sử dụng GalleryManager
+ * Gallery functionality is handled by gallery-manager.js
  */
 function initializeGallery() {
-    console.log('Initializing Gallery...');
-    
-    if (window.galleryManager) {
-        console.log('Using existing GalleryManager');
-        } else {
-        console.warn('GalleryManager not available');
-    }
-    
-    // Initialize gallery event listeners for group posts
-    initializeGroupGalleryEvents();
+    // No additional initialization needed as gallery-manager.js handles everything
 }
 
-/**
- * Initialize Gallery Events for Group Posts
- */
-function initializeGroupGalleryEvents() {
-    console.log('Initializing Group Gallery Events...');
-    
-    // Wait a bit for DOM to be fully rendered
-    setTimeout(() => {
-        // Add click handlers for gallery items
-        document.querySelectorAll('.gallery-image').forEach((item, index) => {
-            // Remove any existing listeners to avoid duplicates
-            item.replaceWith(item.cloneNode(true));
-        });
-        
-        // Re-query after cloning
-        document.querySelectorAll('.gallery-image').forEach((item, index) => {
-            item.addEventListener('click', function(e) {
-            e.preventDefault();
-                e.stopPropagation();
-                const postId = this.closest('[data-post-id]').dataset.postId;
-                console.log('Gallery image clicked:', postId, index);
-                // Call the global function from gallery-manager.js
-                if (typeof openLightbox === 'function') {
-                    openLightbox(postId, index);
-            } else {
-                    console.warn('openLightbox function not available');
-            }
-        });
-    });
-        
-        // Add click handlers for more items indicator
-        document.querySelectorAll('.more-items-indicator').forEach((item) => {
-            // Remove any existing listeners to avoid duplicates
-            item.replaceWith(item.cloneNode(true));
-        });
-        
-        // Re-query after cloning
-        document.querySelectorAll('.more-items-indicator').forEach((item) => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                const postId = this.closest('[data-post-id]').dataset.postId;
-                console.log('More items clicked:', postId);
-                // Call the global function from gallery-manager.js
-                if (typeof showAllFiles === 'function') {
-                    showAllFiles(postId);
-                } else {
-                    console.warn('showAllFiles function not available');
-                }
-            });
-        });
-        
-        console.log('Group Gallery Events: Initialized');
-    }, 100);
-}
+// Gallery events are handled by gallery-manager.js
 
 /**
  * Initialize Group Actions
  */
 function initializeGroupActions() {
-    console.log('Initializing Group Actions...');
     
     // Join Group
     window.joinGroup = async function() {
         if (!groupId) {
-            console.error('Group ID not found');
             return;
         }
         
@@ -281,7 +198,6 @@ function initializeGroupActions() {
                 showToast(error.message || 'Không thể tham gia nhóm', 'error');
             }
         } catch (error) {
-            console.error('Error joining group:', error);
             showToast('Có lỗi xảy ra khi tham gia nhóm', 'error');
         }
     };
@@ -289,7 +205,6 @@ function initializeGroupActions() {
     // Leave Group
     window.leaveGroup = async function() {
         if (!groupId) {
-            console.error('Group ID not found');
             return;
         }
         
@@ -311,24 +226,13 @@ function initializeGroupActions() {
                 showToast(error.message || 'Không thể rời nhóm', 'error');
             }
         } catch (error) {
-            console.error('Error leaving group:', error);
             showToast('Có lỗi xảy ra khi rời nhóm', 'error');
         }
     };
     
-    console.log('Group Actions: joinGroup and leaveGroup functions defined');
 }
 
-/**
- * Show Toast Notification
- */
-function showToast(message, type = 'info') {
-    if (window.toastManager) {
-        window.toastManager.show(message, type);
-        } else {
-        console.log(`Toast (${type}): ${message}`);
-    }
-}
+// showToast function is available from gallery-manager.js
 
 /**
  * Global functions for backward compatibility
@@ -372,16 +276,8 @@ window.editPost = function(element) {
 // Gallery functions - These will be available from gallery-manager.js
 // No need to redefine them here as they are global functions
 
-// Download all files function
-window.downloadAllFiles = function(postId) {
-    console.log('downloadAllFiles called:', postId);
-    // This function is defined in gallery-manager.js
-    if (typeof downloadAllFiles === 'function') {
-        downloadAllFiles(postId);
-        } else {
-        console.warn('downloadAllFiles function not available');
-    }
-};
+// Download all files function is already defined in gallery-manager.js
+// No need to redefine it here - it's already available globally
 
 // Comment functions
 window.toggleCommentSection = function(element) {
@@ -401,31 +297,29 @@ window.postComment = function(element) {
     if (!commentText) return;
     
     // TODO: Implement comment posting
-    console.log('Posting comment:', commentText, 'for post:', postId);
     commentInput.value = '';
 };
 
 window.loadMoreComments = function(element) {
     const postId = element.getAttribute('data-post-id');
-    console.log('Loading more comments for post:', postId);
     // TODO: Implement load more comments
 };
 
 // Hashtag search
 window.searchByHashtag = function(hashtag) {
-    console.log('Searching by hashtag:', hashtag);
     // TODO: Implement hashtag search
 };
 
 // Smart Filter Functions
 function initializeSmartFilters() {
-    console.log('Initializing smart filters...');
     
     // Members filter
     initializeMembersFilter();
     
-    // Documents filter
-    initializeDocumentsFilter();
+    // Documents filter - with delay to ensure DOM is fully rendered
+    setTimeout(() => {
+        initializeDocumentsFilter();
+    }, 100);
 }
 
 function initializeMembersFilter() {
@@ -461,7 +355,7 @@ function initializeMembersFilter() {
             switch(sortValue) {
                 case 'name':
                     return a.dataset.name.localeCompare(b.dataset.name);
-                case 'joinDate':
+                case 'joinedAt':
                     return new Date(b.dataset.joinDate) - new Date(a.dataset.joinDate);
                 case 'activity':
                     // Mock activity - in real app, this would be based on actual data
@@ -508,7 +402,7 @@ function initializeMembersFilter() {
                     sortFilter.value = 'activity';
                     break;
                 case 'new':
-                    sortFilter.value = 'joinDate';
+                    sortFilter.value = 'joinedAt';
                     break;
             }
             filterMembers();
@@ -524,9 +418,13 @@ function initializeDocumentsFilter() {
     const quickFilters = document.querySelectorAll('.quick-doc-filter');
     const documentsList = document.getElementById('documentsList');
     
-    if (!documentsList) return;
+    
+    if (!documentsList) {
+        return;
+    }
     
     const documentItems = Array.from(documentsList.querySelectorAll('.document-item'));
+    
     
     function filterDocuments() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -538,7 +436,25 @@ function initializeDocumentsFilter() {
             const type = item.dataset.type;
             
             const matchesSearch = name.includes(searchTerm);
-            const matchesType = !typeValue || type === typeValue;
+            let matchesType = true;
+            
+            if (typeValue && typeValue !== 'all') {
+                if (typeValue === 'pdf') {
+                    matchesType = type === '.pdf' || type === 'pdf';
+                } else if (typeValue === 'doc') {
+                    matchesType = type === '.doc' || type === 'doc' || type === '.docx' || type === 'docx';
+                } else if (typeValue === 'xls') {
+                    matchesType = type === '.xls' || type === 'xls' || type === '.xlsx' || type === 'xlsx';
+                } else if (typeValue === 'ppt') {
+                    matchesType = type === '.ppt' || type === 'ppt' || type === '.pptx' || type === 'pptx';
+                } else if (typeValue === 'image') {
+                    matchesType = type === '.jpg' || type === 'jpg' || 
+                                 type === '.jpeg' || type === 'jpeg' || 
+                                 type === '.png' || type === 'png' || 
+                                 type === '.gif' || type === 'gif';
+                }
+            }
+            
             
             return matchesSearch && matchesType;
         });
@@ -549,7 +465,13 @@ function initializeDocumentsFilter() {
                 case 'name':
                     return a.dataset.name.localeCompare(b.dataset.name);
                 case 'date':
-                    return new Date(b.dataset.date) - new Date(a.dataset.date);
+                    // Parse date from dd/MM/yyyy format
+                    const parseDate = (dateStr) => {
+                        if (!dateStr) return new Date(0);
+                        const [day, month, year] = dateStr.split('/');
+                        return new Date(year, month - 1, day);
+                    };
+                    return parseDate(b.dataset.date) - parseDate(a.dataset.date);
                 case 'size':
                     return parseFloat(b.dataset.size) - parseFloat(a.dataset.size);
                 case 'downloads':
@@ -559,6 +481,11 @@ function initializeDocumentsFilter() {
                     return 0;
             }
         });
+        
+        // For recent filter, limit to 10 most recent files
+        if (typeValue === 'all' && sortValue === 'date') {
+            filtered = filtered.slice(0, 10);
+        }
         
         // Hide all items
         documentItems.forEach(item => item.style.display = 'none');
@@ -582,26 +509,98 @@ function initializeDocumentsFilter() {
         });
     }
     
-    // Quick filters
-    quickFilters.forEach(btn => {
-        btn.addEventListener('click', () => {
-            quickFilters.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            const filter = btn.dataset.filter;
-            if (filter === 'recent') {
-                sortFilter.value = 'date';
-            } else {
-                typeFilter.value = filter;
-            }
-            filterDocuments();
+        // Quick filters
+        quickFilters.forEach(btn => {
+            btn.addEventListener('click', () => {
+                quickFilters.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                if (filter === 'recent') {
+                    // For recent, set type filter to all and sort by date
+                    typeFilter.value = 'all';
+                    sortFilter.value = 'date';
+                } else {
+                    // For other filters, set type filter and reset sort
+                    typeFilter.value = filter;
+                    sortFilter.value = 'name';
+                }
+                filterDocuments();
+            });
         });
-    });
 }
 
-// Initialize smart filters when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSmartFilters();
-});
+// Smart filters are initialized in the main DOMContentLoaded listener
 
-console.log('Group Detail JS: Loaded successfully');
+// Global view function
+function viewFile(url) {
+    // Open file in new tab
+    window.open(url, '_blank');
+}
+
+// Download functions are now handled by download-utils.js
+
+// Start chat with user
+async function startChatWithUser(userId) {
+    try {
+        const response = await fetch('/api/chat/private-chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId: userId })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                // Redirect to chat page with the room ID
+                window.location.href = `/chat?room=${result.data.id}`;
+            } else {
+                alert('Không thể tạo cuộc trò chuyện: ' + result.message);
+            }
+        } else {
+            alert('Có lỗi xảy ra khi tạo cuộc trò chuyện');
+        }
+    } catch (error) {
+        console.error('Error starting chat:', error);
+        alert('Có lỗi xảy ra khi tạo cuộc trò chuyện');
+    }
+}
+
+// View user profile
+function viewUserProfile(username) {
+    window.location.href = `/profile/${username}`;
+}
+
+// Switch to specific tab
+function switchToTab(tabName) {
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.nav-link').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Add active class to target tab
+    const targetTab = document.querySelector(`a[href*="tab=${tabName}"]`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Hide all tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Show target tab content
+    const targetContent = document.getElementById(tabName);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
+    
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set('tab', tabName);
+    window.history.pushState({}, '', url);
+}
+

@@ -1,6 +1,8 @@
 package GraduationProject.forumikaa.service;
 
+import GraduationProject.forumikaa.dao.DocumentDao;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
+import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.patterns.strategy.FileStorageStrategy;
 import GraduationProject.forumikaa.patterns.strategy.FileStorageStrategyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ import java.util.zip.ZipOutputStream;
 public class FileUploadServiceImpl implements FileUploadService {
 
     private final FileStorageStrategyFactory strategyFactory;
+    
+    @Autowired
+    private DocumentDao documentDao;
 
     @Autowired
     public FileUploadServiceImpl(FileStorageStrategyFactory strategyFactory) {
@@ -96,16 +101,38 @@ public class FileUploadServiceImpl implements FileUploadService {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try (ZipOutputStream zos = new ZipOutputStream(baos)) {
                 
+                // Use Set to track added filenames and avoid duplicates
+                java.util.Set<String> addedFiles = new java.util.HashSet<>();
+                
                 for (FileUploadResponse file : files) {
                     try {
                         // Download file content
                         byte[] fileContent = strategyFactory.getStorageStrategy().downloadFile(file.getId());
                         
-                        // Create ZIP entry
-                        ZipEntry zipEntry = new ZipEntry(file.getOriginalName());
+                        // Increment download count for this file
+                        incrementDownloadCount(file.getId());
+                        
+                        // Handle duplicate filenames
+                        String fileName = file.getOriginalName();
+                        String uniqueFileName = fileName;
+                        int counter = 1;
+                        
+                        while (addedFiles.contains(uniqueFileName)) {
+                            String nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+                            String extension = fileName.substring(fileName.lastIndexOf('.'));
+                            uniqueFileName = nameWithoutExt + "_" + counter + extension;
+                            counter++;
+                        }
+                        
+                        addedFiles.add(uniqueFileName);
+                        
+                        // Create ZIP entry with unique name
+                        ZipEntry zipEntry = new ZipEntry(uniqueFileName);
                         zos.putNextEntry(zipEntry);
                         zos.write(fileContent);
                         zos.closeEntry();
+                        
+                        System.out.println("Added to ZIP: " + uniqueFileName + " (" + fileContent.length + " bytes)");
                         
                     } catch (Exception e) {
                         // Log error but continue with other files
@@ -118,6 +145,25 @@ public class FileUploadServiceImpl implements FileUploadService {
             
         } catch (Exception e) {
             return CompletableFuture.failedFuture(new IOException("Failed to create ZIP file: " + e.getMessage(), e));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void incrementDownloadCount(Long fileId) {
+        try {
+            Document document = documentDao.findById(fileId).orElse(null);
+            if (document != null) {
+                Integer currentCount = document.getDownloadCount() != null ? document.getDownloadCount() : 0;
+                document.setDownloadCount(currentCount + 1);
+                documentDao.save(document);
+                System.out.println("Download count incremented for file " + fileId + ": " + (currentCount + 1));
+            } else {
+                System.out.println("File not found with ID: " + fileId);
+            }
+        } catch (Exception e) {
+            System.err.println("Error incrementing download count for file " + fileId + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -46,4 +46,7 @@ public class Document {
     @CreationTimestamp
     @Column(name = "uploaded_at", nullable = false, updatable = false)
     private LocalDateTime uploadedAt;
+    
+    @Column(name = "download_count", nullable = false)
+    private Integer downloadCount = 0;
 } 

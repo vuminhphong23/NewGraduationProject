@@ -116,7 +116,8 @@ function openLightbox(postId, imageIndex) {
             .map(file => ({
                 src: file.previewUrl,
                 alt: file.originalName,
-                downloadUrl: file.downloadUrl
+                downloadUrl: file.downloadUrl,
+                id: file.id || 0 // Fallback to 0 if id is null/undefined
             }));
     } else {
         // Fallback to DOM extraction
@@ -127,7 +128,8 @@ function openLightbox(postId, imageIndex) {
         currentImages = Array.from(images).map(img => ({
             src: img.src,
             alt: img.alt,
-            downloadUrl: img.closest('.gallery-image').dataset.downloadUrl || img.src
+            downloadUrl: img.closest('.gallery-image').dataset.downloadUrl || img.src,
+            id: img.closest('.gallery-image').dataset.fileId || null
         }));
     }
     
@@ -183,14 +185,14 @@ async function loadImagesForLightbox(postId, imageIndex) {
         }
         
         const files = await response.json();
-        
         // Filter only images
         currentImages = files
             .filter(file => file.fileType === 'image')
             .map(file => ({
                 src: file.previewUrl,
                 alt: file.originalName,
-                downloadUrl: file.downloadUrl
+                downloadUrl: file.downloadUrl,
+                id: file.id || 0 // Fallback to 0 if id is null/undefined
             }));
         
         // Store in global data for future use
@@ -272,19 +274,27 @@ function changeLightboxImage(direction) {
 // Download current image
 function downloadCurrentImage() {
     if (currentImages.length > 0) {
-        downloadFile(currentImages[currentImageIndex].downloadUrl);
+        const currentImage = currentImages[currentImageIndex];
+        downloadGalleryFile(currentImage.downloadUrl, currentImage.id);
     }
 }
 
-// Download file
-function downloadFile(url) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = '';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+// Download file from gallery - use global function
+async function downloadGalleryFile(url, fileId) {
+    if (window.downloadFile) {
+        window.downloadFile(url, fileId);
+    }
 }
+
+// Make functions available globally
+window.openLightbox = openLightbox;
+window.showAllFiles = showAllFiles;
+window.downloadAllFilesFromModal = downloadAllFilesFromModal;
+window.changeLightboxImage = changeLightboxImage;
+window.downloadCurrentImage = downloadCurrentImage;
+window.toggleFullscreen = toggleFullscreen;
+window.forceCloseModal = forceCloseModal;
+window.closeLightboxOnClick = closeLightboxOnClick;
 
 // Toggle fullscreen
 function toggleFullscreen() {
@@ -435,7 +445,7 @@ function displayAllFiles(files, postId) {
                                     ${formatFileSize(file.fileSize)}
                                 </small>
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" onclick="downloadFile('${file.downloadUrl}')" title="Tải về">
+                                    <button class="btn btn-outline-primary" onclick="downloadGalleryFile('${file.downloadUrl}', ${file.id})" title="Tải về">
                                         <i class="fa fa-download"></i>
                                     </button>
                                     <button class="btn btn-outline-secondary" onclick="openLightbox('${postId}', ${index})" title="Xem">
@@ -469,7 +479,7 @@ function displayAllFiles(files, postId) {
                                     <i class="fa fa-video me-1"></i>
                                     ${formatFileSize(file.fileSize)}
                                 </small>
-                                <button class="btn btn-outline-primary btn-sm" onclick="downloadFile('${file.downloadUrl}')" title="Tải về">
+                                <button class="btn btn-outline-primary btn-sm" onclick="downloadGalleryFile('${file.downloadUrl}', ${file.id})" title="Tải về">
                                     <i class="fa fa-download"></i>
                                 </button>
                             </div>
@@ -493,7 +503,7 @@ function displayAllFiles(files, postId) {
                                     <i class="fa fa-file me-1"></i>
                                     ${formatFileSize(file.fileSize)}
                                 </small>
-                                <button class="btn btn-outline-primary btn-sm" onclick="downloadFile('${file.downloadUrl}')" title="Tải về">
+                                <button class="btn btn-outline-primary btn-sm" onclick="downloadGalleryFile('${file.downloadUrl}', ${file.id})" title="Tải về">
                                     <i class="fa fa-download"></i>
                                 </button>
                             </div>
@@ -571,6 +581,8 @@ async function downloadAllFiles(postId) {
         showToast('Không thể tải về file ZIP', 'error');
     }
 }
+
+// Update download count - use global function from group-detail.js
 
 // Download all files from modal
 function downloadAllFilesFromModal(files) {

@@ -48,7 +48,7 @@
                      onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                 <div>
                     <div class="fw-semibold" th:text="${userName}">Tên người dùng</div>
-                    <div class="text-muted small">Công nghệ thông tin</div>
+                    <div class="text-muted small">Trường Công Nghệ Thông Tin</div>
                 </div>
             </div>
             <!-- Danh sách bạn bè -->
@@ -119,7 +119,7 @@
                         <span class="badge bg-warning text-dark rounded-pill">+1</span>
                     </li>
                 </ul>
-                <a href="#" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Khám phá thêm nhóm</a>
+                <a th:href="@{/groups/explore}" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Khám phá thêm nhóm</a>
             </div>
         </aside>
         <!-- FEED CENTER -->
@@ -129,13 +129,13 @@
                     <img th:src="${user?.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
                          alt="avatar" class="rounded-circle" width="44" height="44"
                          onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
-                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn đang nghĩ gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?" data-bs-toggle="modal" data-bs-target="#postModal" readonly style="cursor:pointer;">
+                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3" th:placeholder="'Bạn muốn chia sẻ điều gì, ' + ${userName} + '?'" placeholder="Bạn đang nghĩ gì?" data-bs-toggle="modal" data-bs-target="#postModal" readonly style="cursor:pointer;">
                 </div>
                 <hr style="color: #c3d2e0; margin: 1rem">
                 <div class="card-footer bg-white border-0 d-flex justify-content-between px-3 pt-0">
                     <button class="btn btn-light text-success d-flex align-items-center gap-2"><i class="fa-regular fa-image"></i>Ảnh</button>
                     <button class="btn btn-light text-danger d-flex align-items-center gap-2"><i class="fa-solid fa-video"></i>Video</button>
-                    <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-calendar"></i>Sự kiện</button>
+                    <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-file"></i>Tài liệu</button>
                 </div>
             </div>
 
@@ -260,7 +260,7 @@
                                         
                                         <!-- Document Preview -->
                                         <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
-                                             th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\')'">
+                                             th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\', ' + ${doc.id} + ')'">
                                             <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
                                                  style="width: 100%; height: 120px; cursor: pointer;">
                                                 <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
@@ -656,6 +656,7 @@
 <script src="/js/post-interactions.js"></script>
 <script src="/js/websocket-manager.js"></script>
 <script src="/js/notifications.js"></script>
+<script src="/js/download-utils.js"></script>
 <script src="/js/gallery-manager.js"></script>
 
 <!-- Initialize global data storage -->

@@ -46,6 +46,7 @@ public interface PostService {
 
     // Admin management methods
     Page<Post> findPaginated(String keyword, String status, String privacy, Pageable pageable);
+    Page<Post> findPostsByGroup(Long groupId, String keyword, String status, Pageable pageable);
     Optional<Post> findById(Long id);
     Post save(Post post);
     void deleteById(Long id);

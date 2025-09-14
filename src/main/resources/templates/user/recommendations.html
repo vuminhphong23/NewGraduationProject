@@ -23,7 +23,7 @@
                         <i class="fa fa-magic text-primary me-2"></i>
                         Gợi ý thông minh
                     </h2>
-                    <p class="text-muted mb-0">Khám phá nội dung phù hợp với sở thích của bạn</p>
+                    <p class="text-muted mb-0">Khám phá nội dung phù hợp với mối quan tâm của bạn</p>
                 </div>
                 <button class="btn btn-outline-primary" onclick="refreshRecommendations()">
                     <i class="fa fa-refresh me-1"></i>
@@ -60,7 +60,7 @@
                                 <i class="fa fa-magic text-primary me-2"></i>
                                 AI-Powered Content for You
                             </h6>
-                            <small class="text-muted">Nội dung được gợi ý dựa trên sở thích cá nhân</small>
+                            <small class="text-muted">Nội dung được gợi ý dựa trên mối quan tâm cá nhân</small>
                         </div>
                         <div class="card-body">
                             <div id="personalizedContent" class="posts-container">
@@ -148,11 +148,11 @@
                     </button>
                 </div>
                 <div class="card-body">
-                    <!-- Chung sở thích -->
+                    <!-- Chung mối quan tâm -->
                     <div class="mb-4">
                         <h6 class="text-primary mb-3">
                             <i class="fa fa-heart me-2"></i>
-                            Chung sở thích
+                            Chung mối quan tâm
                         </h6>
                         <div id="user-recommendations-interests">
                             <div class="text-center py-3 text-muted">
@@ -211,7 +211,7 @@ class RecommendationPageManager {
     }
 
     async loadUserRecommendations() {
-        // Load gợi ý dựa trên sở thích (bao gồm cả tương tác chung)
+        // Load gợi ý dựa trên mối quan tâm (bao gồm cả tương tác chung)
         await this.loadUserRecommendationsByType('INTERESTS', 'user-recommendations-interests');
         
         // Load gợi ý dựa trên bạn chung
@@ -264,7 +264,7 @@ class RecommendationPageManager {
         const mutualFriendsText = user.mutualFriendsCount > 0 ? 
             `${user.mutualFriendsCount} bạn chung` : '';
         const commonTopicsText = user.commonTopics && user.commonTopics.length > 0 ? 
-            `Sở thích: ${user.commonTopics.slice(0, 2).join(', ')}` : '';
+            `Cùng quan tâm: ${user.commonTopics.slice(0, 2).join(', ')}` : '';
 
         // Hiển thị button kết bạn (sẽ xử lý trạng thái qua response từ server)
         const buttonHtml = `<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(${user.userId})">
@@ -280,8 +280,7 @@ class RecommendationPageManager {
                     <div>
                         <div class="fw-semibold small">${this.escapeHtml(fullName)}</div>
                         <div class="text-muted" style="font-size: 0.75rem;">
-                            ${mutualFriendsText ? mutualFriendsText + ' • ' : ''}
-                            ${commonTopicsText || user.reason}
+                            ${mutualFriendsText || commonTopicsText || user.reason}
                         </div>
                     </div>
                 </div>

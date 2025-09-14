@@ -210,7 +210,7 @@ class TopicServiceImplTest {
         topic3.setUsageCount(0);
 
         List<Topic> allTopics = Arrays.asList(topic1, topic2, topic3);
-        when(topicDao.findTopTopics()).thenReturn(allTopics);
+        when(topicDao.findTopTopics(10)).thenReturn(allTopics);
 
         // When
         List<Topic> result = topicService.getTopTopics(2);

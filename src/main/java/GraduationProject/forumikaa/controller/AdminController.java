@@ -18,19 +18,17 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.http.ResponseEntity;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.springframework.validation.BindingResult;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -64,6 +62,8 @@ public class AdminController {
     public void setGroupService(GroupService groupService) {
         this.groupService = groupService;
     }
+
+
 
     private SecurityUtil securityUtil;
 
@@ -302,6 +302,111 @@ public class AdminController {
         }
     }
 
+    // ========== GROUP POST MANAGEMENT ==========
+    
+    @GetMapping("/admin/groups/{groupId}/posts")
+    public String groupPostManagementPage(@PathVariable Long groupId, 
+                                        Model model,
+                                        @RequestParam(defaultValue = "1") int page,
+                                        @RequestParam(defaultValue = "10") int size,
+                                        @RequestParam(required = false) String keyword,
+                                        @RequestParam(required = false, defaultValue = "") String status) {
+        try {
+            // Lấy thông tin nhóm
+            UserGroup group = groupService.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm"));
+            
+            // Tạo PageRequest
+            PageRequest pageRequest = PageRequest.of(page - 1, size);
+            
+            // Lấy bài viết theo nhóm với phân trang
+            Page<Post> postPage = postService.findPostsByGroup(groupId, keyword, status, pageRequest);
+            
+            model.addAttribute("group", group);
+            model.addAttribute("postPage", postPage);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("status", status);
+            model.addAttribute("allStatuses", PostStatus.values());
+            
+            return "admin/group-post-management";
+        } catch (Exception e) {
+            return "redirect:/admin/groups?error=" + e.getMessage();
+        }
+    }
+    
+    @PostMapping("/admin/groups/{groupId}/posts/{postId}/toggle-status")
+    public String toggleGroupPostStatus(@PathVariable Long groupId, 
+                                      @PathVariable Long postId, 
+                                      RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
+            
+            if (post.getStatus() == PostStatus.PENDING) {
+                post.setStatus(PostStatus.APPROVED);
+                redirectAttributes.addFlashAttribute("successMessage", "Duyệt bài viết thành công.");
+            } else if (post.getStatus() == PostStatus.APPROVED) {
+                post.setStatus(PostStatus.PENDING);
+                redirectAttributes.addFlashAttribute("successMessage", "Chuyển bài viết về trạng thái chờ duyệt.");
+            }
+            
+            postService.save(post);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thay đổi trạng thái: " + e.getMessage());
+        }
+        return "redirect:/admin/groups/" + groupId + "/posts";
+    }
+    
+    @PostMapping("/admin/groups/{groupId}/posts/{postId}/reject")
+    public String rejectGroupPost(@PathVariable Long groupId, 
+                                @PathVariable Long postId, 
+                                RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
+            post.setStatus(PostStatus.REJECTED);
+            postService.save(post);
+            redirectAttributes.addFlashAttribute("successMessage", "Từ chối bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi từ chối bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/groups/" + groupId + "/posts";
+    }
+    
+    @PostMapping("/admin/groups/{groupId}/posts/{postId}/delete")
+    public String deleteGroupPost(@PathVariable Long groupId, 
+                                @PathVariable Long postId, 
+                                RedirectAttributes redirectAttributes) {
+        try {
+            postService.deleteById(postId);
+            redirectAttributes.addFlashAttribute("successMessage", "Xóa bài viết thành công.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/groups/" + groupId + "/posts";
+    }
+    
+    @GetMapping("/admin/groups/{groupId}/posts/stats")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getGroupPostStats(@PathVariable Long groupId) {
+        try {
+            List<Post> groupPosts = postService.findPostsByGroup(groupId, null, null, PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+            
+            long totalPosts = groupPosts.size();
+            long pendingPosts = groupPosts.stream().filter(p -> p.getStatus() == PostStatus.PENDING).count();
+            long approvedPosts = groupPosts.stream().filter(p -> p.getStatus() == PostStatus.APPROVED).count();
+            long rejectedPosts = groupPosts.stream().filter(p -> p.getStatus() == PostStatus.REJECTED).count();
+            
+            Map<String, Object> stats = Map.of(
+                "totalPosts", totalPosts,
+                "pendingPosts", pendingPosts,
+                "approvedPosts", approvedPosts,
+                "rejectedPosts", rejectedPosts
+            );
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ========== GROUP MANAGEMENT ==========
     
     @GetMapping("/admin/groups")
@@ -377,7 +482,112 @@ public class AdminController {
     }
 
     @PostMapping("/admin/groups/create")
-    public String createGroup(@RequestParam String name, 
+    public String createGroup(@ModelAttribute("group") UserGroup group,
+                            BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+        model.addAttribute("allRoles", GroupMemberRole.values());
+        
+        if (bindingResult.hasErrors()) {
+            return "admin/group-form";
+        }
+        
+        try {
+            // Set admin as creator
+            Long currentUserId = securityUtil.getCurrentUserId();
+            if (currentUserId == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể xác định người dùng hiện tại.");
+                return "admin/group-form";
+            }
+            
+            User adminUser = userService.findById(currentUserId).orElse(null);
+            if (adminUser != null) {
+                group.setCreatedBy(adminUser);
+            }
+            
+            // Topics will be handled by entity relationship only
+            
+            // Save group
+            System.out.println("DEBUG: Saving group: " + group.getName());
+            UserGroup savedGroup = groupService.save(group);
+            System.out.println("DEBUG: Group saved with ID: " + savedGroup.getId());
+            
+            // Add admin as member
+            try {
+                System.out.println("DEBUG: Adding admin as member");
+                groupService.addMember(savedGroup.getId(), currentUserId, "ADMIN");
+                System.out.println("DEBUG: Admin added as member successfully");
+            } catch (Exception e) {
+                System.err.println("DEBUG: Error adding admin as member: " + e.getMessage());
+                redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm admin vào nhóm: " + e.getMessage());
+                return "admin/group-form";
+            }
+            
+            redirectAttributes.addFlashAttribute("successMessage", "Tạo nhóm thành công.");
+            return "redirect:/admin/groups";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo nhóm: " + e.getMessage());
+            return "admin/group-form";
+        }
+    }
+    
+    // ========== NEW ADMIN FEATURES ==========
+    
+    @PostMapping("/admin/groups/bulk-delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> bulkDeleteGroups(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Long> groupIds = (List<Long>) request.get("groupIds");
+            
+            if (groupIds == null || groupIds.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không có nhóm nào được chọn"));
+            }
+            
+            int deletedCount = 0;
+            for (Long groupId : groupIds) {
+                try {
+                    groupService.deleteById(groupId);
+                    deletedCount++;
+                } catch (Exception e) {
+                    // Log error but continue with other groups
+                    System.err.println("Error deleting group " + groupId + ": " + e.getMessage());
+                }
+            }
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true, 
+                "message", "Đã xóa " + deletedCount + " nhóm thành công",
+                "deletedCount", deletedCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi khi xóa nhóm: " + e.getMessage()));
+        }
+    }
+    
+    
+    @GetMapping("/admin/groups/stats")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getGroupStats() {
+        try {
+            List<UserGroup> allGroups = groupService.findAll();
+            long totalGroups = allGroups.size();
+            long totalMembers = allGroups.stream()
+                .mapToLong(group -> groupService.getMemberCount(group.getId()))
+                .sum();
+            double avgMembersPerGroup = totalGroups > 0 ? (double) totalMembers / totalGroups : 0;
+            
+            return ResponseEntity.ok(Map.of(
+                "totalGroups", totalGroups,
+                "totalMembers", totalMembers,
+                "avgMembersPerGroup", Math.round(avgMembersPerGroup * 100.0) / 100.0
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    
+    @PostMapping("/admin/groups/create-simple")
+    public String createGroupSimple(@RequestParam String name, 
                             @RequestParam String description,
                             @RequestParam(required = false) String avatar,
                             RedirectAttributes redirectAttributes) {
@@ -388,11 +598,24 @@ public class AdminController {
                 return "redirect:/admin/groups";
             }
             
-            UserGroup group = groupService.createGroup(name, description, currentUserId);
+            // Create group with admin as creator
+            UserGroup group = new UserGroup();
+            group.setName(name);
+            group.setDescription(description);
+            
+            // Set admin as creator
+            User adminUser = userService.findById(currentUserId).orElse(null);
+            if (adminUser != null) {
+                group.setCreatedBy(adminUser);
+            }
+            
             if (avatar != null && !avatar.trim().isEmpty()) {
                 group.setAvatar(avatar.trim());
-                groupService.save(group);
             }
+            
+            UserGroup savedGroup = groupService.save(group);
+            // Add admin as member
+            groupService.addMember(savedGroup.getId(), currentUserId, "ADMIN");
             redirectAttributes.addFlashAttribute("successMessage", "Tạo nhóm thành công.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo nhóm: " + e.getMessage());
@@ -400,8 +623,6 @@ public class AdminController {
         return "redirect:/admin/groups";
     }
 
-    // ========== GROUP MEMBERS API ==========
-    
     @GetMapping("/admin/groups/{id}/members")
     @ResponseBody
     public ResponseEntity<?> getGroupMembers(@PathVariable Long id) {
@@ -411,7 +632,7 @@ public class AdminController {
             List<Map<String, Object>> memberData = members.stream()
                 .map(member -> {
                     Map<String, Object> data = new HashMap<>();
-                    data.put("id", member.getId());
+                    data.put("id", member.getUser().getId());
                     data.put("username", member.getUser().getUsername());
                     data.put("firstName", member.getUser().getFirstName());
                     data.put("lastName", member.getUser().getLastName());

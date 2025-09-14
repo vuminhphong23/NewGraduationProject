@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám phá nhóm - Forumikaa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/user/layout.css">
+    
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .search-input {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .filter-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .category-tag {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            color: #6c757d;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .category-tag:hover, .category-tag.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+        
+        .group-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .group-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .group-avatar {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .group-info {
+            padding: 1.5rem;
+        }
+        
+        .group-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .group-description {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .group-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .group-stats {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .group-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .topic-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .join-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .join-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .joined-btn {
+            background: #28a745;
+            border: none;
+            border-radius: 12px;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+        }
+        
+        .pagination {
+            justify-content: center;
+            margin-top: 3rem;
+        }
+        
+        .page-link {
+            border: none;
+            border-radius: 10px;
+            margin: 0 0.2rem;
+            padding: 0.8rem 1.2rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .page-link:hover {
+            background: #f8f9fa;
+            color: #667eea;
+        }
+        
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .no-groups {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        
+        .no-groups i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner-border {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/user/header :: header}"></div>
+
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title">Khám phá nhóm</h1>
+                    <p class="hero-subtitle">Tìm kiếm và tham gia các nhóm học tập, nghiên cứu và kết nối với cộng đồng</p>
+                </div>
+                <div class="col-lg-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-number" th:text="${totalGroups}">0</div>
+                                <div class="stats-label">Nhóm</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card">
+                                <div class="stats-number" th:text="${totalMembers}">0</div>
+                                <div class="stats-label">Thành viên</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Section -->
+        <div class="search-section">
+            <form th:action="@{/groups/explore}" method="get" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" 
+                               name="keyword" 
+                               th:value="${keyword}" 
+                               class="form-control search-input border-0" 
+                               placeholder="Tìm kiếm nhóm theo tên, mô tả...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn filter-btn w-100">
+                        <i class="bi bi-search me-2"></i>Tìm kiếm
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Category Filters -->
+            <div class="category-filter">
+                <a th:href="@{/groups/explore(keyword=${keyword})}" 
+                   th:classappend="${category == 'all'} ? 'active' : ''"
+                   class="category-tag">Tất cả</a>
+                <a th:each="topic : ${popularTopics}" 
+                   th:href="@{/groups/explore(keyword=${keyword}, category=${topic.name})}"
+                   th:classappend="${category == topic.name} ? 'active' : ''"
+                   th:text="'#' + ${topic.name}"
+                   class="category-tag"></a>
+            </div>
+        </div>
+
+        <!-- Groups Grid -->
+        <div class="row g-4" th:if="${groups.hasContent()}">
+            <div class="col-lg-4 col-md-6" th:each="group : ${groups.content}">
+                <div class="group-card">
+                    <img th:src="${group.avatar != null ? group.avatar : 'https://via.placeholder.com/400x200/667eea/ffffff?text=' + group.name}" 
+                         class="group-avatar" 
+                         th:alt="${group.name}">
+                    
+                    <div class="group-info">
+                        <h5 class="group-name" th:text="${group.name}">Tên nhóm</h5>
+                        <p class="group-description" th:text="${group.description}">Mô tả nhóm...</p>
+                        
+                        <div class="group-meta">
+                            <div class="group-stats">
+                                <div class="stat-item">
+                                    <i class="bi bi-people"></i>
+                                    <span th:text="${group.memberCount != null ? group.memberCount : 0}">0</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="bi bi-calendar"></i>
+                                    <span th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="group-topics" th:if="${group.topics != null and !group.topics.isEmpty()}">
+                            <span th:each="topic : ${group.topics}" 
+                                  th:text="'#' + ${topic.name}" 
+                                  class="topic-tag"></span>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/groups/{id}(id=${group.id})}" 
+                               class="btn btn-outline-primary flex-fill">
+                                <i class="bi bi-eye me-1"></i>Xem
+                            </a>
+                            <button th:if="${!joinedGroupIds.contains(group.id)}"
+                                    th:onclick="'joinGroup(' + ${group.id} + ')'"
+                                    class="btn join-btn flex-fill">
+                                <i class="bi bi-plus-circle me-1"></i>Tham gia
+                            </button>
+                            <button th:if="${joinedGroupIds.contains(group.id)}"
+                                    class="btn joined-btn flex-fill" disabled>
+                                <i class="bi bi-check-circle me-1"></i>Đã tham gia
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Groups Found -->
+        <div th:if="${!groups.hasContent()}" class="no-groups">
+            <i class="bi bi-search"></i>
+            <h4>Không tìm thấy nhóm nào</h4>
+            <p>Hãy thử tìm kiếm với từ khóa khác hoặc khám phá các chủ đề khác</p>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${groups.totalPages > 1}" class="pagination">
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${groups.first} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/groups/explore(page=0, keyword=${keyword}, category=${category})}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:classappend="${groups.first} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/groups/explore(page=${groups.number - 1}, keyword=${keyword}, category=${category})}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, groups.number - 2), T(java.lang.Math).min(groups.totalPages - 1, groups.number + 2))}">
+                    <a class="page-link" 
+                       th:href="@{/groups/explore(page=${i}, keyword=${keyword}, category=${category})}" 
+                       th:text="${i + 1}"
+                       th:classappend="${i == groups.number} ? 'active' : ''"></a>
+                </li>
+                <li class="page-item" th:classappend="${groups.last} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/groups/explore(page=${groups.number + 1}, keyword=${keyword}, category=${category})}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:classappend="${groups.last} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/groups/explore(page=${groups.totalPages - 1}, keyword=${keyword}, category=${category})}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/jwt-utils.js"></script>
+    <script src="/js/logout.js"></script>
+    
+    <script>
+        function joinGroup(groupId) {
+            fetch(`/groups/${groupId}/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    // Reload page to update UI
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi tham gia nhóm');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tham gia nhóm');
+            });
+        }
+    </script>
+</body>
+</html>

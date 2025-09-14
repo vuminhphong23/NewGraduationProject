@@ -202,4 +202,25 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     
     @Query("SELECT COUNT(p) FROM Post p WHERE p.group.id = :groupId")
     Long countByGroupId(@Param("groupId") Long groupId);
+    
+    // Find posts by group with pagination and filters
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN FETCH p.user u
+        LEFT JOIN FETCH u.userProfile
+        LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
+        WHERE p.group.id = :groupId
+        AND (:keyword IS NULL OR :keyword = '' OR 
+             LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+             LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+             LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:status IS NULL OR :status = '' OR p.status = :statusEnum)
+        ORDER BY p.createdAt DESC
+    """)
+    Page<Post> findPostsByGroup(@Param("groupId") Long groupId, 
+                               @Param("keyword") String keyword, 
+                               @Param("status") String status,
+                               @Param("statusEnum") PostStatus statusEnum,
+                               Pageable pageable);
 }

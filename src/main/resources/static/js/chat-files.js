@@ -328,7 +328,7 @@ class ChatFilesManager {
                     <i class="${iconClass}"></i>
                 </div>
                 <div class="file-info">
-                    <div class="file-name" title="${file.originalName}">${file.originalName}</div>
+                    <div class="file-name" title="${file.originalName}" onclick="window.downloadFile('${file.downloadUrl}', ${file.id})" style="cursor: pointer;">${file.originalName}</div>
                     <div class="file-meta">
                         <span>${fileSize}</span>
                         <span>•</span>
@@ -339,7 +339,7 @@ class ChatFilesManager {
                     <button class="file-action-btn" title="Xem" onclick="chatFilesManager.viewFile(${file.id})">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="file-action-btn" title="Tải về" onclick="chatFilesManager.downloadFile(${file.id})">
+                    <button class="file-action-btn" title="Tải về" onclick="window.downloadFile('${file.downloadUrl}', ${file.id})">
                         <i class="fas fa-download"></i>
                     </button>
                     <button class="file-action-btn delete" title="Xóa" onclick="chatFilesManager.deleteFile(${file.id})">
@@ -357,7 +357,12 @@ class ChatFilesManager {
             <div class="image-item" data-file-id="${image.id}">
                 <img src="${image.previewUrl}" alt="${image.originalName}" loading="lazy">
                 <div class="image-overlay">
-                    <i class="fas fa-eye"></i>
+                    <button class="image-action-btn" title="Xem" onclick="chatFilesManager.viewFile(${image.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="image-action-btn" title="Tải về" onclick="window.downloadFile('${image.downloadUrl}', ${image.id})">
+                        <i class="fas fa-download"></i>
+                    </button>
                 </div>
                 <div class="image-info" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; font-size: 10px;">
                     ${uploadDate}
@@ -404,18 +409,7 @@ class ChatFilesManager {
         }
     }
 
-    downloadFile(fileId) {
-        const file = this.files.find(f => f.id === fileId);
-        if (file) {
-            const link = document.createElement('a');
-            link.href = file.downloadUrl;
-            link.download = file.originalName;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
+    // downloadFile is now handled by download-utils.js
 
     async deleteFile(fileId) {
         if (!confirm('Bạn có chắc chắn muốn xóa file này?')) {
@@ -718,6 +712,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
         chatFilesManager = new ChatFilesManager();
         console.log('ChatFilesManager: Successfully initialized');
+        console.log('chatFilesManager.downloadFile:', chatFilesManager.downloadFile);
         
         // Integrate with existing chat manager
         if (window.chatManager) {

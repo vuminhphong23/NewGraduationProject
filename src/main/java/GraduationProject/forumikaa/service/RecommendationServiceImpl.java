@@ -27,7 +27,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     public List<UserRecommendationResponse> recommendUsers(Long userId, Integer limit) {
         List<UserRecommendationResponse> recommendations = new ArrayList<>();
         
-        // Gợi ý dựa trên sở thích (bao gồm cả tương tác chung) (40%)
+        // Gợi ý dựa trên mối quan tâm và tương tác chung (40%)
         recommendations.addAll(recommendUsersByInterests(userId, limit * 2 / 5));
         
         // Gợi ý dựa trên bạn bè chung (30%)
@@ -64,7 +64,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                     // Chỉ dựa trên số lượng bạn chung
                     double score = mutualFriendsCount * 1.0; // Trọng số 100% cho bạn chung
                     
-                    String reason = "Có " + mutualFriendsCount + " bạn chung";
+                    String reason = mutualFriendsCount + " bạn chung";
                     
                     recommendations.add(UserRecommendationResponse.builder()
                             .userId(user.getId())
@@ -126,24 +126,24 @@ public class RecommendationServiceImpl implements RecommendationService {
                         .filter(allOtherUserTopics::contains)
                         .collect(Collectors.toList());
                 
-                // Tính tương tác chung
-                int commonInteractions = countCommonInteractions(userId, user.getId());
+                // Tính tương tác chung (cùng like/comment trên posts không phải của chính mình)
+                int commonInteractions = countCommonInteractionsOnOthersPosts(userId, user.getId());
                 
                 // Tính điểm tổng hợp
                 double score = 0.0;
                 String reason = "";
                 
                 if (!commonTopics.isEmpty() && commonInteractions > 0) {
-                    // Có cả topics chung và tương tác chung
-                    score = (commonTopics.size() * 1.0) + (commonInteractions * 0.5);
-                    reason = "Chung sở thích: " + commonTopics.size() + " topics, tương tác chung: " + commonInteractions + " posts";
+                    // Có cả mối quan tâm chung và tương tác chung
+                    score = (commonTopics.size() * 1.0) + (commonInteractions * 0.8);
+                    reason = "Cùng quan tâm: " + commonTopics.size() + " topics, tương tác chung: " + commonInteractions + " posts";
                 } else if (!commonTopics.isEmpty()) {
-                    // Chỉ có topics chung
+                    // Chỉ có mối quan tâm chung
                     score = commonTopics.size() * 1.0;
-                    reason = "Chung sở thích: " + commonTopics.size() + " topics";
+                    reason = "Cùng quan tâm: " + commonTopics.size() + " topics";
                 } else if (commonInteractions > 0) {
                     // Chỉ có tương tác chung
-                    score = commonInteractions * 0.5;
+                    score = commonInteractions * 0.8;
                     reason = "Tương tác chung: " + commonInteractions + " posts";
                 }
                 
@@ -172,38 +172,42 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
 
 
-    private Set<Long> getInteractedPostIds(Long userId) {
+    
+    /**
+     * Lấy danh sách posts user đã tương tác (loại trừ posts của chính họ)
+     */
+    private Set<Long> getInteractedPostIdsExcludingOwn(Long userId) {
         Set<Long> postIds = new HashSet<>();
         
         try {
-            // Lấy posts user đã like
+            // Lấy posts user đã like (loại trừ posts của chính họ)
             List<Like> likes = likeDao.findByUserIdAndLikeableType(userId, LikeableType.POST);
             if (likes != null) {
-                postIds.addAll(likes.stream()
-                    .filter(like -> like.getLikeableId() != null)
-                    .map(Like::getLikeableId)
-                    .collect(Collectors.toSet()));
+                for (Like like : likes) {
+                    if (like.getLikeableId() != null) {
+                        // Kiểm tra xem post này có phải của chính user không
+                        Optional<Post> post = postDao.findById(like.getLikeableId());
+                        if (post.isPresent() && !post.get().getUser().getId().equals(userId)) {
+                            postIds.add(like.getLikeableId());
+                        }
+                    }
+                }
             }
             
-            // Lấy posts user đã comment
+            // Lấy posts user đã comment (loại trừ posts của chính họ)
             List<Comment> comments = commentDao.findByUserId(userId);
             if (comments != null) {
-                postIds.addAll(comments.stream()
-                    .filter(comment -> comment.getPost() != null && comment.getPost().getId() != null)
-                    .map(comment -> comment.getPost().getId())
-                    .collect(Collectors.toSet()));
-            }
-            
-            // Lấy posts user đã tạo
-            List<Post> userPosts = postDao.findByUserIdOrderByCreatedAtDesc(userId);
-            if (userPosts != null) {
-                postIds.addAll(userPosts.stream()
-                    .filter(post -> post.getId() != null)
-                    .map(Post::getId)
-                    .collect(Collectors.toSet()));
+                for (Comment comment : comments) {
+                    if (comment.getPost() != null && comment.getPost().getId() != null) {
+                        // Kiểm tra xem post này có phải của chính user không
+                        if (!comment.getPost().getUser().getId().equals(userId)) {
+                            postIds.add(comment.getPost().getId());
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
-            System.err.println("Error getting interacted post IDs: " + e.getMessage());
+            System.err.println("Error getting interacted post IDs excluding own: " + e.getMessage());
         }
         
         return postIds;
@@ -350,25 +354,26 @@ public class RecommendationServiceImpl implements RecommendationService {
     }
     
     /**
-     * Đếm số posts chung mà cả hai user đã tương tác
+     * Đếm số posts chung mà cả hai user đã tương tác (không phải posts của chính họ)
      */
-    private int countCommonInteractions(Long userId1, Long userId2) {
+    private int countCommonInteractionsOnOthersPosts(Long userId1, Long userId2) {
         try {
-            // Lấy posts user1 đã tương tác
-            Set<Long> user1InteractedPosts = getInteractedPostIds(userId1);
+            // Lấy posts user1 đã tương tác (loại trừ posts của chính họ)
+            Set<Long> user1InteractedPosts = getInteractedPostIdsExcludingOwn(userId1);
             
-            // Lấy posts user2 đã tương tác
-            Set<Long> user2InteractedPosts = getInteractedPostIds(userId2);
+            // Lấy posts user2 đã tương tác (loại trừ posts của chính họ)
+            Set<Long> user2InteractedPosts = getInteractedPostIdsExcludingOwn(userId2);
             
             // Tìm giao của hai tập hợp
             user1InteractedPosts.retainAll(user2InteractedPosts);
             
             return user1InteractedPosts.size();
         } catch (Exception e) {
-            System.err.println("Error counting common interactions: " + e.getMessage());
+            System.err.println("Error counting common interactions on others' posts: " + e.getMessage());
             return 0;
         }
     }
+    
     
     /**
      * Đếm số lần user2 đã tương tác với posts của user1

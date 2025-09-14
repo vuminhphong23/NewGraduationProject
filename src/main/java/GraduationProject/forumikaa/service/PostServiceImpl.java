@@ -699,6 +699,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
+    public Page<Post> findPostsByGroup(Long groupId, String keyword, String status, Pageable pageable) {
+        // Convert String to enum
+        PostStatus statusEnum = null;
+        if (status != null && !status.trim().isEmpty()) {
+            try {
+                statusEnum = PostStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                // Invalid status, keep as null
+            }
+        }
+        
+        return postDao.findPostsByGroup(groupId, keyword, status, statusEnum, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<Post> findById(Long id) {
         return postDao.findById(id);
     }

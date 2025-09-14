@@ -55,17 +55,13 @@ class FileUploadManager {
     }
 
     handleFiles(files) {
-        console.log('handleFiles called with:', files.length, 'files');
-        console.log('Current selectedFiles count:', this.selectedFiles.length);
         
         files.forEach(file => {
             if (this.validateFile(file)) {
                 this.selectedFiles.push(file);
-                console.log('Added file:', file.name);
             }
         });
         
-        console.log('Final selectedFiles count:', this.selectedFiles.length);
         this.updateFilePreview();
         this.showFilePreviewArea();
         
@@ -74,6 +70,12 @@ class FileUploadManager {
     }
 
     validateFile(file) {
+        // Check if file is empty
+        if (!file || file.size === 0) {
+            this.showError(`File ${file.name} trống hoặc không hợp lệ`);
+            return false;
+        }
+
         // Check file size (10MB limit)
         const maxSize = 10 * 1024 * 1024; // 10MB
         if (file.size > maxSize) {
@@ -87,7 +89,9 @@ class FileUploadManager {
             'video/mp4', 'video/avi', 'video/mov', 'video/wmv',
             'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+            'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed',
+            'application/x-7z-compressed', 'application/x-tar', 'application/gzip'
         ];
 
         if (!allowedTypes.includes(file.type)) {
@@ -197,40 +201,32 @@ class FileUploadManager {
 
     async uploadFiles(postId) {
         if (this.selectedFiles.length === 0) {
-            console.log('No files to upload');
             return [];
         }
 
-        console.log('Starting file upload for postId:', postId);
-        console.log('Files to upload:', this.selectedFiles.map(f => f.name));
 
         this.currentPostId = postId;
         const formData = new FormData();
         
         this.selectedFiles.forEach(file => {
             formData.append('files', file);
-            console.log('Added file to FormData:', file.name, 'size:', file.size);
         });
         formData.append('postId', postId);
 
         try {
-            console.log('Sending request to /api/files/upload-multiple');
             const response = await fetch('/api/files/upload-multiple', {
                 method: 'POST',
                 body: formData
             });
 
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
 
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Response error:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}`);
+                console.error('Upload error:', errorText);
+                throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
             }
 
             const uploadedFiles = await response.json();
-            console.log('Upload successful, response:', uploadedFiles);
             this.uploadedFiles = uploadedFiles;
             
             // Clear selected files after successful upload
@@ -240,8 +236,8 @@ class FileUploadManager {
             
             return uploadedFiles;
         } catch (error) {
-            console.error('Error uploading files:', error);
-            this.showError('Có lỗi xảy ra khi upload file');
+            console.error('Upload error details:', error);
+            this.showError('Có lỗi xảy ra khi upload file: ' + error.message);
             throw error;
         }
     }
@@ -279,14 +275,11 @@ let fileUploadManager;
 document.addEventListener('DOMContentLoaded', function() {
     // Prevent multiple initializations
     if (window.fileUploadManager) {
-        console.log('FileUploadManager already initialized, skipping...');
         return;
     }
     
-    console.log('Initializing FileUploadManager...');
     fileUploadManager = new FileUploadManager();
     window.fileUploadManager = fileUploadManager;
-    console.log('FileUploadManager initialized:', fileUploadManager);
 });
 
 // Global function for file input change (for backward compatibility)

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DocumentDTO {
+    private Long id;
     private String name;
     private String size;
     private String type;

@@ -2,7 +2,7 @@
 
 ## 🎯 TỔNG QUAN
 
-Hệ thống Web Crawling đã được tích hợp thành công vào dự án Forumikaa, cho phép tự động thu thập nội dung từ các nguồn bên ngoài và gợi ý cho người dùng dựa trên sở thích cá nhân.
+Hệ thống Web Crawling đã được tích hợp thành công vào dự án Forumikaa, cho phép tự động thu thập nội dung từ các nguồn bên ngoài và gợi ý cho người dùng dựa trên mối quan tâm cá nhân.
 
 ## 🚀 TÍNH NĂNG CHÍNH
 
@@ -12,12 +12,12 @@ Hệ thống Web Crawling đã được tích hợp thành công vào dự án F
 - **Nội dung học thuật** từ arXiv (mỗi ngày lúc 2:00 AM)
 
 ### 2. **Smart Recommendation System**
-- **Personalized Content**: Gợi ý dựa trên sở thích cá nhân
+- **Personalized Content**: Gợi ý dựa trên mối quan tâm cá nhân
 - **Trending Content**: Nội dung đang hot
 - **Interest-based**: Theo từng chủ đề cụ thể
 
 ### 3. **AI-Powered Scoring**
-- Sở thích cá nhân (40%)
+- Mối quan tâm cá nhân (40%)
 - Engagement (30%)
 - Lịch sử tương tác (20%)
 - Thời gian (10%)
@@ -130,7 +130,7 @@ spring.task.scheduling.pool.size=5
 - **Màu sắc phân biệt**: Xanh dương cho AI content, xanh lá cho score
 
 ### **Recommendation Tabs**
-- **Personalized**: Nội dung phù hợp với sở thích
+- **Personalized**: Nội dung phù hợp với mối quan tâm
 - **Trending**: Nội dung đang hot
 - **By Interests**: Filter theo chủ đề cụ thể
 
@@ -210,7 +210,7 @@ curl http://localhost:8080/api/recommendations/crawled-content?limit=10
 ## 🎯 KẾT QUẢ MONG ĐỢI
 
 1. **Tự động thu thập** nội dung chất lượng từ internet
-2. **Gợi ý thông minh** dựa trên sở thích cá nhân
+2. **Gợi ý thông minh** dựa trên mối quan tâm cá nhân
 3. **Tăng engagement** với nội dung mới
 4. **Giảm tải** cho người dùng tạo content
 5. **Cải thiện UX** với recommendation system

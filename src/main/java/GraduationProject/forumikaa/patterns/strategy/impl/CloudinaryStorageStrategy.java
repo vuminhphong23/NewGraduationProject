@@ -58,8 +58,8 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
     @Override
     public FileUploadResponse uploadFile(MultipartFile file, Long postId, Long userId) throws Exception {
         // Validate file
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("File không được để trống");
+        if (file.isEmpty() || file.getSize() == 0) {
+            throw new IllegalArgumentException("File không được để trống hoặc có kích thước 0 bytes");
         }
 
         // Get post and user
@@ -141,9 +141,42 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
         Document document = documentDao.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy file"));
 
-        // For Cloudinary, we return the URL instead of file content
-        // The client can download directly from Cloudinary URL
-        throw new UnsupportedOperationException("Direct download not supported for Cloudinary. Use preview URL instead.");
+        try {
+            // Download file content from Cloudinary URL
+            String cloudinaryUrl = document.getFilePath();
+            System.out.println("Downloading Cloudinary file: " + cloudinaryUrl);
+            
+            // Use Java's built-in HTTP client to download the file
+            java.net.URL url = new java.net.URL(cloudinaryUrl);
+            java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(10000); // 10 seconds
+            connection.setReadTimeout(30000); // 30 seconds
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200) {
+                throw new IOException("Failed to download file from Cloudinary. Response code: " + responseCode);
+            }
+            
+            // Read the file content
+            try (java.io.InputStream inputStream = connection.getInputStream();
+                 java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream()) {
+                
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                
+                byte[] fileContent = outputStream.toByteArray();
+                System.out.println("Successfully downloaded Cloudinary file: " + document.getOriginalName() + " (" + fileContent.length + " bytes)");
+                return fileContent;
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error downloading Cloudinary file " + document.getOriginalName() + ": " + e.getMessage());
+            throw new IOException("Failed to download file from Cloudinary: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -299,6 +332,7 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
         response.setDownloadUrl(document.getFilePath()); // Cloudinary URL for download
         response.setPreviewUrl(document.getFilePath()); // Cloudinary URL for preview
         response.setFileType(getFileType(document.getMimeType()));
+        response.setCloudStorage(true); // Mark as cloud storage
         return response;
     }
 

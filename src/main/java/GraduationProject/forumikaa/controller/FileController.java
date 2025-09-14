@@ -117,6 +117,21 @@ public class FileController {
             });
     }
 
+    @PostMapping("/{fileId}/download")
+    @ResponseBody
+    public ResponseEntity<String> updateDownloadCount(@PathVariable Long fileId) {
+        try {
+            System.out.println("API called: updateDownloadCount for fileId=" + fileId);
+            fileUploadService.incrementDownloadCount(fileId);
+            System.out.println("Download count updated successfully for file " + fileId);
+            return ResponseEntity.ok("success");
+        } catch (Exception e) {
+            System.err.println("Error updating download count for file " + fileId + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("error: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/download-all/{postId}")
     public CompletableFuture<ResponseEntity<ByteArrayResource>> downloadAllFilesAsZip(@PathVariable Long postId) {
         Long userId = securityUtil.getCurrentUserId();

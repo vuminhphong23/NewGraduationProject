@@ -21,4 +21,6 @@ public interface FileUploadService {
     String getFilePreviewUrl(Long fileId);
     
     CompletableFuture<byte[]> downloadAllFilesAsZip(Long postId, Long userId);
+    
+    void incrementDownloadCount(Long fileId);
 }

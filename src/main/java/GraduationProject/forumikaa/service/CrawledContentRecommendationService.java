@@ -22,7 +22,7 @@ public class CrawledContentRecommendationService {
     private TopicService topicService;
 
     /**
-     * Gợi ý crawled content dựa trên sở thích và tương tác của user
+     * Gợi ý crawled content dựa trên mối quan tâm và tương tác của user
      */
     public List<PostResponse> getRecommendedCrawledContent(Long userId, Integer limit) {
         System.out.println("=== CRAWLED CONTENT RECOMMENDATION ===");
@@ -36,7 +36,7 @@ public class CrawledContentRecommendationService {
             return new ArrayList<>();
         }
         
-        // Lấy sở thích của user
+        // Lấy mối quan tâm của user
         Set<String> userInterests = getUserInterests(userId);
         System.out.println("User interests: " + userInterests);
         
@@ -89,7 +89,7 @@ public class CrawledContentRecommendationService {
     }
     
     /**
-     * Gợi ý crawled content theo sở thích cụ thể
+     * Gợi ý crawled content theo mối quan tâm cụ thể
      */
     public List<PostResponse> getCrawledContentByInterest(Long userId, String interest, Integer limit) {
         // Tìm topic tương ứng với interest
@@ -116,7 +116,7 @@ public class CrawledContentRecommendationService {
     private double calculateRecommendationScore(Post post, Long userId, Set<String> userInterests, Map<Long, Double> userInteractionScores) {
         double score = 0.0;
         
-        // 1. Điểm dựa trên sở thích (40%)
+        // 1. Điểm dựa trên mối quan tâm (40%)
         Set<String> postTopics = post.getTopics().stream()
                 .map(Topic::getName)
                 .collect(Collectors.toSet());
@@ -149,7 +149,7 @@ public class CrawledContentRecommendationService {
     }
     
     private Set<String> getUserInterests(Long userId) {
-        // Lấy sở thích từ posts user đã tương tác
+        // Lấy mối quan tâm từ posts user đã tương tác
         Set<String> interests = new HashSet<>();
         
         // Từ posts user đã like

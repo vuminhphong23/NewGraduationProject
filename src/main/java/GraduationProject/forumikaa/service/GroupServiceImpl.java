@@ -1,24 +1,33 @@
 package GraduationProject.forumikaa.service;
 
+import GraduationProject.forumikaa.dao.DocumentDao;
 import GraduationProject.forumikaa.dao.GroupDao;
 import GraduationProject.forumikaa.dao.GroupMemberDao;
 import GraduationProject.forumikaa.dao.UserDao;
+import GraduationProject.forumikaa.dao.TopicDao;
+import GraduationProject.forumikaa.dao.PostDao;
 import GraduationProject.forumikaa.dto.DocumentDTO;
-import GraduationProject.forumikaa.dto.LinkDTO;
+import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.Topic;
+import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
+import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
 @Transactional
@@ -32,11 +41,27 @@ public class GroupServiceImpl implements GroupService {
     
     @Autowired
     private UserDao userDao;
+    
+    @Autowired
+    private TopicDao topicDao;
+    
+    @Autowired
+    private PostDao postDao;
+    
+    @Autowired
+    private DocumentDao documentDao;
+
+    @Autowired
+    private SecurityUtil securityUtil;
 
     @Override
     @Transactional
     public UserGroup save(UserGroup group) {
-        return groupDao.save(group);
+        System.out.println("DEBUG: GroupService.save() called with group: " + group.getName());
+        System.out.println("DEBUG: Group topics count: " + (group.getTopics() != null ? group.getTopics().size() : 0));
+        UserGroup savedGroup = groupDao.save(group);
+        System.out.println("DEBUG: Group saved with ID: " + savedGroup.getId());
+        return savedGroup;
     }
 
     @Override
@@ -61,59 +86,6 @@ public class GroupServiceImpl implements GroupService {
     @Transactional(readOnly = true)
     public Page<UserGroup> findPaginated(String keyword, String status, String privacy, Pageable pageable) {
         return groupDao.findPaginated(keyword, status, privacy, pageable);
-    }
-
-    @Override
-    @Transactional
-    public UserGroup createGroup(String name, String description, Long createdById) {
-        User creator = userDao.findById(createdById)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        
-        UserGroup group = new UserGroup();
-        group.setName(name);
-        group.setDescription(description);
-        group.setCreatedBy(creator);
-        
-        UserGroup savedGroup = groupDao.save(group);
-        
-        // Note: Creator is not automatically added as member
-        // Admin can manually add members later
-        
-        return savedGroup;
-    }
-
-    @Override
-    @Transactional
-    public UserGroup updateGroup(Long groupId, String name, String description, Long userId) {
-        UserGroup group = groupDao.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-        
-        if (!canEditGroup(groupId, userId)) {
-            throw new UnauthorizedException("You can only edit groups you created");
-        }
-        
-        group.setName(name);
-        group.setDescription(description);
-        
-        return groupDao.save(group);
-    }
-
-    @Override
-    @Transactional
-    public void deleteGroup(Long groupId, Long userId) {
-        // Check if group exists
-        groupDao.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
-        
-        if (!canDeleteGroup(groupId, userId)) {
-            throw new UnauthorizedException("You can only delete groups you created");
-        }
-        
-        // Delete all group members first
-        groupMemberDao.deleteByGroupId(groupId);
-        
-        // Delete the group
-        groupDao.deleteById(groupId);
     }
 
     @Override
@@ -160,24 +132,6 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserGroup> findByCreatedById(Long userId) {
-        return groupDao.findByCreatedById(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserGroup> findByNameContaining(String name) {
-        return groupDao.findByNameContainingIgnoreCase(name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Long countByCreatedById(Long userId) {
-        return groupDao.countByCreatedById(userId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public boolean canEditGroup(Long groupId, Long userId) {
         return groupDao.findById(groupId)
                 .map(group -> group.getCreatedBy().getId().equals(userId))
@@ -219,14 +173,89 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional(readOnly = true)
     public List<DocumentDTO> getGroupDocuments(Long groupId) {
-        // For now, return empty list - can be implemented later with actual document storage
-        return List.of();
+        Long userId = securityUtil.getCurrentUserId();
+
+        List<Post> posts = postDao.findByGroupIdWithUserAccess(groupId, userId);
+        
+        
+        // Extract documents from posts
+        List<DocumentDTO> documents = new ArrayList<>();
+        for (Post post : posts) {
+            if (post.getDocuments() != null && !post.getDocuments().isEmpty()) {
+                for (Document file : post.getDocuments()) {
+                    DocumentDTO doc = new DocumentDTO();
+                    doc.setId(file.getId());
+                    doc.setFileName(file.getFileName());
+                    doc.setFileSize(file.getFileSize());
+                    doc.setFileType(file.getFileExtension());
+                    doc.setUploadDate(file.getUploadedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                    doc.setDownloadCount(file.getDownloadCount() != null ? file.getDownloadCount() : 0);
+                    doc.setName(file.getOriginalName());
+                    doc.setOriginalName(file.getOriginalName());
+                    doc.setSize(file.getFileSize() != null ? formatFileSize(file.getFileSize()) : "0 B");
+                    doc.setType(file.getFileExtension());
+                    doc.setUrl(file.getFilePath());
+                    doc.setDownloadUrl(file.getFilePath());
+                    documents.add(doc);
+                }
+            }
+        }
+        
+        System.out.println("Total documents found: " + documents.size());
+        return documents;
     }
 
+    
     @Override
     @Transactional(readOnly = true)
-    public List<LinkDTO> getGroupLinks(Long groupId) {
-        // For now, return empty list - can be implemented later with group settings
-        return List.of();
+    public List<Topic> getPopularTopicsInGroup(Long groupId, int limit) {
+        // Lấy các topic phổ biến nhất trong group cụ thể
+        return topicDao.findTopTopicsByGroup(groupId, limit);
     }
+    
+    private String formatFileSize(Long bytes) {
+        if (bytes == null || bytes == 0) return "0 B";
+        
+        String[] units = {"B", "KB", "MB", "GB", "TB"};
+        int unitIndex = 0;
+        double size = bytes.doubleValue();
+        
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+        
+        return String.format("%.1f %s", size, units[unitIndex]);
+    }
+    
+    @Override
+    public Page<UserGroup> findGroupsForExplore(String keyword, String category, Pageable pageable) {
+        if ("all".equals(category)) {
+            return groupDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword, pageable);
+        } else {
+            return groupDao.findGroupsWithKeywordAndCategory(keyword, category, pageable);
+        }
+    }
+    
+    @Override
+    public List<Long> getUserJoinedGroupIds(Long userId) {
+        return groupMemberDao.findGroupIdsByUserId(userId);
+    }
+    
+    @Override
+    public List<Topic> getPopularTopics(int limit) {
+        return topicDao.findTopTopicsByUsage(limit);
+    }
+    
+    @Override
+    public Long getTotalGroupCount() {
+        return groupDao.count();
+    }
+    
+    @Override
+    public Long getTotalMemberCount() {
+        return groupMemberDao.count();
+    }
+    
+    
 }

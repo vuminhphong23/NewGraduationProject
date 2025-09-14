@@ -432,6 +432,23 @@
     color: #721c24;
 }
 
+/* Image action buttons */
+.image-action-btn {
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s ease;
+    margin: 0 2px;
+}
+
+.image-action-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
 /* Images Grid */
 .files-grid {
     display: grid;

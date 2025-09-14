@@ -16,8 +16,12 @@ public class FileStorageConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Static file resources
         registry.addResourceHandler(urlPrefix + "/**")
                 .addResourceLocations("file:" + uploadPath + "/");
+        
+        // Ensure static resources don't interfere with controller mappings
+        registry.setOrder(1);
     }
 }
 

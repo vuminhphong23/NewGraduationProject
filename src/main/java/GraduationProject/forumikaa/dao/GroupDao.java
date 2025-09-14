@@ -89,4 +89,35 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
     default boolean canEdit(UserGroup group, Long userId) {
         return group != null && group.getCreatedBy().getId().equals(userId);
     }
+    
+    // Explore groups methods
+    @Query("""
+        SELECT DISTINCT g FROM UserGroup g
+        LEFT JOIN FETCH g.createdBy u
+        LEFT JOIN FETCH u.userProfile
+        WHERE (:keyword IS NULL OR :keyword = '' OR 
+               LOWER(g.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+               LOWER(g.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        ORDER BY g.createdAt DESC
+    """)
+    Page<UserGroup> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+        @Param("keyword") String keyword1, 
+        @Param("keyword") String keyword2, 
+        Pageable pageable);
+    
+    @Query("""
+        SELECT DISTINCT g FROM UserGroup g
+        LEFT JOIN FETCH g.createdBy u
+        LEFT JOIN FETCH u.userProfile
+        LEFT JOIN g.topics t
+        WHERE (:keyword IS NULL OR :keyword = '' OR 
+               LOWER(g.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+               LOWER(g.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:category IS NULL OR :category = '' OR LOWER(t.name) LIKE LOWER(CONCAT('%', :category, '%')))
+        ORDER BY g.createdAt DESC
+    """)
+    Page<UserGroup> findGroupsWithKeywordAndCategory(
+        @Param("keyword") String keyword, 
+        @Param("category") String category, 
+        Pageable pageable);
 }

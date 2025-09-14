@@ -1,9 +1,10 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.dto.MemberDTO;
 import GraduationProject.forumikaa.dto.DocumentDTO;
-import GraduationProject.forumikaa.dto.LinkDTO;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.PostService;
@@ -12,6 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +34,46 @@ public class GroupController {
     @Autowired
     private SecurityUtil securityUtil;
     
+    @GetMapping("/explore")
+    public String exploreGroups(@RequestParam(defaultValue = "") String keyword,
+                               @RequestParam(defaultValue = "0") int page,
+                               @RequestParam(defaultValue = "all") String category,
+                               Model model) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            User currentUser = securityUtil.getCurrentUser();
+            
+            // Pagination
+            Pageable pageable = PageRequest.of(page, 12);
+            
+            // Get groups with filters
+            Page<UserGroup> groupsPage = groupService.findGroupsForExplore(keyword, category, pageable);
+            
+            // Get user's joined groups
+            List<Long> joinedGroupIds = groupService.getUserJoinedGroupIds(currentUserId);
+            
+            // Get popular topics for filter
+            List<Topic> popularTopics = groupService.getPopularTopics(10);
+            
+            // Get group statistics
+            Long totalGroups = groupService.getTotalGroupCount();
+            Long totalMembers = groupService.getTotalMemberCount();
+            
+            model.addAttribute("groups", groupsPage);
+            model.addAttribute("user", currentUser);
+            model.addAttribute("joinedGroupIds", joinedGroupIds);
+            model.addAttribute("popularTopics", popularTopics);
+            model.addAttribute("totalGroups", totalGroups);
+            model.addAttribute("totalMembers", totalMembers);
+            model.addAttribute("keyword", keyword);
+            model.addAttribute("category", category);
+            model.addAttribute("currentPage", page);
+            
+            return "user/explore-groups";
+        } catch (Exception e) {
+            return "redirect:/login";
+        }
+    }
 
     @GetMapping("/{groupId}")
     public String groupDetail(@PathVariable Long groupId, 
@@ -63,8 +107,9 @@ public class GroupController {
                 ))
                 .collect(Collectors.toList());
         
-        // Get current user ID
+        // Get current user ID and user info
         Long currentUserId = securityUtil.getCurrentUserId();
+        User currentUser = securityUtil.getCurrentUser();
         
         // Get group posts from database
         List<PostResponse> posts = postService.getPostsByGroup(groupId, currentUserId);
@@ -74,7 +119,11 @@ public class GroupController {
         
         // Get group documents from database
         List<DocumentDTO> groupDocuments = groupService.getGroupDocuments(groupId);
-        Long documentCount = (long) groupDocuments.size();
+        
+        // Count all files from posts (images + documents)
+        Long documentCount = posts.stream()
+                .mapToLong(post -> post.getDocuments() != null ? post.getDocuments().size() : 0L)
+                .sum();
         
         // Get pinned documents (top 3 most downloaded)
         List<DocumentDTO> pinnedDocuments = groupDocuments.stream()
@@ -82,10 +131,12 @@ public class GroupController {
                 .limit(3)
                 .collect(Collectors.toList());
         
-        // Get important links from group settings (if available)
-        List<LinkDTO> importantLinks = groupService.getGroupLinks(groupId);
+        
+        // Get popular topics in group (top 5)
+        List<Topic> popularTopics = groupService.getPopularTopicsInGroup(groupId, 5);
         
         model.addAttribute("group", group);
+        model.addAttribute("user", currentUser);
         model.addAttribute("memberCount", memberCount);
         model.addAttribute("postCount", postCount);
         model.addAttribute("documentCount", documentCount);
@@ -93,7 +144,7 @@ public class GroupController {
         model.addAttribute("posts", posts);
         model.addAttribute("groupDocuments", groupDocuments);
         model.addAttribute("pinnedDocuments", pinnedDocuments);
-        model.addAttribute("importantLinks", importantLinks);
+        model.addAttribute("popularTopics", popularTopics);
         model.addAttribute("currentTab", tab);
         model.addAttribute("isMember", groupService.isGroupMember(groupId, currentUserId));
         model.addAttribute("isAdmin", groupService.isGroupAdmin(groupId, currentUserId));
@@ -149,4 +200,5 @@ public class GroupController {
             return "error";
         }
     }
+    
 }

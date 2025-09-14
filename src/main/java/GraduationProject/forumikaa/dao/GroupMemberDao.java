@@ -67,4 +67,8 @@ public interface GroupMemberDao extends JpaRepository<GroupMember, Long> {
         ORDER BY gm.joinedAt ASC
     """)
     List<GroupMember> findAdminsByGroupId(@Param("groupId") Long groupId);
+    
+    // Get user's joined group IDs
+    @Query("SELECT gm.group.id FROM GroupMember gm WHERE gm.user.id = :userId")
+    List<Long> findGroupIdsByUserId(@Param("userId") Long userId);
 }

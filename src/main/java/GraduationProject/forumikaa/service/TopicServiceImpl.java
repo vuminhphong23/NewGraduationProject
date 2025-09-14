@@ -4,7 +4,6 @@ import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +20,17 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Topic findOrCreateTopic(String name, User createdBy) {
         String cleanName = cleanHashtagName(name);
+        System.out.println("DEBUG: TopicService.findOrCreateTopic() called with name: " + name + ", cleanName: " + cleanName);
         
         return topicDao.findByName(cleanName)
                 .orElseGet(() -> {
+                    System.out.println("DEBUG: Creating new topic: " + cleanName);
                     Topic newTopic = new Topic(cleanName);
                     newTopic.setCreatedBy(createdBy);
                     newTopic.setUsageCount(0);
-                    return topicDao.save(newTopic);
+                    Topic savedTopic = topicDao.save(newTopic);
+                    System.out.println("DEBUG: New topic saved with ID: " + savedTopic.getId());
+                    return savedTopic;
                 });
     }
 
@@ -48,11 +51,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     @Transactional(readOnly = true)
     public List<Topic> getTopTopics(int limit) {
-        List<Topic> allTop = topicDao.findTopTopics();
-        return allTop.stream()
-                .filter(topic -> topic.getUsageCount() != null && topic.getUsageCount() > 0)
-                .limit(limit)
-                .collect(Collectors.toList());
+        return topicDao.findTopTopics(limit);
     }
 
     @Override
@@ -89,6 +88,11 @@ public class TopicServiceImpl implements TopicService {
         cleanName = cleanName.toLowerCase()
                 .replaceAll("\\s+", "_")
                 .replaceAll("[^a-zA-Z0-9_àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]", "");
+        
+        // Ensure we don't return empty string
+        if (cleanName.isEmpty()) {
+            cleanName = "general";
+        }
         
         return cleanName;
     }

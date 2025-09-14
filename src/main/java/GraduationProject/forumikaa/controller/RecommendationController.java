@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/recommendations")
@@ -54,7 +53,7 @@ public class RecommendationController {
     }
     
     /**
-     * Gợi ý crawled content dựa trên sở thích cá nhân
+     * Gợi ý crawled content dựa trên mối quan tâm cá nhân
      */
     @GetMapping("/crawled-content")
     public ResponseEntity<List<PostResponse>> getRecommendedCrawledContent(
@@ -88,7 +87,7 @@ public class RecommendationController {
     }
     
     /**
-     * Gợi ý crawled content theo sở thích cụ thể
+     * Gợi ý crawled content theo mối quan tâm cụ thể
      */
     @GetMapping("/crawled-content/interest/{interest}")
     public ResponseEntity<List<PostResponse>> getCrawledContentByInterest(
