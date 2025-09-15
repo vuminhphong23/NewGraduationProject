@@ -50,42 +50,77 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function filterDocuments() {
-        const searchTerm = documentSearch ? documentSearch.value.toLowerCase() : '';
+        const searchTerm = documentSearch ? documentSearch.value.toLowerCase().trim() : '';
         const typeFilter = documentTypeFilter ? documentTypeFilter.value : '';
         
         // Get fresh list of document items
         const items = Array.from(documentsList.querySelectorAll('.document-item'));
+        let visibleCount = 0;
+        
+        // Enhanced type mappings for flexible matching
+        const typeMappings = {
+            'doc': ['doc', 'docx', '.doc', '.docx', 'word', 'msword'],
+            'xls': ['xls', 'xlsx', '.xls', '.xlsx', 'excel'],
+            'ppt': ['ppt', 'pptx', '.ppt', '.pptx', 'powerpoint'],
+            'image': ['image', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'],
+            'video': ['video', 'mp4', 'avi', 'mov', 'wmv', '.mp4', '.avi', '.mov', '.wmv'],
+            'text': ['text', 'txt', '.txt'],
+            'pdf': ['pdf', '.pdf'],
+            'document': ['document'],
+            'other': ['other', 'unknown']
+        };
         
         items.forEach(item => {
             const name = item.getAttribute('data-name') || '';
             const type = item.getAttribute('data-type') || '';
+            const fileName = name.toLowerCase();
+            const fileType = type.toLowerCase();
             
             let showItem = true;
             
-            // Search filter
-            if (searchTerm && !name.toLowerCase().includes(searchTerm)) {
-                showItem = false;
+            // Search filter - check both name and type
+            if (searchTerm) {
+                const matchesName = fileName.includes(searchTerm);
+                const matchesType = fileType.includes(searchTerm);
+                if (!matchesName && !matchesType) {
+                    showItem = false;
+                }
             }
             
-            // Type filter
-            if (typeFilter && type !== typeFilter) {
-                showItem = false;
+            // Type filter - flexible matching
+            if (typeFilter && showItem) {
+                const validTypes = typeMappings[typeFilter] || [typeFilter];
+                const matchesType = validTypes.some(validType => 
+                    fileType === validType || 
+                    fileType.includes(validType) || 
+                    validType.includes(fileType)
+                );
+                if (!matchesType) {
+                    showItem = false;
+                }
             }
             
-            // Apply filter
+            // Apply filter with smooth transition
             if (showItem) {
+                item.style.display = 'flex';
+                item.style.opacity = '1';
                 item.classList.remove('filtered-out');
                 item.classList.add('filtered-in');
-                item.style.display = 'flex'; // Ensure visible
+                visibleCount++;
             } else {
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    if (item.style.opacity === '0') {
+                        item.style.display = 'none';
+                    }
+                }, 200);
                 item.classList.remove('filtered-in');
                 item.classList.add('filtered-out');
-                item.style.display = 'none'; // Hide completely
             }
         });
         
-        // Update document count
-        updateDocumentCount();
+        // Update count with animation
+        updateDocumentCount(visibleCount);
     }
 
     function sortDocuments() {
@@ -93,12 +128,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const container = documentsList;
         const items = Array.from(container.querySelectorAll('.document-item'));
         
-        items.sort((a, b) => {
+        // Only sort visible items
+        const visibleItems = items.filter(item => 
+            item.style.display !== 'none' && 
+            !item.classList.contains('filtered-out')
+        );
+        
+        visibleItems.sort((a, b) => {
             switch (sortBy) {
                 case 'name':
-                    const nameA = a.getAttribute('data-name') || '';
-                    const nameB = b.getAttribute('data-name') || '';
-                    return nameA.localeCompare(nameB);
+                    const nameA = (a.getAttribute('data-name') || '').toLowerCase();
+                    const nameB = (b.getAttribute('data-name') || '').toLowerCase();
+                    return nameA.localeCompare(nameB, 'vi', { numeric: true });
                     
                 case 'date':
                     const dateA = parseDate(a.getAttribute('data-date') || '');
@@ -120,8 +161,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Re-append sorted items
-        items.forEach(item => container.appendChild(item));
+        // Re-append sorted items with animation
+        visibleItems.forEach((item, index) => {
+            item.style.transition = 'all 0.3s ease';
+            item.style.order = index;
+            container.appendChild(item);
+        });
     }
 
     function applyQuickFilter(filter) {
@@ -132,6 +177,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const activeButton = document.querySelector(`[data-filter="${filter}"]`);
         if (activeButton) {
             activeButton.classList.add('active');
+        }
+        
+        // Clear search first
+        if (documentSearch) {
+            documentSearch.value = '';
         }
         
         // Apply filter based on type
@@ -159,10 +209,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
             case 'recent':
                 setSortFilter('date');
+                setTypeFilter(''); // Clear type filter for recent
                 break;
             default:
                 clearAllFilters();
         }
+        
+        // Apply filters
+        filterDocuments();
     }
 
     function setTypeFilter(type) {
@@ -176,6 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (documentSortFilter) {
             documentSortFilter.value = sort;
             sortDocuments();
+            filterDocuments();
         }
     }
 
@@ -198,27 +253,48 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove active class from quick filters
         quickDocFilters.forEach(btn => btn.classList.remove('active'));
         
-        // Show all documents
+        // Show all documents with animation
         const items = Array.from(documentsList.querySelectorAll('.document-item'));
-        items.forEach(item => {
+        items.forEach((item, index) => {
+            item.style.display = 'flex';
+            item.style.opacity = '1';
+            item.style.transition = 'all 0.3s ease';
+            item.style.order = index;
             item.classList.remove('filtered-out');
             item.classList.add('filtered-in');
-            item.style.display = 'flex'; // Ensure visible
         });
         
-        // Reset sort
+        // Reset sort and filter
         sortDocuments();
+        filterDocuments();
         
         // Update count
-        updateDocumentCount();
+        updateDocumentCount(items.length);
     }
 
-    function updateDocumentCount() {
-        const visibleItems = documentsList.querySelectorAll('.document-item[style*="flex"], .document-item:not([style*="none"])');
-        const countElement = document.querySelector('.document-count span');
+    function updateDocumentCount(count = null) {
+        let visibleCount = count;
+        
+        if (count === null) {
+            const visibleItems = documentsList.querySelectorAll('.document-item[style*="flex"]');
+            visibleCount = visibleItems.length;
+        }
+        
+        const countElement = document.querySelector('.document-count .badge span');
         
         if (countElement) {
-            countElement.textContent = visibleItems.length;
+            // Animate count change
+            const currentCount = parseInt(countElement.textContent) || 0;
+            if (currentCount !== visibleCount) {
+                countElement.style.transition = 'all 0.3s ease';
+                countElement.textContent = visibleCount;
+                
+                // Add pulse animation
+                countElement.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    countElement.style.transform = 'scale(1)';
+                }, 150);
+            }
         }
     }
 

@@ -6,14 +6,6 @@
     <title th:text="${group.name} + ' - Forumikaa'">Group Detail - Forumikaa</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/user/group-detail.css">
@@ -21,6 +13,9 @@
     <link rel="stylesheet" href="/css/post-modal.css">
     <link rel="stylesheet" href="/css/post-interactions.css">
     <link rel="stylesheet" href="/css/file-upload.css">
+    <style>
+
+    </style>
 </head>
 <body>
 <!-- HEADER -->
@@ -606,7 +601,7 @@
                             <h4 class="mb-0">Tài liệu nhóm</h4>
                             <div class="group-document-count">
                                 <span class="badge bg-warning">
-                                    <i class="bi bi-file-earmark me-1"></i><span th:text="${documentCount}">12</span> tài liệu
+                                    <i class="fa fa-file me-1"></i><span th:text="${documentCount}">12</span> tài liệu
                                 </span>
                             </div>
                         </div>
@@ -696,15 +691,32 @@
                                           data-date=${doc.uploadDate ?: '01/01/2024'},
                                           data-downloads=${doc.downloadCount ?: 0}">
                                 <div class="group-document-icon">
-                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
-                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
-                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
-                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
-                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
-                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
-                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <!-- PDF -->
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x mb-2" style="color: #dc3545;"></i>
+                                    
+                                    <!-- Word Documents -->
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x mb-2" style="color: #007bff;"></i>
+                                    
+                                    <!-- Excel -->
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x mb-2" style="color: #28a745;"></i>
+                                    
+                                    <!-- PowerPoint -->
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x mb-2" style="color: #ffc107;"></i>
+                                    
+                                    <!-- Images -->
+                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    
+                                    <!-- Video -->
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x mb-2" style="color: #6f42c1;"></i>
+                                    
+                                    <!-- Text -->
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    
+                                    <!-- Generic Document -->
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
+                                    
+                                    <!-- Other/Unknown - Fallback -->
+                                    <i th:if="${doc.fileType == 'other' || doc.fileType == 'unknown' || doc.fileType == null || doc.fileType == ''}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
                                 </div>
                                 <div class="group-document-info">
                                     <div class="group-document-name" th:text="${doc.originalName}">Document Name</div>
@@ -725,12 +737,6 @@
                                             onclick="downloadFile(this.dataset.downloadUrl, this.dataset.documentId)" 
                                             title="Tải xuống">
                                         <i class="bi bi-download"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-info" 
-                                            th:data-view-url="${doc.downloadUrl}" 
-                                            onclick="viewFile(this.dataset.viewUrl)" 
-                                            title="Xem trước">
-                                        <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             </div>
@@ -784,15 +790,15 @@
                         <div class="pinned-documents">
                             <div th:each="doc : ${pinnedDocuments}" class="document-item">
                                 <div class="group-document-icon">
-                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
-                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
-                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
-                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
-                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
-                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
-                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x mb-2" style="color: #dc3545;"></i>
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x mb-2" style="color: #007bff;"></i>
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x mb-2" style="color: #28a745;"></i>
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x mb-2" style="color: #ffc107;"></i>
+                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x mb-2" style="color: #6f42c1;"></i>
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
+                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
                                 </div>
                                 <div class="group-document-info">
                                     <div class="group-document-name" th:text="${doc.originalName}">Document Name</div>

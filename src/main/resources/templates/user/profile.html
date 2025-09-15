@@ -641,15 +641,32 @@
                                           data-date=${doc.uploadDate ?: '01/01/2024'},
                                           data-downloads=${doc.downloadCount ?: 0}">
                                 <div class="document-icon">
-                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
-                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
-                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
-                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
-                                    <i th:if="${doc.fileType == 'image'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
-                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
-                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
-                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <!-- PDF -->
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x mb-2" style="color: #dc3545;"></i>
+                                    
+                                    <!-- Word Documents -->
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x mb-2" style="color: #007bff;"></i>
+                                    
+                                    <!-- Excel -->
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x mb-2" style="color: #28a745;"></i>
+                                    
+                                    <!-- PowerPoint -->
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x mb-2" style="color: #ffc107;"></i>
+                                    
+                                    <!-- Images -->
+                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    
+                                    <!-- Video -->
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x mb-2" style="color: #6f42c1;"></i>
+                                    
+                                    <!-- Text -->
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x mb-2" style="color: #17a2b8;"></i>
+                                    
+                                    <!-- Generic Document -->
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
+                                    
+                                    <!-- Other/Unknown - Fallback -->
+                                    <i th:if="${doc.fileType == 'other' || doc.fileType == 'unknown' || doc.fileType == null || doc.fileType == ''}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
                                 </div>
                                 <div class="document-info">
                                     <div class="document-name" th:text="${doc.originalName}">Document Name</div>
@@ -666,7 +683,7 @@
                                 </div>
                                 <div class="document-actions">
                                     <a th:href="${doc.downloadUrl}" class="btn btn-sm btn-outline-primary" download>
-                                        <i class="bi bi-download me-1"></i>Tải xuống
+                                        <i class="bi bi-download me-1"></i>
                                     </a>
                                 </div>
                             </div>

@@ -1342,3 +1342,10 @@ aside.col-lg-4 {
     border-color: #007bff;
     background: #e3f2fd;
 }
+
+.tab-content {
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
