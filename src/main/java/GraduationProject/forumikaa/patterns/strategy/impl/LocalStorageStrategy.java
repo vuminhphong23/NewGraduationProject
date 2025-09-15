@@ -271,6 +271,7 @@ public class LocalStorageStrategy implements FileStorageStrategy {
         response.setMimeType(document.getMimeType());
         response.setDownloadUrl("/api/files/download/" + document.getId());
         response.setPreviewUrl(urlPrefix + "/" + document.getFilePath());
+        
         response.setFileType(getFileType(document.getMimeType()));
         response.setCloudStorage(false); // Mark as local storage
         

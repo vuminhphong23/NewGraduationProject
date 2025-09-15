@@ -316,10 +316,58 @@ hr.my-2 {
 
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 8px;
     max-height: 400px;
     overflow: hidden;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+/* Optimized layouts for specific item counts */
+.gallery-grid.single-item {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.gallery-grid.single-item .gallery-item {
+    max-width: 100%;
+    width: 100%;
+}
+
+.gallery-grid.single-item .gallery-image img,
+.gallery-grid.single-item .gallery-video video {
+    height: 200px !important;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.gallery-grid.two-items {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.gallery-grid.three-items {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.gallery-grid.four-items {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.gallery-grid.five-items {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.gallery-grid.six-items {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.gallery-grid.seven-items {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.gallery-grid.eight-items {
+    grid-template-columns: repeat(4, 1fr);
 }
 
 .gallery-item {

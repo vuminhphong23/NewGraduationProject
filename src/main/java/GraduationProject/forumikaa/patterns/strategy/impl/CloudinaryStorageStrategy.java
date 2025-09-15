@@ -331,6 +331,7 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
         response.setMimeType(document.getMimeType());
         response.setDownloadUrl(document.getFilePath()); // Cloudinary URL for download
         response.setPreviewUrl(document.getFilePath()); // Cloudinary URL for preview
+        
         response.setFileType(getFileType(document.getMimeType()));
         response.setCloudStorage(true); // Mark as cloud storage
         
