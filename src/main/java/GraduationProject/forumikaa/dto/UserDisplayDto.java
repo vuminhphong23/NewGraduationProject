@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberDTO {
+public class UserDisplayDto {
     private Long id;
     private String username;
     private String firstName;
@@ -15,4 +15,5 @@ public class MemberDTO {
     private String avatar;
     private String role;
     private String joinedAt;
+    private Long memberCount;
 }

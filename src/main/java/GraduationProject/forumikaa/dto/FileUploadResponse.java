@@ -21,4 +21,8 @@ public class FileUploadResponse {
     private String cloudinaryUrl;
     private boolean cloudStorage;
     private String fileType; // image, video, document
+    
+    // Thêm các thuộc tính cần thiết cho documents tab
+    private String uploadDate; // Upload date
+    private int downloadCount = 0; // Download count
 }

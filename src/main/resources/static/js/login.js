@@ -18,6 +18,22 @@ if (toggle) {
 
 
 document.addEventListener("DOMContentLoaded", function() {
+    // Hiển thị thông báo từ server nếu có
+    const serverErrorAlert = document.querySelector('.alert-danger');
+    const serverSuccessAlert = document.querySelector('.alert-success');
+    
+    if (serverErrorAlert || serverSuccessAlert) {
+        // Hiển thị thông báo ngay lập tức
+        if (serverErrorAlert) {
+            serverErrorAlert.style.display = 'block';
+            serverErrorAlert.style.opacity = '1';
+        }
+        if (serverSuccessAlert) {
+            serverSuccessAlert.style.display = 'block';
+            serverSuccessAlert.style.opacity = '1';
+        }
+    }
+
     // Chọn tất cả các phần tử muốn hiệu ứng (trừ alert)
     const selectors = [
         '.icon-animated',

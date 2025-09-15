@@ -45,6 +45,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.HashMap;
 import java.util.Optional;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
 
 @Service
@@ -770,6 +772,15 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public Long getPostCountByGroup(Long groupId) {
         return postDao.countByGroupId(groupId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Long getNewPostCountByGroupToday(Long groupId) {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+        return postDao.countNewPostsByGroupToday(groupId, startOfDay, endOfDay);
     }
 
 }

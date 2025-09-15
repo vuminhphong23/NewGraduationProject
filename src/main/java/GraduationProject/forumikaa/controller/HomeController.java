@@ -1,16 +1,19 @@
 package GraduationProject.forumikaa.controller;
 import GraduationProject.forumikaa.dto.PostResponse;
+import GraduationProject.forumikaa.dto.UserDisplayDto;
 import GraduationProject.forumikaa.entity.Topic;
+import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.service.TopicService;
+import GraduationProject.forumikaa.dao.GroupMemberDao;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class HomeController {
@@ -37,6 +40,14 @@ public class HomeController {
     }
 
 
+    private GroupMemberDao groupMemberDao;
+
+    @Autowired
+    public void setGroupMemberDao(GroupMemberDao groupMemberDao) {
+        this.groupMemberDao = groupMemberDao;
+    }
+
+
 
     @GetMapping("/")
     public String home(Model model) {
@@ -58,10 +69,38 @@ public class HomeController {
         // Đơn giản hóa logic - chỉ lấy trending topics
         List<Topic> trendingTopics = topicService.getTopTopics(10);
 
+        // Lấy danh sách nhóm của user (nếu đã đăng nhập)
+        List<UserDisplayDto> userGroups = List.of();
+        if (userId != null) {
+            try {
+                List<GroupMember> groupMembers = groupMemberDao.findByUserId(userId);
+                userGroups = groupMembers.stream()
+                        .map(member -> {
+                            UserDisplayDto dto = new UserDisplayDto();
+                            dto.setId(member.getGroup().getId());
+                            dto.setUsername(member.getGroup().getName());
+                            dto.setFirstName(member.getGroup().getName());
+                            dto.setLastName("");
+                            dto.setAvatar(member.getGroup().getAvatar() != null ? 
+                                    member.getGroup().getAvatar() : 
+                                    "https://ui-avatars.com/api/?name=" + member.getGroup().getName() + "&background=007bff&color=ffffff&size=60");
+                            dto.setRole(member.getRole().name());
+                            dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10));
+                            dto.setMemberCount(postService.getNewPostCountByGroupToday(member.getGroup().getId()));
+                            return dto;
+                        })
+                        .collect(Collectors.toList());
+            } catch (Exception e) {
+                // Nếu có lỗi, để danh sách rỗng
+                userGroups = List.of();
+            }
+        }
+
         model.addAttribute("userName", userName);
         model.addAttribute("user", user);
         model.addAttribute("posts", posts);
         model.addAttribute("trendingTopics", trendingTopics);
+        model.addAttribute("userGroups", userGroups);
         return "user/index";
     }
 

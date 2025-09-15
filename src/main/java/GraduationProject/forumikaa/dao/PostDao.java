@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -212,6 +213,11 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     
     @Query("SELECT COUNT(p) FROM Post p WHERE p.group.id = :groupId")
     Long countByGroupId(@Param("groupId") Long groupId);
+    
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.group.id = :groupId AND p.createdAt >= :startOfDay AND p.createdAt < :endOfDay")
+    Long countNewPostsByGroupToday(@Param("groupId") Long groupId, 
+                                   @Param("startOfDay") LocalDateTime startOfDay, 
+                                   @Param("endOfDay") LocalDateTime endOfDay);
     
     // Find posts by group with pagination and filters
     @Query("""

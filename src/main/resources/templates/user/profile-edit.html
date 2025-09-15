@@ -65,93 +65,78 @@
             <button type="button" class="btn btn-light border position-absolute d-flex align-items-center gap-2 px-3 py-1" style="top:20px; right:20px; border-radius:10px; font-weight:500; font-size:0.98rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);" onclick="resetCoverDefault()">
                 <i class="fa fa-undo"></i> Reset
             </button>
-            <input type="file" id="coverInput" name="cover" accept="image/*" class="d-none" onchange="previewCover(event)">
+            <input type="file" id="coverInput" name="cover" accept="image/*" class="d-none">
             <!-- Avatar nổi -->
             <div class="position-absolute" style="left:40px; bottom:-56px;">
                 <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}" class="profile-avatar rounded-circle" id="avatarPreview">
                 <button type="button" class="btn btn-light border position-absolute d-flex align-items-center gap-2 px-2 py-1" style="bottom:8px; left:90px; border-radius:10px; font-size:0.95rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);" onclick="document.getElementById('avatarInput').click()">
                     <i class="fa fa-camera"></i>
                 </button>
-                <input type="file" id="avatarInput" name="avatar" accept="image/*" class="d-none" onchange="previewAvatar(event)">
+                <input type="file" id="avatarInput" name="avatar" accept="image/*" class="d-none">
             </div>
         </div>
         <!-- Form chỉnh sửa thông tin cá nhân -->
-        <form th:action="@{/profile/update}" th:object="${user}" method="POST" class="edit-profile-form px-5 pb-4 pt-5">
+        <form id="profileForm" class="edit-profile-form px-5 pb-4 pt-5">
 
             <h4 class="fw-bold mb-4 mt-2" style="color:#22336b;">Chỉnh sửa thông tin cá nhân</h4>
             <div class="row g-3">
-                <input type="hidden" th:field="*{id}" />
-
-                <input type="hidden" id="avatarUrlInput" name="userProfile.avatar"
-                           th:value="${user.userProfile?.avatar}">
-
-                <input type="hidden" id="coverUrlInput" name="userProfile.cover"
-                           th:value="${user.userProfile?.cover}">
+                <input type="hidden" id="avatarUrlInput" th:value="${user.userProfile?.avatar}">
+                <input type="hidden" id="coverUrlInput" th:value="${user.userProfile?.cover}">
 
                 <div class="col-md-6">
                     <label class="form-label">Tên đăng nhập</label>
-                    <input type="text" class="form-control" th:field="*{username}">
+                    <input type="text" id="username" class="form-control" th:value="${user.username}" readonly style="background:#f2f4f8;">
                 </div>
-                <span th:if="${#fields.hasErrors('username')}" class="text-danger small" th:errors="*{username}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Email</label>
-                    <input type="email" class="form-control" th:field="*{email}" required>
+                    <input type="email" id="email" class="form-control" th:value="${user.email}" required>
                 </div>
-                <span th:if="${#fields.hasErrors('email')}" class="text-danger small" th:errors="*{email}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Họ</label>
-                    <input type="text" class="form-control" th:field="*{firstName}">
+                    <input type="text" id="firstName" class="form-control" th:value="${user.firstName}">
                 </div>
-                <span th:if="${#fields.hasErrors('firstName')}" class="text-danger small" th:errors="*{firstName}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Tên</label>
-                    <input type="text" class="form-control" th:field="*{lastName}">
+                    <input type="text" id="lastName" class="form-control" th:value="${user.lastName}">
                 </div>
-                <span th:if="${#fields.hasErrors('lastName')}" class="text-danger small" th:errors="*{lastName}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Số điện thoại</label>
-                    <input type="text" class="form-control" th:field="*{phone}">
+                    <input type="text" id="phone" class="form-control" th:value="${user.phone}">
                 </div>
-                <span th:if="${#fields.hasErrors('phone')}" class="text-danger small" th:errors="*{phone}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Ngày sinh</label>
-                    <input type="date" class="form-control" th:field="*{birthDate}">
+                    <input type="date" id="birthDate" class="form-control" th:value="${user.birthDate}">
                 </div>
-                <span th:if="${#fields.hasErrors('birthDate')}" class="text-danger small" th:errors="*{birthDate}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Giới tính</label>
-                    <select class="form-select" th:field="*{gender}">
+                    <select id="gender" class="form-select">
                         <option value="">Chọn giới tính</option>
-                        <option value="NAM">Nam</option>
-                        <option value="NU">Nữ</option>
-                        <option value="KHAC">Khác</option>
+                        <option value="NAM" th:selected="${user.gender == 'NAM'}">Nam</option>
+                        <option value="NU" th:selected="${user.gender == 'NU'}">Nữ</option>
+                        <option value="KHAC" th:selected="${user.gender == 'KHAC'}">Khác</option>
                     </select>
                 </div>
-                <span th:if="${#fields.hasErrors('gender')}" class="text-danger small" th:errors="*{gender}"></span>
 
                 <div class="col-md-6">
                     <label class="form-label">Địa chỉ</label>
-                    <input type="text" class="form-control" th:field="*{address}">
+                    <input type="text" id="address" class="form-control" th:value="${user.address}">
                 </div>
-                <span th:if="${#fields.hasErrors('address')}" class="text-danger small" th:errors="*{address}"></span>
 
                 <div class="col-12">
                     <label class="form-label">Mô tả bản thân</label>
-                    <textarea class="form-control" th:field="*{profileInfo}" rows="2"></textarea>
+                    <textarea id="profileInfo" class="form-control" rows="2" th:text="${user.profileInfo}"></textarea>
                 </div>
-                <span th:if="${#fields.hasErrors('profileInfo')}" class="text-danger small" th:errors="*{profileInfo}"></span>
 
                 <div class="col-12">
                     <label class="form-label">Bio (giới thiệu ngắn)</label>
-                    <textarea class="form-control" th:field="*{userProfile.bio}" rows="2"></textarea>
+                    <textarea id="bio" class="form-control" rows="2" th:text="${user.userProfile?.bio}"></textarea>
                 </div>
-                <span th:if="${#fields.hasErrors('userProfile.bio')}" class="text-danger small" th:errors="*{userProfile.bio}"></span>
 
                 <div class="col-12">
                     <label class="form-label">Liên kết trang cá nhân</label>
@@ -165,8 +150,10 @@
             </div>
             <div class="d-flex justify-content-end gap-2 mt-4">
                 <a th:href="@{'/profile/' + ${user.username}}" class="btn btn-outline-secondary">Hủy</a>
-                <button type="reset" class="btn btn-outline-warning">Đặt lại</button>
-                <button type="submit" class="btn btn-warning fw-bold"><i class="fa fa-save me-1"></i>Lưu thay đổi</button>
+                <button type="button" class="btn btn-outline-warning" onclick="resetForm()">Đặt lại</button>
+                <button type="button" class="btn btn-warning fw-bold" onclick="updateProfile()">
+                    <i class="fa fa-save me-1"></i>Lưu thay đổi
+                </button>
             </div>
         </form>
     </div>
@@ -256,11 +243,129 @@
         }
     });
 
+
     function resetCoverDefault() {
         const defaultUrl = 'https://media.vietnamplus.vn/images/ff19e4aafab8485e8307470102cc768913111b4eeeb06dd8393e71d67982f6bf02764b1fba7ad23425af24c332b1cd09/dai-hoc-phenikaa.jpg';
         document.getElementById('coverPreview').src = defaultUrl;
         document.getElementById('coverInput').value = '';
         document.getElementById('coverUrlInput').value = defaultUrl;
+    }
+
+    // Function to update profile via AJAX
+    function updateProfile() {
+        const submitBtn = document.querySelector('button[onclick="updateProfile()"]');
+        const originalText = submitBtn.innerHTML;
+        
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i>Đang lưu...';
+        submitBtn.disabled = true;
+
+        // Collect form data
+        const formData = {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            birthDate: document.getElementById('birthDate').value,
+            gender: document.getElementById('gender').value,
+            profileInfo: document.getElementById('profileInfo').value,
+            bio: document.getElementById('bio').value,
+            avatar: document.getElementById('avatarUrlInput').value,
+            cover: document.getElementById('coverUrlInput').value
+        };
+
+        // Send AJAX request using authenticatedFetch
+        authenticatedFetch('/api/profile/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(data => {
+            // Success
+            if (window.toastManager) {
+                window.toastManager.show('Cập nhật profile thành công!', 'success');
+            } else {
+                showToast('success', 'Cập nhật profile thành công!');
+            }
+            setTimeout(() => {
+                window.location.href = '/profile/' + document.getElementById('username').value;
+            }, 1500);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (window.toastManager) {
+                window.toastManager.show('Có lỗi xảy ra khi cập nhật profile: ' + error.message, 'error');
+            } else {
+                showToast('error', 'Có lỗi xảy ra khi cập nhật profile: ' + error.message);
+            }
+        })
+        .finally(() => {
+            // Reset button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Function to reset form
+    function resetForm() {
+        document.getElementById('profileForm').reset();
+        // Reset avatar and cover to original values
+        const originalAvatar = document.getElementById('avatarUrlInput').getAttribute('th:value');
+        const originalCover = document.getElementById('coverUrlInput').getAttribute('th:value');
+        if (originalAvatar) {
+            document.getElementById('avatarPreview').src = originalAvatar;
+            document.getElementById('avatarUrlInput').value = originalAvatar;
+        }
+        if (originalCover) {
+            document.getElementById('coverPreview').src = originalCover;
+            document.getElementById('coverUrlInput').value = originalCover;
+        }
+    }
+
+    // Function to show toast notifications
+    function showToast(type, message) {
+        // Create toast element
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fa fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        // Add to toast container
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+        
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+        
+        // Show toast
+        const toastElement = toastContainer.lastElementChild;
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+        
+        // Remove toast element after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
     }
 </script>
 

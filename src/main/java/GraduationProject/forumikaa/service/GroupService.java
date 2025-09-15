@@ -3,7 +3,7 @@ package GraduationProject.forumikaa.service;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.Topic;
-import GraduationProject.forumikaa.dto.DocumentDTO;
+import GraduationProject.forumikaa.dto.FileUploadResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -41,7 +41,7 @@ public interface GroupService {
     boolean isGroupAdmin(Long groupId, Long userId);
     
     // Document management
-    List<DocumentDTO> getGroupDocuments(Long groupId);
+    List<FileUploadResponse> getGroupDocuments(Long groupId);
     
     
     // Topic management

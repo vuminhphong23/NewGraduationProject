@@ -333,6 +333,11 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
         response.setPreviewUrl(document.getFilePath()); // Cloudinary URL for preview
         response.setFileType(getFileType(document.getMimeType()));
         response.setCloudStorage(true); // Mark as cloud storage
+        
+        // Set downloadCount và uploadDate từ database
+        response.setDownloadCount(document.getDownloadCount() != null ? document.getDownloadCount() : 0);
+        response.setUploadDate(document.getUploadedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
         return response;
     }
 

@@ -1,12 +1,11 @@
 package GraduationProject.forumikaa.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserDto {
+public class UserRegistrationDto {
     
     private Long id;
     

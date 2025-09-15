@@ -28,7 +28,7 @@ public class PostResponse {
     // Thêm fields cho crawled content
     private Double recommendationScore;
     private Boolean isCrawledContent = false;
-    private UserResponse user;
+    private UserBasicDto user;
     
     // Thêm fields cho group information
     private Long groupId;

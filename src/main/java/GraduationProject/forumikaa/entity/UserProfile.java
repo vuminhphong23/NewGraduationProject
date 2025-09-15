@@ -30,4 +30,10 @@ public class UserProfile {
 
     @Column(name = "social_links", columnDefinition = "TEXT")
     private String socialLinks;
+
+    // Constructor để tạo UserProfile với User
+    public UserProfile(User user) {
+        this.user = user;
+        this.id = user.getId();
+    }
 } 

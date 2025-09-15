@@ -2,7 +2,7 @@
 
 /* Main Layout */
 .container {
-    max-width: 1200px;
+    max-width: 1320px;
 }
 
 .row.g-4 {
@@ -335,7 +335,7 @@ main.col-lg-8 {
 }
 
 .post-documents .document-item i {
-    color: #ff6b00;
+    color: #0d6efd;
     font-size: 1rem;
 }
 
@@ -346,8 +346,8 @@ main.col-lg-8 {
 }
 
 .file-preview-item:hover {
-    border-color: #ff6b00;
-    background: #fff5f0 !important;
+    border-color: #0d6efd;
+    background: #e3f2fd !important;
 }
 
 .file-preview-item .btn-outline-danger {
@@ -617,11 +617,11 @@ main.col-lg-8 {
 
 /* Post Interactions - Override for group posts */
 .like-btn.active i.fa-solid {
-    color: #ff6b00 !important;
+    color: #0d6efd !important;
 }
 
 .like-btn.active:hover i.fa-solid {
-    color: #e55a00 !important;
+    color: #0a58ca !important;
 }
 
 /* File Upload Area */
@@ -631,13 +631,13 @@ main.col-lg-8 {
 }
 
 .file-upload-area:hover {
-    border-color: #ff6b00 !important;
-    background: #fff5f0 !important;
+    border-color: #0d6efd !important;
+    background: #e3f2fd !important;
 }
 
 .file-upload-area.dragover {
-    border-color: #ff6b00 !important;
-    background: #fff5f0 !important;
+    border-color: #0d6efd !important;
+    background: #e3f2fd !important;
     transform: scale(1.02);
 }
 
@@ -774,9 +774,9 @@ main.col-lg-8 {
 }
 
 .engagement-actions .btn.active {
-    background: #ff6b00;
+    background: #0d6efd;
     color: white;
-    border-color: #ff6b00;
+    border-color: #0d6efd;
 }
 
 /* Tab Content */
@@ -947,7 +947,7 @@ aside.col-lg-4 {
 
 .recent-member-avatar:hover {
     transform: scale(1.1);
-    border-color: #ff6b00;
+    border-color: #0d6efd;
 }
 
 /* Pinned Documents */
@@ -978,7 +978,7 @@ aside.col-lg-4 {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ff6b00;
+    background: #0d6efd;
     color: white;
     border-radius: 8px;
     font-size: 1.2rem;
@@ -1020,7 +1020,7 @@ aside.col-lg-4 {
 
 .link-item:hover {
     background: #f8f9fa;
-    color: #ff6b00;
+    color: #0d6efd;
     transform: translateX(5px);
 }
 
@@ -1056,6 +1056,11 @@ aside.col-lg-4 {
 .info-item span:last-child {
     color: #333;
     font-weight: 600;
+}
+
+/* Orange text color for icons */
+.text-orange {
+    color: #ff6b00 !important;
 }
 
 /* Responsive Design */

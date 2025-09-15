@@ -1,14 +1,11 @@
 package GraduationProject.forumikaa.config;
 
-import GraduationProject.forumikaa.handler.CustomAuthenticationSuccessHandler;
-import GraduationProject.forumikaa.handler.OAuth2SuccessHandler;
 import GraduationProject.forumikaa.security.jwt.JwtTokenProvider;
 import GraduationProject.forumikaa.security.jwt.TokenProvider;
 import GraduationProject.forumikaa.security.jwt.authentication.JwtAuthenticationConvertor;
 import GraduationProject.forumikaa.security.jwt.authentication.JwtAuthenticationFilter;
 import GraduationProject.forumikaa.security.jwt.authentication.JwtAuthenticationProvider;
 import GraduationProject.forumikaa.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,15 +26,6 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-//    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
-//
-//    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-
-//    public SecurityConfig(CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler, OAuth2SuccessHandler oAuth2SuccessHandler, CustomUserDetailsService customUserDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
-//        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
-//        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-//    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -57,17 +45,18 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .successHandler(customAuthenticationSuccessHandler)
-//                        .permitAll()
-//                )
-//                .oauth2Login(oauth2 -> oauth2
-//                        .loginPage("/login")
-////                        .successHandler(oAuth2SuccessHandler)
-//                )
-                .logout(Customizer.withDefaults())
 
+                .logout(Customizer.withDefaults())
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirect to login page for 403 errors
+                            response.sendRedirect("/login?error=access_denied");
+                        })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Redirect to login page for unauthenticated users
+                            response.sendRedirect("/login?error=unauthorized");
+                        })
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

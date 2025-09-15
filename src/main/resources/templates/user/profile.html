@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/css/post-interactions.css">
     <link rel="stylesheet" href="/css/group-indicator.css">
     <link rel="stylesheet" href="/css/user/profile-navigation.css">
+    <link rel="stylesheet" href="/css/user/profile-documents.css">
     <link rel="stylesheet" href="/css/file-upload.css">
     <style>
         .profile-cover { height: 240px; object-fit: cover}
@@ -140,40 +141,6 @@
                         <span class="small">0123456789</span>
                     </div>
                 </div>
-            </div>
-            <div class="card mb-4 border-0 ">
-                <div class="card-header border-0 fw-bold fs-5 bg-white pt-3">Nhóm bạn đã tham gia</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>CLB Tin học</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+5</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Hội Sinh viên Dược</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+2</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Hội Kỹ thuật</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+7</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>CLB Nhiếp ảnh</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+3</span>
-                    </li>
-                </ul>
-                <a href="#" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Xem tất cả</a>
             </div>
 
 
@@ -570,42 +537,133 @@
 
                 <!-- Tab Documents -->
                 <div id="documents" th:class="${activeTab == 'documents'} ? 'tab-content active' : 'tab-content'">
-                    <div class="card mb-4 border-0">
-                        <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
-                            <span>Tài liệu</span>
-                            <span class="small text-muted" th:text="${documentsCount}">0</span>
+                    <div class="documents-card">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Tài liệu cá nhân</h4>
+                            <div class="document-count">
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-file-earmark me-1"></i><span th:text="${documentsCount}">0</span> tài liệu
+                                </span>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div th:if="${userDocuments != null and !userDocuments.isEmpty()}" class="row g-3">
-                                <div th:each="document : ${userDocuments}" class="col-md-6 col-lg-4">
-                                    <div class="card border-0 shadow-sm">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center mb-2">
-                                                <i class="fa fa-file-pdf text-danger me-2" th:if="${document.fileName != null and document.fileName.endsWith('.pdf')}"></i>
-                                                <i class="fa fa-file-word text-primary me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.doc') or document.fileName.endsWith('.docx'))}"></i>
-                                                <i class="fa fa-file-excel text-success me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.xls') or document.fileName.endsWith('.xlsx'))}"></i>
-                                                <i class="fa fa-file-powerpoint text-warning me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.ppt') or document.fileName.endsWith('.pptx'))}"></i>
-                                                <i class="fa fa-file me-2" th:if="${document.fileName == null or (!document.fileName.endsWith('.pdf') and !document.fileName.endsWith('.doc') and !document.fileName.endsWith('.docx') and !document.fileName.endsWith('.xls') and !document.fileName.endsWith('.xlsx') and !document.fileName.endsWith('.ppt') and !document.fileName.endsWith('.pptx'))}"></i>
-                                                <h6 class="card-title mb-0" th:text="${document.originalName}">Tên tài liệu</h6>
-                                            </div>
-                                            <p class="card-text text-muted small mb-2" th:text="${document.fileSize} + ' bytes'">Kích thước</p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <small class="text-muted" th:text="${document.mimeType}">Loại file</small>
-                                                <a th:href="${document.downloadUrl}" class="btn btn-sm btn-outline-primary" download>
-                                                    <i class="fa fa-download me-1"></i>Tải xuống
-                                                </a>
-                                            </div>
+                        
+                        <!-- Smart Filter Section -->
+                        <div class="filter-section mb-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="search-box">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="documentSearch" 
+                                                   placeholder="Tìm kiếm tài liệu...">
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="documentTypeFilter">
+                                        <option value="">Tất cả loại</option>
+                                        <option value="pdf">PDF</option>
+                                        <option value="doc">Word</option>
+                                        <option value="xls">Excel</option>
+                                        <option value="ppt">PowerPoint</option>
+                                        <option value="image">Hình ảnh</option>
+                                        <option value="video">Video</option>
+                                        <option value="text">Text</option>
+                                        <option value="document">Tài liệu khác</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="documentSortFilter">
+                                        <option value="name">Sắp xếp theo tên</option>
+                                        <option value="date">Ngày tạo</option>
+                                        <option value="size">Kích thước</option>
+                                        <option value="downloads">Lượt tải</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="clearDocFilters">
+                                        <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                                    </button>
+                                </div>
                             </div>
-                            <div th:if="${userDocuments == null or userDocuments.isEmpty()}" class="text-center text-muted py-5">
-                                <i class="fa fa-file fa-3x mb-3 text-muted"></i>
-                                <h5 class="text-muted">Chưa có tài liệu nào</h5>
-                                <p class="text-muted">Chia sẻ tài liệu để xem chúng ở đây</p>
+                            
+                            <!-- Quick Filter Tags -->
+                            <div class="quick-filters mt-3">
+                                <button class="btn btn-sm btn-outline-danger me-2 quick-doc-filter" data-filter="pdf">
+                                    <i class="bi bi-file-pdf me-1"></i>PDF
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary me-2 quick-doc-filter" data-filter="doc">
+                                    <i class="bi bi-file-word me-1"></i>Word
+                                </button>
+                                <button class="btn btn-sm btn-outline-success me-2 quick-doc-filter" data-filter="xls">
+                                    <i class="bi bi-file-excel me-1"></i>Excel
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning me-2 quick-doc-filter" data-filter="image">
+                                    <i class="bi bi-image me-1"></i>Hình ảnh
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-2 quick-doc-filter" data-filter="video">
+                                    <i class="bi bi-play-circle me-1"></i>Video
+                                </button>
+                                <button class="btn btn-sm btn-outline-dark me-2 quick-doc-filter" data-filter="text">
+                                    <i class="bi bi-file-text me-1"></i>Text
+                                </button>
+                                <button class="btn btn-sm btn-outline-info me-2 quick-doc-filter" data-filter="recent">
+                                    <i class="bi bi-clock me-1"></i>Gần đây
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Documents Grid -->
+                        <div class="documents-grid" id="documentsList">
+                            <!-- No documents message -->
+                            <div th:if="${userDocuments == null or userDocuments.isEmpty()}" class="no-documents text-center py-5">
+                                <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-3">Chưa có tài liệu nào</p>
+                                <p class="text-muted small">Chia sẻ tài liệu để xem chúng ở đây</p>
                                 <a href="#" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#postModal">
                                     <i class="fa fa-upload me-2"></i>Chia sẻ tài liệu
                                 </a>
+                            </div>
+                            
+                            <!-- Document items -->
+                            <div th:each="doc : ${userDocuments}" class="document-item" 
+                                 th:attr="data-name=${doc.originalName},
+                                          data-type=${doc.fileType ?: 'unknown'},
+                                          data-size=${doc.fileSize ?: 0},
+                                          data-date=${doc.uploadDate ?: '01/01/2024'},
+                                          data-downloads=${doc.downloadCount ?: 0}">
+                                <div class="document-icon">
+                                    <i th:if="${doc.fileType == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
+                                    <i th:if="${doc.fileType == 'doc'}" class="bi bi-file-earmark-word text-primary"></i>
+                                    <i th:if="${doc.fileType == 'xls'}" class="bi bi-file-earmark-excel text-success"></i>
+                                    <i th:if="${doc.fileType == 'ppt'}" class="bi bi-file-earmark-ppt text-warning"></i>
+                                    <i th:if="${doc.fileType == 'image'}" class="bi bi-file-earmark-image text-info"></i>
+                                    <i th:if="${doc.fileType == 'video'}" class="bi bi-file-earmark-play text-secondary"></i>
+                                    <i th:if="${doc.fileType == 'text'}" class="bi bi-file-earmark-text text-dark"></i>
+                                    <i th:if="${doc.fileType == 'document'}" class="bi bi-file-earmark text-primary"></i>
+                                    <i th:if="${doc.fileType == 'other'}" class="bi bi-file-earmark text-muted"></i>
+                                </div>
+                                <div class="document-info">
+                                    <div class="document-name" th:text="${doc.originalName}">Document Name</div>
+                                    <div class="document-meta">
+                                        <span class="document-size" th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">2.4 MB</span>
+                                        <span class="document-date" th:text="${doc.uploadDate}">01/01/2024</span>
+                                    </div>
+                                    <div class="document-stats">
+                                        <small class="text-muted">
+                                            <i class="bi bi-download me-1"></i>
+                                            <span th:text="${doc.downloadCount}">0</span> lượt tải
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="document-actions">
+                                    <a th:href="${doc.downloadUrl}" class="btn btn-sm btn-outline-primary" download>
+                                        <i class="bi bi-download me-1"></i>Tải xuống
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -784,6 +842,7 @@
 <script src="/js/profile-friendship.js"></script>
 <script src="/js/group-indicator.js"></script>
 <script src="/js/user/profile-navigation.js"></script>
+<script src="/js/user/profile-documents.js"></script>
 <script src="/js/download-utils.js"></script>
 <script src="/js/gallery-manager.js"></script>
 

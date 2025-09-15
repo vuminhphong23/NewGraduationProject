@@ -1,30 +1,21 @@
 /**
  * Group Detail Page - JavaScript
- * Tích hợp với các class global: PostManager, FileUploadManager, HashtagManager
+ * Sử dụng các class global có sẵn: PostManager, PostInteractions, FileUploadManager
  */
 
 // Global variables
 let groupId = null;
-let groupPostManager = null;
-let groupFileUploadManager = null;
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    
     // Get group ID from URL
     groupId = getGroupIdFromUrl();
     
-    // Check if we're on documents tab
-    const currentTab = new URLSearchParams(window.location.search).get('tab');
-    
-    // Initialize managers
-    initializeGroupPostManager();
-    initializeGroupFileUploadManager();
+    // Initialize group-specific functionality
     initializeGroupDetail();
     
     // Initialize smart filters
     initializeSmartFilters();
-    
 });
 
 /**
@@ -36,142 +27,101 @@ function getGroupIdFromUrl() {
     return match ? match[1] : null;
 }
 
-/**
- * Initialize Group Post Manager
- * Override PostManager để thêm groupId vào post data
- */
-function initializeGroupPostManager() {
-    
-    // Wait for PostManager to be available
-    if (window.postManager) {
-        groupPostManager = window.postManager;
-    } else {
-        // Create new PostManager instance
-        groupPostManager = new PostManager();
-    }
-    
-    // Override submitPost method to include groupId
-    if (groupPostManager && groupPostManager.submitPost) {
-        const originalSubmitPost = groupPostManager.submitPost.bind(groupPostManager);
-        
-        groupPostManager.submitPost = async function() {
-            
-            if (this.publishBtn.disabled) return;
-            
-            // Get selected topics
-            const selectedTopics = window.HashtagManager?.getSelected() || [];
-            
-            const postData = {
-                title: this.titleInput.value.trim(),
-                content: this.contentInput.value.trim(),
-                topicNames: selectedTopics,
-                privacy: this.currentPrivacy,
-                groupId: groupId  // Add groupId here
-            };
-            
-            
-            const url = this.editingPostId ? `/api/posts/${this.editingPostId}` : '/api/posts';
-            const method = this.editingPostId ? 'PUT' : 'POST';
-            
-            try {
-                this.setLoading(true);
-                
-                const response = await authenticatedFetch(url, {
-                    method,
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(postData)
-                });
-                
-                if (response.ok) {
-                    const result = await response.json();
-                    
-                    // Upload files if any are selected
-                    if (window.fileUploadManager && window.fileUploadManager.selectedFiles.length > 0) {
-                        try {
-                            await window.fileUploadManager.uploadFiles(result.id);
-                            this.showToast('File đã được đính kèm thành công!', 'success');
-                        } catch (fileError) {
-                            this.showToast('Bài viết đã được đăng nhưng có lỗi khi đính kèm file', 'warning');
-                        }
-                    }
-                    
-                    // Save topics
-                    if (selectedTopics.length > 0 && window.HashtagManager && typeof window.HashtagManager.saveTopics === 'function') {
-                        try {
-                            await window.HashtagManager.saveTopics(selectedTopics);
-                        } catch (topicError) {
-                        }
-                    }
-                    
-                    const message = this.editingPostId ? 'Cập nhật thành công!' : 'Đăng bài thành công!';
-                    this.showToast(message, 'success');
-                    this.closeModal();
-                    setTimeout(() => window.location.reload(), 1000);
-                } else {
-                    const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
-                    this.showToast(error.message || 'Có lỗi xảy ra khi xử lý bài viết', 'error');
-                }
-            } catch (error) {
-                this.showToast('Không thể kết nối đến máy chủ', 'error');
-            } finally {
-                this.setLoading(false);
-            }
-        };
-        
-    }
-}
-
-/**
- * Initialize Group File Upload Manager
- * Sử dụng FileUploadManager global
- */
-function initializeGroupFileUploadManager() {
-    
-    if (window.fileUploadManager) {
-        groupFileUploadManager = window.fileUploadManager;
-    } else {
-    }
-}
+// PostManager và FileUploadManager đã được khởi tạo trong các file riêng
 
 /**
  * Initialize Group Detail specific functionality
  */
 function initializeGroupDetail() {
-    
-    // Initialize post interactions
-    initializePostInteractions();
-    
-    // Gallery functionality is handled by gallery-manager.js
-    initializeGallery();
+    // Override PostManager để thêm groupId
+    overridePostManagerForGroup();
     
     // Initialize group actions
     initializeGroupActions();
     
-}
-
-/**
- * Initialize Post Interactions
- * Sử dụng PostInteractions class
- */
-function initializePostInteractions() {
-    
-    if (window.postInteractions) {
-    } else {
+    // Đảm bảo PostInteractions được khởi tạo
+    if (!window.postInteractions) {
+        window.postInteractions = new PostInteractions();
     }
 }
 
 /**
- * Initialize Gallery
- * Gallery functionality is handled by gallery-manager.js
+ * Override PostManager để thêm groupId vào post data
  */
-function initializeGallery() {
-    // No additional initialization needed as gallery-manager.js handles everything
+function overridePostManagerForGroup() {
+    // Đợi PostManager được khởi tạo
+    setTimeout(() => {
+        if (window.postManager && window.postManager.submitPost) {
+            const originalSubmitPost = window.postManager.submitPost.bind(window.postManager);
+            
+            window.postManager.submitPost = async function() {
+                if (this.publishBtn.disabled) return;
+                
+                // Get selected topics
+                const selectedTopics = window.HashtagManager?.getSelected() || [];
+                
+                const postData = {
+                    title: this.titleInput.value.trim(),
+                    content: this.contentInput.value.trim(),
+                    topicNames: selectedTopics,
+                    privacy: this.currentPrivacy,
+                    groupId: groupId  // Add groupId here
+                };
+                
+                const url = this.editingPostId ? `/api/posts/${this.editingPostId}` : '/api/posts';
+                const method = this.editingPostId ? 'PUT' : 'POST';
+                
+                try {
+                    this.setLoading(true);
+                    
+                    const response = await authenticatedFetch(url, {
+                        method,
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(postData)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        // Upload files if any are selected
+                        if (window.fileUploadManager && window.fileUploadManager.selectedFiles.length > 0) {
+                            try {
+                                await window.fileUploadManager.uploadFiles(result.id);
+                                this.showToast('File đã được đính kèm thành công!', 'success');
+                            } catch (fileError) {
+                                this.showToast('Bài viết đã được đăng nhưng có lỗi khi đính kèm file', 'warning');
+                            }
+                        }
+                        
+                        // Save topics
+                        if (selectedTopics.length > 0 && window.HashtagManager && typeof window.HashtagManager.saveTopics === 'function') {
+                            try {
+                                await window.HashtagManager.saveTopics(selectedTopics);
+                            } catch (topicError) {
+                                // Ignore topic save errors
+                            }
+                        }
+                        
+                        const message = this.editingPostId ? 'Cập nhật thành công!' : 'Đăng bài thành công!';
+                        this.showToast(message, 'success');
+                        this.closeModal();
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
+                        this.showToast(error.message || 'Có lỗi xảy ra khi xử lý bài viết', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Không thể kết nối đến máy chủ', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            };
+        }
+    }, 100);
 }
-
-// Gallery events are handled by gallery-manager.js
 
 /**
  * Initialize Group Actions
@@ -232,83 +182,8 @@ function initializeGroupActions() {
     
 }
 
-// showToast function is available from gallery-manager.js
-
-/**
- * Global functions for backward compatibility
- */
-window.toggleLike = function(element) {
-    if (window.postManager) {
-        const postId = window.postManager.getPostId(element);
-        if (postId) {
-            window.postManager.toggleLike(postId);
-        }
-    }
-};
-
-window.sharePost = function(element) {
-    if (window.postManager) {
-        const postId = window.postManager.getPostId(element);
-        if (postId) {
-            window.postManager.sharePost(postId);
-        }
-    }
-};
-
-window.deletePost = function(element) {
-    if (window.postManager) {
-        const postId = window.postManager.getPostId(element);
-        if (postId) {
-            window.postManager.deletePost(postId);
-        }
-    }
-};
-
-window.editPost = function(element) {
-    if (window.postManager) {
-        const postId = window.postManager.getPostId(element);
-        if (postId) {
-            window.postManager.editPost(postId);
-        }
-    }
-};
-
-// Gallery functions - These will be available from gallery-manager.js
-// No need to redefine them here as they are global functions
-
-// Download all files function is already defined in gallery-manager.js
-// No need to redefine it here - it's already available globally
-
-// Comment functions
-window.toggleCommentSection = function(element) {
-    const postId = element.getAttribute('data-post-id');
-    const commentSection = document.querySelector(`[data-post-id="${postId}"].comment-section`);
-    
-    if (commentSection) {
-        commentSection.classList.toggle('d-none');
-    }
-};
-
-window.postComment = function(element) {
-    const postId = element.getAttribute('data-post-id');
-    const commentInput = document.querySelector(`[data-post-id="${postId}"].comment-input`);
-    const commentText = commentInput.value.trim();
-    
-    if (!commentText) return;
-    
-    // TODO: Implement comment posting
-    commentInput.value = '';
-};
-
-window.loadMoreComments = function(element) {
-    const postId = element.getAttribute('data-post-id');
-    // TODO: Implement load more comments
-};
-
-// Hashtag search
-window.searchByHashtag = function(hashtag) {
-    // TODO: Implement hashtag search
-};
+// Tất cả các chức năng post (like, comment, share) đã được định nghĩa trong post-interactions.js
+// Không cần định nghĩa lại ở đây
 
 // Smart Filter Functions
 function initializeSmartFilters() {

@@ -194,7 +194,7 @@ public class CrawledContentRecommendationService {
         response.setIsCrawledContent(true); // Đánh dấu là crawled content
         
         // Set user info
-        UserResponse userResponse = new UserResponse();
+        UserBasicDto userResponse = new UserBasicDto();
         userResponse.setId(post.getUser().getId());
         userResponse.setUsername(post.getUser().getUsername());
         userResponse.setFirstName(post.getUser().getFirstName());

@@ -71,57 +71,33 @@
             </div>
 
             <!-- Nhóm bạn đã tham gia -->
-            <div class="card mb-4 border-0 ">
+            <div class="card mb-4 border-0">
                 <div class="card-header border-0 fw-bold fs-5 bg-white pt-3">Nhóm bạn đã tham gia</div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>CLB Tin học</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+5</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Hội Sinh viên Dược</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+2</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Hội Kỹ thuật</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+7</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>CLB Nhiếp ảnh</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+3</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center gap-2">
-                        <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                        <span>Đội tranh biện</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Sinh viên quốc tế</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+12</span>
-                    </li>
-                    <li class="list-group-item d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=600&q=80" class="rounded" width="36" height="36">
-                            <span>Nhóm nghiên cứu</span>
-                        </div>
-                        <span class="badge bg-warning text-dark rounded-pill">+1</span>
-                    </li>
-                </ul>
-                <a th:href="@{/groups/explore}" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Khám phá thêm nhóm</a>
+                <div th:if="${userGroups != null and !userGroups.isEmpty()}">
+                    <ul class="list-group list-group-flush">
+                        <li th:each="group : ${userGroups}" class="list-group-item d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <a th:href="@{'/groups/' + ${group.id}}" class="text-decoration-none">
+                                    <img th:src="${group.avatar}" 
+                                         th:alt="${group.firstName}"
+                                         class="rounded" width="36" height="36"
+                                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${group.firstName}') + '&background=007bff&color=ffffff&size=36'">
+                                </a>
+                                <a th:href="@{'/groups/' + ${group.id}}" class="text-decoration-none text-dark">
+                                    <span th:text="${group.firstName}">Tên nhóm</span>
+                                </a>
+                            </div>
+                            <span class="badge bg-warning text-dark rounded-pill" th:text="'+' + ${group.memberCount}" title="Số bài viết mới hôm nay">+0</span>
+                        </li>
+                    </ul>
+                </div>
+                <div th:if="${userGroups == null or userGroups.isEmpty()}" class="text-center text-muted py-4">
+                    <i class="fa fa-users fa-2x mb-2 text-muted"></i>
+                    <p class="mb-0">Chưa tham gia nhóm nào</p>
+                </div>
+                <a th:href="@{/groups/explore}" class="btn btn-link text-primary w-100 mt-2">
+                    <i class="fa-regular fa-compass me-1"></i>Khám phá thêm nhóm
+                </a>
             </div>
         </aside>
         <!-- FEED CENTER -->
@@ -153,12 +129,17 @@
                     <!-- Header -->
                     <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                                 class="rounded-circle" width="40" height="40" alt="avatar"
-                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                            <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none">
+                                <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                     class="rounded-circle" width="40" height="40" alt="avatar"
+                                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'"
+                                     style="cursor: pointer;">
+                            </a>
                             <div>
                                 <div class="fw-semibold d-flex align-items-center gap-2">
-                                    <span th:text="${post.userName}">User name</span>
+                                    <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none text-dark" style="cursor: pointer;">
+                                        <span th:text="${post.userName}">User name</span>
+                                    </a>
                                     <!-- Group indicator -->
                                     <div th:if="${post.groupId != null}" class="group-indicator-container position-relative">
                                         <span class="badge bg-primary text-white group-badge" 

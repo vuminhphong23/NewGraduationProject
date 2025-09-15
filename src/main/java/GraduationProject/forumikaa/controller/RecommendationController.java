@@ -1,6 +1,7 @@
 package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.*;
+import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.RecommendationService;
 import GraduationProject.forumikaa.service.CrawledContentRecommendationService;
 import GraduationProject.forumikaa.util.SecurityUtil;

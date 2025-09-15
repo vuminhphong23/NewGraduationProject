@@ -129,12 +129,17 @@
                                 <!-- Header -->
                                 <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                                     <div class="d-flex align-items-center gap-2">
-                                        <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                                             class="rounded-circle" width="40" height="40" alt="avatar"
-                                             onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                                        <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none">
+                                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                                 class="rounded-circle" width="40" height="40" alt="avatar"
+                                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'"
+                                                 style="cursor: pointer;">
+                                        </a>
                                         <div>
                                             <div class="fw-semibold d-flex align-items-center gap-2">
-                                                <span th:text="${post.userName}">User name</span>
+                                                <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none text-dark" style="cursor: pointer;">
+                                                    <span th:text="${post.userName}">User name</span>
+                                                </a>
                                                 <!-- Crawled content indicator -->
                                                 <span th:if="${post.isCrawledContent}" class="badge bg-info text-white">
                                                     🤖 AI Content
@@ -296,7 +301,6 @@
                                     <div class="d-flex justify-content-around">
                                         <button class="btn btn-light d-flex align-items-center gap-2 like-btn" 
                                                 th:attr="data-post-id=${post.id}"
-                                                th:classappend="${post.isLiked != null and post.isLiked} ? 'active' : ''"
                                                 onclick="toggleLike(this)">
                                             <i class="fa-regular fa-thumbs-up"></i> 
                                             <span class="like-text">Thích</span>
@@ -400,19 +404,19 @@
                                         </h6>
                                         <div class="info-details">
                                             <div class="detail-item">
-                                                <i class="bi bi-people me-2 text-success"></i>
+                                                <i class="bi bi-people me-2 text-orange"></i>
                                                 <strong>Thành viên:</strong> <span th:text="${memberCount}">256</span>&nbsp;người
                                             </div>
                                             <div class="detail-item">
-                                                <i class="bi bi-chat-dots me-2 text-info"></i>
+                                                <i class="bi bi-chat-dots me-2 text-orange"></i>
                                                 <strong>Bài viết:</strong> <span th:text="${postCount}">45</span>&nbsp;bài
                                             </div>
                                             <div class="detail-item">
-                                                <i class="bi bi-file-earmark me-2 text-warning"></i>
+                                                <i class="bi bi-file-earmark me-2 text-orange"></i>
                                                 <strong>Tài liệu:</strong> <span th:text="${documentCount}">12</span>&nbsp;file
                                             </div>
                                             <div class="detail-item">
-                                                <i class="bi bi-clock me-2 text-secondary"></i>
+                                                <i class="bi bi-clock me-2 text-orange"></i>
                                                 <strong>Ngày tạo:</strong> <span th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy')}">15/09/2023</span>
                                             </div>
                                         </div>

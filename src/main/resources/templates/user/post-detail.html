@@ -32,11 +32,18 @@
                     <!-- Header -->
                     <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
-                            <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                                 class="rounded-circle" width="40" height="40" alt="avatar"
-                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                            <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none">
+                                <img th:src="${post.userAvatar != null ? post.userAvatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                     class="rounded-circle" width="40" height="40" alt="avatar"
+                                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'"
+                                     style="cursor: pointer;">
+                            </a>
                             <div>
-                                <div class="fw-semibold" th:text="${post.userName}">User name</div>
+                                <div class="fw-semibold">
+                                    <a th:href="@{'/profile/' + ${post.userName}}" class="text-decoration-none text-dark" style="cursor: pointer;">
+                                        <span th:text="${post.userName}">User name</span>
+                                    </a>
+                                </div>
                                 <div class="text-muted small">
                                     <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
                                     •

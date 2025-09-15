@@ -22,6 +22,7 @@ public interface PostService {
     List<PostResponse> getPostsByTopic(Long topicId, Long userId);
     List<PostResponse> getPostsByGroup(Long groupId, Long userId);
     Long getPostCountByGroup(Long groupId);
+    Long getNewPostCountByGroupToday(Long groupId);
     PostResponse approvePost(Long postId);
 
     PostResponse rejectPost(Long postId, String reason);

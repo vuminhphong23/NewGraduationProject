@@ -2,8 +2,8 @@ package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.LoginRequest;
 import GraduationProject.forumikaa.dto.LoginResponse;
-import GraduationProject.forumikaa.dto.UserDto;
-import GraduationProject.forumikaa.dto.UserInfoResponse;
+import GraduationProject.forumikaa.dto.UserRegistrationDto;
+import GraduationProject.forumikaa.dto.UserProfileDto;
 import GraduationProject.forumikaa.security.jwt.JwtCookieService;
 import GraduationProject.forumikaa.security.jwt.TokenProvider;
 import GraduationProject.forumikaa.service.CustomUserDetailsService;
@@ -95,7 +95,7 @@ public class AuthController {
         // Lấy thông tin user từ database
         User user = userService.findById(userId).orElse(null);
 
-        UserInfoResponse userInfoResponse = new UserInfoResponse(
+        UserProfileDto userInfoResponse = new UserProfileDto(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

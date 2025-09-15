@@ -6,7 +6,7 @@ import GraduationProject.forumikaa.dao.GroupMemberDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.PostDao;
-import GraduationProject.forumikaa.dto.DocumentDTO;
+import GraduationProject.forumikaa.dto.FileUploadResponse;
 import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
@@ -50,18 +50,13 @@ public class GroupServiceImpl implements GroupService {
     
     @Autowired
     private DocumentDao documentDao;
-
     @Autowired
     private SecurityUtil securityUtil;
 
     @Override
     @Transactional
     public UserGroup save(UserGroup group) {
-        System.out.println("DEBUG: GroupService.save() called with group: " + group.getName());
-        System.out.println("DEBUG: Group topics count: " + (group.getTopics() != null ? group.getTopics().size() : 0));
-        UserGroup savedGroup = groupDao.save(group);
-        System.out.println("DEBUG: Group saved with ID: " + savedGroup.getId());
-        return savedGroup;
+        return groupDao.save(group);
     }
 
     @Override
@@ -172,29 +167,25 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DocumentDTO> getGroupDocuments(Long groupId) {
+    public List<FileUploadResponse> getGroupDocuments(Long groupId) {
         Long userId = securityUtil.getCurrentUserId();
 
         List<Post> posts = postDao.findByGroupIdWithUserAccess(groupId, userId);
         
         
         // Extract documents from posts
-        List<DocumentDTO> documents = new ArrayList<>();
+        List<FileUploadResponse> documents = new ArrayList<>();
         for (Post post : posts) {
             if (post.getDocuments() != null && !post.getDocuments().isEmpty()) {
                 for (Document file : post.getDocuments()) {
-                    DocumentDTO doc = new DocumentDTO();
+                    FileUploadResponse doc = new FileUploadResponse();
                     doc.setId(file.getId());
                     doc.setFileName(file.getFileName());
                     doc.setFileSize(file.getFileSize());
                     doc.setFileType(file.getFileExtension());
                     doc.setUploadDate(file.getUploadedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
                     doc.setDownloadCount(file.getDownloadCount() != null ? file.getDownloadCount() : 0);
-                    doc.setName(file.getOriginalName());
                     doc.setOriginalName(file.getOriginalName());
-                    doc.setSize(file.getFileSize() != null ? formatFileSize(file.getFileSize()) : "0 B");
-                    doc.setType(file.getFileExtension());
-                    doc.setUrl(file.getFilePath());
                     doc.setDownloadUrl(file.getFilePath());
                     documents.add(doc);
                 }
@@ -204,6 +195,7 @@ public class GroupServiceImpl implements GroupService {
         System.out.println("Total documents found: " + documents.size());
         return documents;
     }
+    
 
     
     @Override

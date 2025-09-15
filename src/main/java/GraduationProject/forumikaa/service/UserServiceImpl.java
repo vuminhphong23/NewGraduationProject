@@ -4,6 +4,7 @@ import GraduationProject.forumikaa.dao.RoleDao;
 import GraduationProject.forumikaa.dao.UserDao;
 
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.UserProfile;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,28 @@ public class UserServiceImpl implements UserService {
             existingUser.setAddress(user.getAddress());
             existingUser.setBirthDate(user.getBirthDate());
             existingUser.setProfileInfo(user.getProfileInfo());
+            
+            // Cập nhật UserProfile nếu có
+            if (user.getUserProfile() != null) {
+                if (existingUser.getUserProfile() == null) {
+                    UserProfile newProfile = new UserProfile(existingUser);
+                    existingUser.setUserProfile(newProfile);
+                }
+                
+                if (user.getUserProfile().getBio() != null) {
+                    existingUser.getUserProfile().setBio(user.getUserProfile().getBio());
+                }
+                if (user.getUserProfile().getAvatar() != null) {
+                    existingUser.getUserProfile().setAvatar(user.getUserProfile().getAvatar());
+                }
+                if (user.getUserProfile().getCover() != null) {
+                    existingUser.getUserProfile().setCover(user.getUserProfile().getCover());
+                }
+                if (user.getUserProfile().getSocialLinks() != null) {
+                    existingUser.getUserProfile().setSocialLinks(user.getUserProfile().getSocialLinks());
+                }
+            }
+            
             // Chỉ cập nhật mật khẩu nếu có nhập mật khẩu mới
             if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
                 // Chỉ mã hóa mật khẩu nếu nó chưa được mã hóa (không bắt đầu bằng $2a$)

@@ -3,8 +3,8 @@ package GraduationProject.forumikaa.controller;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Topic;
-import GraduationProject.forumikaa.dto.MemberDTO;
-import GraduationProject.forumikaa.dto.DocumentDTO;
+import GraduationProject.forumikaa.dto.UserDisplayDto;
+import GraduationProject.forumikaa.dto.FileUploadResponse;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.PostService;
@@ -92,19 +92,21 @@ public class GroupController {
         group.setMemberCount(memberCount);
         
         // Get group members for display
-        List<MemberDTO> recentMembers = groupService.getGroupMembers(groupId).stream()
+        List<UserDisplayDto> recentMembers = groupService.getGroupMembers(groupId).stream()
                 .limit(6)
-                .map(member -> new MemberDTO(
-                    member.getUser().getId(),
-                    member.getUser().getUsername(),
-                    member.getUser().getFirstName(),
-                    member.getUser().getLastName(),
-                    member.getUser().getUserProfile() != null ? 
+                .map(member -> {
+                    UserDisplayDto dto = new UserDisplayDto();
+                    dto.setId(member.getUser().getId());
+                    dto.setUsername(member.getUser().getUsername());
+                    dto.setFirstName(member.getUser().getFirstName());
+                    dto.setLastName(member.getUser().getLastName());
+                    dto.setAvatar(member.getUser().getUserProfile() != null ? 
                             member.getUser().getUserProfile().getAvatar() : 
-                            "https://i.pravatar.cc/40?u=" + member.getUser().getId(),
-                    member.getRole().toString(),
-                    member.getJoinedAt().toString()
-                ))
+                            "https://i.pravatar.cc/40?u=" + member.getUser().getId());
+                    dto.setRole(member.getRole().toString());
+                    dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10));
+                    return dto;
+                })
                 .collect(Collectors.toList());
         
         // Get current user ID and user info
@@ -118,7 +120,7 @@ public class GroupController {
         Long postCount = postService.getPostCountByGroup(groupId);
         
         // Get group documents from database
-        List<DocumentDTO> groupDocuments = groupService.getGroupDocuments(groupId);
+        List<FileUploadResponse> groupDocuments = groupService.getGroupDocuments(groupId);
         
         // Count all files from posts (images + documents)
         Long documentCount = posts.stream()
@@ -126,7 +128,7 @@ public class GroupController {
                 .sum();
         
         // Get pinned documents (top 3 most downloaded)
-        List<DocumentDTO> pinnedDocuments = groupDocuments.stream()
+        List<FileUploadResponse> pinnedDocuments = groupDocuments.stream()
                 .sorted((a, b) -> Integer.compare(b.getDownloadCount(), a.getDownloadCount()))
                 .limit(3)
                 .collect(Collectors.toList());

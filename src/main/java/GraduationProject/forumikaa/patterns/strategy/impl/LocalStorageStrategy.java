@@ -273,6 +273,11 @@ public class LocalStorageStrategy implements FileStorageStrategy {
         response.setPreviewUrl(urlPrefix + "/" + document.getFilePath());
         response.setFileType(getFileType(document.getMimeType()));
         response.setCloudStorage(false); // Mark as local storage
+        
+        // Set downloadCount và uploadDate từ database
+        response.setDownloadCount(document.getDownloadCount() != null ? document.getDownloadCount() : 0);
+        response.setUploadDate(document.getUploadedAt().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        
         return response;
     }
 
