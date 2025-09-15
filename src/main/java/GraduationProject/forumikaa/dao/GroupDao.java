@@ -14,26 +14,6 @@ import java.util.List;
 @Repository
 public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificationExecutor<UserGroup> {
 
-    // Find groups by creator
-    @Query("""
-        SELECT DISTINCT g FROM UserGroup g
-        LEFT JOIN FETCH g.createdBy u
-        LEFT JOIN FETCH u.userProfile
-        WHERE g.createdBy.id = :userId
-        ORDER BY g.createdAt DESC
-    """)
-    List<UserGroup> findByCreatedById(@Param("userId") Long userId);
-
-    // Find groups by name containing
-    @Query("""
-        SELECT DISTINCT g FROM UserGroup g
-        LEFT JOIN FETCH g.createdBy u
-        LEFT JOIN FETCH u.userProfile
-        WHERE LOWER(g.name) LIKE LOWER(CONCAT('%', :name, '%'))
-        ORDER BY g.createdAt DESC
-    """)
-    List<UserGroup> findByNameContainingIgnoreCase(@Param("name") String name);
-
     // Admin pagination with filters
     @Query("""
         SELECT DISTINCT g FROM UserGroup g
@@ -49,46 +29,6 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
                                  @Param("status") String status, 
                                  @Param("privacy") String privacy, 
                                  Pageable pageable);
-
-    // Find groups by creator username
-    @Query("""
-        SELECT DISTINCT g FROM UserGroup g
-        LEFT JOIN FETCH g.createdBy u
-        LEFT JOIN FETCH u.userProfile
-        WHERE u.username = :username
-        ORDER BY g.createdAt DESC
-    """)
-    List<UserGroup> findByCreatedByUsername(@Param("username") String username);
-
-    // Count groups by creator
-    @Query("SELECT COUNT(g) FROM UserGroup g WHERE g.createdBy.id = :userId")
-    Long countByCreatedById(@Param("userId") Long userId);
-
-    // Find groups created in date range
-    @Query("""
-        SELECT DISTINCT g FROM UserGroup g
-        LEFT JOIN FETCH g.createdBy u
-        LEFT JOIN FETCH u.userProfile
-        WHERE g.createdAt BETWEEN :startDate AND :endDate
-        ORDER BY g.createdAt DESC
-    """)
-    List<UserGroup> findByCreatedAtBetween(@Param("startDate") java.time.LocalDateTime startDate, 
-                                         @Param("endDate") java.time.LocalDateTime endDate);
-
-    // Find groups with member count
-    @Query("""
-        SELECT g, COUNT(gm.id) as memberCount FROM UserGroup g
-        LEFT JOIN g.createdBy u
-        LEFT JOIN u.userProfile up
-        LEFT JOIN GroupMember gm ON gm.group.id = g.id
-        WHERE g.id = :groupId
-        GROUP BY g.id
-    """)
-    Object[] findGroupWithMemberCount(@Param("groupId") Long groupId);
-
-    default boolean canEdit(UserGroup group, Long userId) {
-        return group != null && group.getCreatedBy().getId().equals(userId);
-    }
     
     // Explore groups methods
     @Query("""
@@ -120,4 +60,6 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
         @Param("keyword") String keyword, 
         @Param("category") String category, 
         Pageable pageable);
+
+    Long countById(Long groupId);
 }

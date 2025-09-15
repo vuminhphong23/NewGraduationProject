@@ -17,7 +17,7 @@ import java.util.List;
 @Repository
 public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 
-    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user u LEFT JOIN FETCH u.userProfile WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user u LEFT JOIN FETCH u.userProfile LEFT JOIN FETCH p.group g WHERE p.user.id = :userId ORDER BY p.createdAt DESC")
     List<Post> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     @Query("""
@@ -25,6 +25,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
         WHERE p.status = 'APPROVED' AND (
@@ -41,6 +42,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
         WHERE p.id = :postId AND (
@@ -56,6 +58,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics t
+        LEFT JOIN FETCH p.group g
         LEFT JOIN Friendship f1 ON (f1.user.id = :userId AND f1.friend.id = p.user.id AND f1.status = 'ACCEPTED')
         LEFT JOIN Friendship f2 ON (f2.user.id = p.user.id AND f2.friend.id = :userId AND f2.status = 'ACCEPTED')
         WHERE t.id = :topicId AND p.status = 'APPROVED' AND (
@@ -98,6 +101,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE (:keyword IS NULL OR :keyword = '' OR 
                LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
                LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
@@ -115,6 +119,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE p.status = :status
         ORDER BY p.createdAt DESC
     """)
@@ -126,6 +131,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE p.privacy = :privacy
         ORDER BY p.createdAt DESC
     """)
@@ -137,6 +143,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE p.status = :status AND p.privacy = :privacy
         ORDER BY p.createdAt DESC
     """)
@@ -150,6 +157,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE (:keyword IS NULL OR :keyword = '' OR 
                LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
                LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
@@ -167,6 +175,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE (:keyword IS NULL OR :keyword = '' OR 
                LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
                LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
@@ -184,6 +193,7 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
         LEFT JOIN FETCH p.user u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN FETCH p.topics
+        LEFT JOIN FETCH p.group g
         WHERE (:keyword IS NULL OR :keyword = '' OR 
                LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
                LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR

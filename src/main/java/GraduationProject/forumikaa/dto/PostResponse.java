@@ -29,4 +29,11 @@ public class PostResponse {
     private Double recommendationScore;
     private Boolean isCrawledContent = false;
     private UserResponse user;
+    
+    // Thêm fields cho group information
+    private Long groupId;
+    private String groupName;
+    private String groupAvatar;
+    private String groupDescription;
+    private Long groupMemberCount;
 } 

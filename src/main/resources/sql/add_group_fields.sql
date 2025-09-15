@@ -10,3 +10,5 @@ ADD COLUMN lecturer VARCHAR(255);
 --     faculty = 'Kinh tế & Quản trị Kinh doanh',
 --     lecturer = 'Dr. Nguyễn Văn A'
 -- WHERE id = 1;
+
+

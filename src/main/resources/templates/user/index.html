@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/post-modal.css">
     <link rel="stylesheet" href="/css/post-interactions.css">
     <link rel="stylesheet" href="/css/file-upload.css">
+    <link rel="stylesheet" href="/css/group-indicator.css">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -29,6 +30,7 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        
     </style>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
@@ -157,6 +159,45 @@
                             <div>
                                 <div class="fw-semibold d-flex align-items-center gap-2">
                                     <span th:text="${post.userName}">User name</span>
+                                    <!-- Group indicator -->
+                                    <div th:if="${post.groupId != null}" class="group-indicator-container position-relative">
+                                        <span class="badge bg-primary text-white group-badge" 
+                                              th:attr="data-group-id=${post.groupId}, data-group-name=${post.groupName}, data-group-avatar=${post.groupAvatar}, data-group-description=${post.groupDescription}"
+                                              style="cursor: pointer; position: relative;">
+                                            <i class="fa fa-users me-1"></i>
+                                            <span th:text="${post.groupName}">Group Name</span>
+                                        </span>
+                                        <!-- Group popup tooltip -->
+                                        <div class="group-popup">
+                                            <div class="group-popup-content">
+                                                <div class="group-popup-header">
+                                                    <img th:src="${post.groupAvatar}" 
+                                                         th:alt="${post.groupName}" 
+                                                         class="group-popup-avatar"
+                                                         onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${post.groupName}') + '&background=007bff&color=ffffff&size=64'">
+                                                    <div class="group-popup-info">
+                                                        <h6 class="group-popup-title" th:text="${post.groupName}">Group Name</h6>
+                                                        <div class="group-popup-meta">
+                                                            <span class="group-popup-type">
+                                                                <i class="fa fa-globe-asia me-1"></i>Nhóm Công khai
+                                                            </span>
+                                                            <span class="group-popup-members" th:if="${post.groupMemberCount != null}">
+                                                                <i class="fa fa-users me-1"></i><span th:text="${post.groupMemberCount}">0</span><span style="padding-left: 2px">thành viên</span>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="group-popup-description" th:text="${post.groupDescription}">
+                                                    Mô tả nhóm...
+                                                </div>
+                                                <div class="group-popup-actions">
+                                                    <div class="group-popup-note">
+                                                        <i class="fa fa-mouse-pointer me-1"></i>Click để vào nhóm
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <!-- Crawled content indicator -->
                                     <span th:if="${post.isCrawledContent}" class="badge bg-info text-white">
                                         🤖 AI Content
@@ -387,7 +428,7 @@
             <!-- Hashtags thịnh hành -->
             <div class="card mb-4 border-0">
                 <div class="card-header border-0 fw-bold fs-5 bg-white d-flex align-items-center justify-content-between pt-3">
-                    <span>Hashtags thịnh hành</span>
+                    <span>Chủ đề thịnh hành</span>
                     <i class="fa-solid fa-hashtag text-warning"></i>
                 </div>
                 <ul class="list-group list-group-flush">
@@ -658,6 +699,7 @@
 <script src="/js/notifications.js"></script>
 <script src="/js/download-utils.js"></script>
 <script src="/js/gallery-manager.js"></script>
+<script src="/js/group-indicator.js"></script>
 
 <!-- Initialize global data storage -->
 <script>

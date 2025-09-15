@@ -61,6 +61,7 @@ public class PostServiceImpl implements PostService {
     @Autowired private FileUploadService fileUploadService;
     @Autowired private FileStorageStrategyFactory strategyFactory;
     @Autowired private GroupDao groupDao;
+    @Autowired private GroupService groupService;
 
     @Override
     public PostResponse createPost(CreatePostRequest request, Long userId) {
@@ -642,6 +643,34 @@ public class PostServiceImpl implements PostService {
             // Log error but don't fail the entire post
             System.err.println("Error loading documents for post " + post.getId() + ": " + e.getMessage());
             dto.setDocuments(new ArrayList<>());
+        }
+
+        // Set group information if post belongs to a group
+        if (post.getGroup() != null) {
+            dto.setGroupId(post.getGroup().getId());
+            dto.setGroupName(post.getGroup().getName());
+            dto.setGroupDescription(post.getGroup().getDescription());
+            
+            // Set group avatar with fallback
+            String groupAvatar = post.getGroup().getAvatar();
+            if (groupAvatar != null && !groupAvatar.trim().isEmpty()) {
+                dto.setGroupAvatar(groupAvatar);
+            } else {
+                // Default group avatar or generate one based on group name
+                dto.setGroupAvatar("https://ui-avatars.com/api/?name=" + 
+                    java.net.URLEncoder.encode(post.getGroup().getName(), java.nio.charset.StandardCharsets.UTF_8) + 
+                    "&background=007bff&color=ffffff&size=64");
+            }
+            
+            // Get member count from database
+            try {
+                Long memberCount = groupService.getMemberCount(post.getGroup().getId());
+                dto.setGroupMemberCount(memberCount != null ? memberCount : 0L);
+            } catch (Exception e) {
+                // Log error but don't fail the entire post
+                System.err.println("Error loading member count for group " + post.getGroup().getId() + ": " + e.getMessage());
+                dto.setGroupMemberCount(0L);
+            }
         }
 
         return dto;

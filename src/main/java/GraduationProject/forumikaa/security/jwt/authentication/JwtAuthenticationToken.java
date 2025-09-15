@@ -1,6 +1,5 @@
 package GraduationProject.forumikaa.security.jwt.authentication;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -12,12 +11,12 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
     private Object credentials;
 
     public JwtAuthenticationToken(Object credentials) {
-        super(null);
+        super((Collection<? extends GrantedAuthority>) null);
         this.credentials = credentials;
     }
 
     public JwtAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
+        super(authorities != null ? authorities : java.util.Collections.emptyList());
         this.principal = principal;
         this.credentials = credentials;
         setAuthenticated(true);

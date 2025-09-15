@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang cá nhân</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/post-interactions.css">
+    <link rel="stylesheet" href="/css/group-indicator.css">
+    <link rel="stylesheet" href="/css/user/profile-navigation.css">
+    <link rel="stylesheet" href="/css/file-upload.css">
     <style>
         .profile-cover { height: 240px; object-fit: cover}
         .profile-avatar { width: 112px; height: 112px; border: 6px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.10); position: absolute; left: 40px; bottom:-56px; background: #fff; }
         .profile-info { padding-top: 64px; padding-bottom: 0.5rem; }
         .profile-edit-btn { border-radius: 10px; font-size: 1rem; font-weight: 600; }
-        .profile-tabs .nav-link { font-weight: 600; }
-        .profile-tabs .nav-link.active { 
-            color: #2176ff !important; 
-            border-bottom: 2.5px solid #2176ff !important; 
-            font-weight: 600;
-        }
         .sidebar-card { border-radius: 10px; box-shadow: 0 2px 12px rgba(35,50,107,0.08); }
         .stats-card {
             border-radius: 16px;
@@ -47,6 +44,8 @@
         textarea:focus {
             box-shadow: none;
         }
+
+
     </style>
 </head>
 <body>
@@ -68,35 +67,51 @@
                 <h3 class="mb-1 fw-bold" style="font-size:1.5rem;" th:text="${user.username}">Tên người dùng</h3>
                 <div class="text-muted small fw-semibold" th:text="${user.profileInfo ?: 'Chưa có thông tin'}">Hello</div>
             </div>
-            
+
             <!-- Nút chỉnh sửa cho profile của chính mình -->
             <a class="btn bg-warning text-white fw-semibold px-4 py-2"
                th:if="${isOwnProfile}"
                th:href="@{/profile/edit/{username}(username = ${user.username})}">Chỉnh sửa</a>
-            
+
             <!-- Nút kết bạn cho profile người khác -->
             <div th:unless="${isOwnProfile}" class="friendship-actions" th:attr="data-user-id=${user.id}">
                 <!-- Các nút sẽ được render bởi JavaScript -->
             </div>
         </div>
-        <ul class="nav nav-tabs profile-tabs px-5 bg-white border-bottom" id="profileTabs" role="tablist">
-            <li class="nav-item"><a class="nav-link" id="posts-tab" th:href="@{'/profile/' + ${user.username} + '/posts'}" role="tab">Bài viết</a></li>
-            <li class="nav-item"><a class="nav-link" id="friends-tab" th:href="@{'/profile/' + ${user.username} + '/friends'}" role="tab">Bạn bè</a></li>
-            <li class="nav-item"><a class="nav-link" id="groups-tab" th:href="@{'/profile/' + ${user.username} + '/groups'}" role="tab">Nhóm</a></li>
-            <li class="nav-item"><a class="nav-link" id="photos-tab" th:href="@{'/profile/' + ${user.username} + '/photos'}" role="tab">Ảnh</a></li>
-        </ul>
+    </div>
+    
+    <!-- Navigation Tabs - Moved outside the profile card -->
+    <div class="profile-nav mt-3">
+        <nav class="nav nav-pills nav-fill">
+            <a class="nav-link" th:classappend="${activeTab == 'posts'} ? 'active' : ''"
+               th:href="@{'/profile/' + ${user.username} + '?tab=posts'}">
+                <i class="bi bi-chat-dots"></i> Bài viết
+            </a>
+            <a class="nav-link" th:classappend="${activeTab == 'friends'} ? 'active' : ''"
+               th:href="@{'/profile/' + ${user.username} + '?tab=friends'}">
+                <i class="bi bi-people"></i> Bạn bè
+            </a>
+            <a class="nav-link" th:classappend="${activeTab == 'groups'} ? 'active' : ''"
+               th:href="@{'/profile/' + ${user.username} + '?tab=groups'}">
+                <i class="bi bi-collection"></i> Nhóm
+            </a>
+            <a class="nav-link" th:classappend="${activeTab == 'documents'} ? 'active' : ''"
+               th:href="@{'/profile/' + ${user.username} + '?tab=documents'}">
+                <i class="bi bi-file-earmark"></i> Tài liệu
+            </a>
+        </nav>
     </div>
     <div class="row g-4">
         <!-- Sidebar trái: About, Contact, Groups, Stats -->
         <aside class="col-lg-4 d-none d-lg-block">
-            
+
             <div class="card bg-white mb-4 py-2">
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Giới thiệu</div>
                 <div class="text-muted small mb-2 px-4" th:text="${user.profileInfo ?: 'Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.'}">Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.</div>
                 <ul class="list-unstyled mb-0 px-4">
                     <li class="mb-1 " th:if="${user.address}">
                         <i class="fa-solid fa-location-dot me-2 text-primary"></i>
-                         <span th:text="${user.address}">Hà Nội, Việt Nam</span>
+                        <span th:text="${user.address}">Hà Nội, Việt Nam</span>
                     </li>
                     <li class="mb-1">
                         <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
@@ -160,8 +175,8 @@
                 </ul>
                 <a href="#" class="btn btn-link text-primary w-100 mt-2"><i class="fa-regular fa-compass me-1"></i>Xem tất cả</a>
             </div>
-            
-            
+
+
             <div class="sidebar-card bg-white p-4 mb-4" style="border-radius: 16px; box-shadow: 0 2px 16px rgba(35,50,107,0.10);">
                 <div class="fw-bold mb-3" style="color: #22336b; font-size: 1.1rem;">Thống kê</div>
                 <div class="d-flex justify-content-between text-center">
@@ -182,25 +197,6 @@
         </aside>
         <!-- Main content -->
         <main class="col-lg-8">
-            <!-- Form đăng bài (chỉ hiển thị nếu là profile của chính mình) -->
-            <div class="card mb-4 border-0 pb-2" th:if="${isOwnProfile}">
-                <div class="card-body d-flex align-items-center gap-3 pb-1">
-                    <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                         alt="avatar" class="rounded-circle" width="44" height="44"
-                         onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
-                    <input type="text" class="form-control rounded-pill bg-white py-2 px-3"
-                           th:placeholder="${'Bạn đang nghĩ gì, ' + user.username + '?'}"
-                           placeholder="Bạn đang nghĩ gì?"
-                           data-bs-toggle="modal" data-bs-target="#postModal"
-                           readonly style="cursor:pointer;">
-                </div>
-                <hr style="color: #c3d2e0; margin: 1rem">
-                <div class="card-footer bg-white border-0 d-flex justify-content-between px-3 pt-0">
-                    <button class="btn btn-light text-success d-flex align-items-center gap-2"><i class="fa-regular fa-image"></i>Ảnh</button>
-                    <button class="btn btn-light text-danger d-flex align-items-center gap-2"><i class="fa-solid fa-video"></i>Video</button>
-                    <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-calendar"></i>Sự kiện</button>
-                </div>
-            </div>
 
             <!-- Thông báo không có bài viết nếu danh sách rỗng -->
             <div th:if="${posts == null or #lists.isEmpty(posts)}" class="text-center text-muted my-5">
@@ -212,34 +208,103 @@
             <!-- Khu vực chuyển nội dung theo tab -->
             <div id="tabContentArea">
                 <!-- Tab Posts -->
-                <div id="posts" th:class="${activeTab == 'posts' ? 'tab-pane fade show active' : 'tab-pane fade'}">
+                <div id="posts" th:class="${activeTab == 'posts'} ? 'tab-content active' : 'tab-content'">
+                    <!-- Form đăng bài (chỉ hiển thị nếu là profile của chính mình) -->
+                    <div class="card mb-4 border-0 pb-2" th:if="${isOwnProfile}">
+                        <div class="card-body d-flex align-items-center gap-3 pb-1">
+                            <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                 alt="avatar" class="rounded-circle" width="44" height="44"
+                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                            <input type="text" class="form-control rounded-pill bg-white py-2 px-3"
+                                   th:placeholder="${'Bạn muốn chia sẻ điều gì, ' + user.username + '?'}"
+                                   placeholder="Bạn muốn chia sẻ điều gì?"
+                                   data-bs-toggle="modal" data-bs-target="#postModal"
+                                   readonly style="cursor:pointer;">
+                        </div>
+                        <hr style="color: #c3d2e0; margin: 1rem">
+                        <div class="card-footer bg-white border-0 d-flex justify-content-between px-3 pt-0">
+                            <button class="btn btn-light text-success d-flex align-items-center gap-2"><i class="fa-regular fa-image"></i>Ảnh</button>
+                            <button class="btn btn-light text-danger d-flex align-items-center gap-2"><i class="fa-solid fa-video"></i>Video</button>
+                            <button class="btn btn-light text-warning d-flex align-items-center gap-2"><i class="fa-regular fa-file"></i>Tài liệu</button>
+                        </div>
+                    </div>
+
                     <!-- Danh sách bài viết từ database -->
                     <div id="feed">
-                    <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
-                        <!-- Header -->
-                        <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                                     class="rounded-circle" width="40" height="40" alt="avatar"
-                                     onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
-                                <div>
-                                    <div class="fw-semibold" th:text="${post.userName}">User name</div>
-                                    <div class="text-muted small">
-                                        <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
-                                        •
-                                        <span th:switch="${post.privacy.name()}">
+                        <div th:each="post : ${posts}" class="card mb-4 border-0 shadow-sm" th:attr="data-post-id=${post.id}">
+                            <!-- Header -->
+                            <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                         class="rounded-circle" width="40" height="40" alt="avatar"
+                                         onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                                    <div>
+                                        <div class="fw-semibold d-flex align-items-center gap-2">
+                                            <span th:text="${post.userName}">User name</span>
+                                            <!-- Group indicator -->
+                                            <div th:if="${post.groupId != null}" class="group-indicator-container position-relative">
+                                            <span class="badge bg-primary text-white group-badge"
+                                                  th:attr="data-group-id=${post.groupId}, data-group-name=${post.groupName}, data-group-avatar=${post.groupAvatar}, data-group-description=${post.groupDescription}"
+                                                  style="cursor: pointer; position: relative;">
+                                                <i class="fa fa-users me-1"></i>
+                                                <span th:text="${post.groupName}">Group Name</span>
+                                            </span>
+                                                <!-- Group popup tooltip -->
+                                                <div class="group-popup">
+                                                    <div class="group-popup-content">
+                                                        <div class="group-popup-header">
+                                                            <img th:src="${post.groupAvatar}"
+                                                                 th:alt="${post.groupName}"
+                                                                 class="group-popup-avatar"
+                                                                 onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${post.groupName}') + '&background=007bff&color=ffffff&size=64'">
+                                                            <div class="group-popup-info">
+                                                                <h6 class="group-popup-title" th:text="${post.groupName}">Group Name</h6>
+                                                                <div class="group-popup-meta">
+                                                                <span class="group-popup-type">
+                                                                    <i class="fa fa-globe-asia me-1"></i>Nhóm Công khai
+                                                                </span>
+                                                                    <span class="group-popup-members" th:if="${post.groupMemberCount != null}">
+                                                                    <i class="fa fa-users me-1"></i><span th:text="${post.groupMemberCount}">0 </span><span style="padding-left: 2px">thành viên</span>
+                                                                </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="group-popup-description" th:text="${post.groupDescription}">
+                                                            Mô tả nhóm...
+                                                        </div>
+                                                        <div class="group-popup-actions">
+                                                            <div class="group-popup-note">
+                                                                <i class="fa fa-mouse-pointer me-1"></i>Click để vào nhóm
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- Crawled content indicator -->
+                                        <span th:if="${post.isCrawledContent}" class="badge bg-info text-white">
+                                        🤖 AI Content
+                                    </span>
+                                        <!-- Recommendation score -->
+                                        <span th:if="${post.recommendationScore != null}" class="badge bg-success text-white">
+                                        Score: <span th:text="${#numbers.formatDecimal(post.recommendationScore, 1, 1)}">0.0</span>
+                                    </span>
+                                        <div class="text-muted small">
+                                            <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2025 10:00</span>
+                                            •
+                                            <span th:switch="${post.privacy.name()}">
                                         <i th:case="'PUBLIC'" class="fa fa-globe-asia" title="Công khai"></i>
                                         <i th:case="'FRIENDS'" class="fa fa-users" title="Bạn bè"></i>
                                         <i th:case="'PRIVATE'" class="fa fa-lock" title="Riêng tư"></i>
                                         <span th:case="*">?</span>
                                     </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <!-- Display topics as hashtags -->
-                                <div class="post-hashtags" th:if="${post.topicNames != null and !post.topicNames.isEmpty()}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <!-- Display topics as hashtags -->
+                                    <div class="post-hashtags" th:if="${post.topicNames != null and !post.topicNames.isEmpty()}">
                                     <span th:each="topicName : ${post.topicNames}"
                                           class="hashtag-link me-2"
                                           th:text="'#' + ${topicName}"
@@ -248,141 +313,300 @@
                                           onclick="searchByHashtag(this.dataset.hashtag)">
                                         #topic
                                     </span>
-                                </div>
-                                <div class="dropdown" th:if="${isOwnProfile}">
-                                    <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                        <i class="fa fa-ellipsis-h"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
-                                        <li><a class="dropdown-item text-danger delete-post-btn" href="#" th:attr="data-post-id=${post.id}">Xoá</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Body -->
-                        <div class="card-body pt-2">
-                            <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
-                                th:text="${post.title}">Tiêu đề bài viết</h5>
-
-                            <p class="card-text" style="white-space: pre-wrap;"
-                               th:text="${post.content}">Nội dung bài viết...</p>
-                        </div>
-
-                        <!-- Footer (like/comment/share placeholders) -->
-                        <div class="card-footer bg-white border-0 pt-0">
-                            <div class="d-flex justify-content-between text-muted small mb-2">
-                                <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
-                                <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
-                            </div>
-                            <hr class="my-2" style="color: #c3d2e0;">
-                            <div class="d-flex justify-content-around">
-                                <button class="btn btn-light d-flex align-items-center gap-2 like-btn"
-                                        th:attr="data-post-id=${post.id}"
-                                        onclick="toggleLike(this)">
-                                    <i class="fa-regular fa-thumbs-up"></i>
-                                    <span class="like-text">Thích</span>
-                                </button>
-                                <button class="btn btn-light d-flex align-items-center gap-2 comment-btn"
-                                        th:attr="data-post-id=${post.id}"
-                                        onclick="toggleCommentSection(this)">
-                                    <i class="fa-regular fa-comment"></i>
-                                    <span>Bình luận</span>
-                                </button>
-                                <button class="btn btn-light d-flex align-items-center gap-2 share-btn"
-                                        th:attr="data-post-id=${post.id}"
-                                        onclick="sharePost(this)">
-                                    <i class="fa-regular fa-share-from-square"></i>
-                                    <span>Chia sẻ</span>
-                                </button>
-                            </div>
-
-                            <!-- Comment Section (Hidden by default) -->
-                            <div class="comment-section mt-3 d-none" th:attr="data-post-id=${post.id}">
-                                <hr class="my-2" style="color: #c3d2e0;">
-
-                                <!-- Comment Input -->
-                                <div class="d-flex gap-2 mb-3">
-                                    <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
-                                         alt="avatar" class="rounded-circle" width="32" height="32"
-                                         onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
-                                    <div class="flex-grow-1">
-                                        <input type="text" class="form-control comment-input"
-                                               placeholder="Viết bình luận..."
-                                               th:attr="data-post-id=${post.id}">
                                     </div>
-                                    <button class="btn btn-primary btn-sm post-comment-btn"
-                                            th:attr="data-post-id=${post.id}"
-                                            onclick="postComment(this)" title="Đăng">
-                                        <i class="fa fa-paper-plane"></i>
+                                    <div class="dropdown" th:if="${isOwnProfile}">
+                                        <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                            <i class="fa fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item edit-post-btn" href="#" th:attr="data-post-id=${post.id}">Chỉnh sửa</a></li>
+                                            <li><a class="dropdown-item text-danger delete-post-btn" href="#" th:attr="data-post-id=${post.id}">Xoá</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="card-body pt-2">
+                                <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
+                                    th:text="${post.title}">Tiêu đề bài viết</h5>
+
+                                <p class="card-text" style="white-space: pre-wrap;"
+                                   th:text="${post.content}">Nội dung bài viết...</p>
+
+                        <!-- Documents Display -->
+                        <div class="post-documents mt-3" th:if="${post.documents != null and !post.documents.isEmpty()}">
+                            <!-- Image Gallery -->
+                            <div th:if="${#lists.size(post.documents) > 0}" class="image-gallery-container">
+                                <!-- Gallery Header -->
+                                <div class="gallery-header d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0 fw-semibold">
+                                        <i class="fa fa-images text-primary me-2"></i>
+                                        <span th:text="${#lists.size(post.documents)} + ' tệp đính kèm'">Tệp đính kèm</span>
+                                    </h6>
+                                    <button class="btn btn-sm btn-outline-primary" th:if="${#lists.size(post.documents) > 8}" 
+                                            th:attr="onclick='showAllFiles(\'' + ${post.id} + '\')'">
+                                        <i class="fa fa-th me-1"></i>Xem tất cả
                                     </button>
                                 </div>
-
-                                <!-- Comments List -->
-                                <div class="comments-list" th:attr="data-post-id=${post.id}">
-                                    <!-- Comments will be loaded here -->
+                                
+                                <!-- Gallery Grid -->
+                                <div class="gallery-grid" th:attr="data-post-id=${post.id}">
+                                    <!-- First 8 items preview -->
+                                    <div th:each="doc, iterStat : ${post.documents}" 
+                                         th:if="${iterStat.index < 8}"
+                                         class="gallery-item" 
+                                         th:classappend="${iterStat.index == 7 and #lists.size(post.documents) > 8 ? 'more-items-overlay' : ''}">
+                                        
+                                        <!-- Image Preview -->
+                                        <div th:if="${doc.fileType == 'image'}" class="gallery-image" 
+                                             th:attr="onclick='openLightbox(\'' + ${post.id} + '\', ' + ${iterStat.index} + ')'">
+                                            <img th:src="${doc.previewUrl}" th:alt="${doc.originalName}" 
+                                                 class="img-fluid rounded lazy-load" 
+                                                 style="width: 100%; height: 120px; object-fit: cover; cursor: pointer;"
+                                                 loading="lazy">
+                                            <div class="gallery-overlay">
+                                                <i class="fa fa-search-plus"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Video Preview -->
+                                        <div th:if="${doc.fileType == 'video'}" class="gallery-video">
+                                            <video th:src="${doc.previewUrl}" th:alt="${doc.originalName}" 
+                                                   class="img-fluid rounded" style="width: 100%; height: 120px; object-fit: cover;" 
+                                                   controls preload="metadata">
+                                                <source th:src="${doc.previewUrl}" th:type="${doc.mimeType}">
+                                            </video>
+                                            <div class="video-overlay">
+                                                <i class="fa fa-play-circle"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Document Preview -->
+                                        <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
+                                             th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\', ' + ${doc.id} + ')'">
+                                            <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
+                                                 style="width: 100%; height: 120px; cursor: pointer;">
+                                                <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
+                                                <small class="text-muted text-center px-2" th:text="${doc.originalName}">filename</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- More items indicator -->
+                                        <div th:if="${iterStat.index == 7 and #lists.size(post.documents) > 8}" 
+                                             class="more-items-indicator">
+                                            <span th:text="'+' + (${#lists.size(post.documents)} - 8)">+5</span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <!-- Load More Comments -->
-                                <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
-                                    <button class="btn btn-link btn-sm load-more-comments"
-                                            th:attr="data-post-id=${post.id}"
-                                            onclick="loadMoreComments(this)">
-                                        Xem thêm bình luận
-                                    </button>
+                                
+                                <!-- File Info Bar -->
+                                <div class="file-info-bar mt-2 p-2 bg-light rounded">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex gap-3">
+                                            <small class="text-muted">
+                                                <i class="fa fa-images me-1"></i>
+                                                <span th:text="${#lists.size(post.documents)} + ' tệp'">0 tệp</span>
+                                            </small>
+                                            <small class="text-muted">
+                                                <i class="fa fa-download me-1"></i>
+                                                <span th:text="${#numbers.formatDecimal(#aggregates.sum(post.documents.![fileSize]) / 1024.0, 1, 1)} + ' KB'">0 KB</span>
+                                            </small>
+                                        </div>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    th:attr="onclick='downloadAllFiles(\'' + ${post.id} + '\')'"
+                                                    title="Tải tất cả">
+                                                <i class="fa fa-download"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-secondary" 
+                                                    th:attr="onclick='showAllFiles(\'' + ${post.id} + '\')'"
+                                                    title="Xem tất cả">
+                                                <i class="fa fa-list"></i>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Footer (like/comment/share placeholders) -->
+                            <div class="card-footer bg-white border-0 pt-0">
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
+                                    <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                                </div>
+                                <hr class="my-2" style="color: #c3d2e0;">
+                                <div class="d-flex justify-content-around">
+                                    <button class="btn btn-light d-flex align-items-center gap-2 like-btn"
+                                            th:attr="data-post-id=${post.id}"
+                                            onclick="toggleLike(this)">
+                                        <i class="fa-regular fa-thumbs-up"></i>
+                                        <span class="like-text">Thích</span>
+                                    </button>
+                                    <button class="btn btn-light d-flex align-items-center gap-2 comment-btn"
+                                            th:attr="data-post-id=${post.id}"
+                                            onclick="toggleCommentSection(this)">
+                                        <i class="fa-regular fa-comment"></i>
+                                        <span>Bình luận</span>
+                                    </button>
+                                    <button class="btn btn-light d-flex align-items-center gap-2 share-btn"
+                                            th:attr="data-post-id=${post.id}"
+                                            onclick="sharePost(this)">
+                                        <i class="fa-regular fa-share-from-square"></i>
+                                        <span>Chia sẻ</span>
+                                    </button>
+                                </div>
+
+                                <!-- Comment Section (Hidden by default) -->
+                                <div class="comment-section mt-3 d-none" th:attr="data-post-id=${post.id}">
+                                    <hr class="my-2" style="color: #c3d2e0;">
+
+                                    <!-- Comment Input -->
+                                    <div class="d-flex gap-2 mb-3">
+                                        <img th:src="${user.userProfile?.avatar != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                             alt="avatar" class="rounded-circle" width="32" height="32"
+                                             onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                                        <div class="flex-grow-1">
+                                            <input type="text" class="form-control comment-input"
+                                                   placeholder="Viết bình luận..."
+                                                   th:attr="data-post-id=${post.id}">
+                                        </div>
+                                        <button class="btn btn-primary btn-sm post-comment-btn"
+                                                th:attr="data-post-id=${post.id}"
+                                                onclick="postComment(this)" title="Đăng">
+                                            <i class="fa fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Comments List -->
+                                    <div class="comments-list" th:attr="data-post-id=${post.id}">
+                                        <!-- Comments will be loaded here -->
+                                    </div>
+
+                                    <!-- Load More Comments -->
+                                    <div class="text-center mt-2 d-none" th:attr="data-post-id=${post.id}">
+                                        <button class="btn btn-link btn-sm load-more-comments"
+                                                th:attr="data-post-id=${post.id}"
+                                                onclick="loadMoreComments(this)">
+                                            Xem thêm bình luận
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Tab Friends -->
-                <div id="friends" th:class="${activeTab == 'friends' ? 'tab-pane fade show active' : 'tab-pane fade'}">
+                <div id="friends" th:class="${activeTab == 'friends'} ? 'tab-content active' : 'tab-content'">
                     <!-- Nội dung tab Bạn bè -->
                     <div class="card mb-4 border-0">
-                    <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
-                        <span>Bạn bè</span>
-                        <span class="small text-muted" id="friendsCount"></span>
-                    </div>
-                    <div class="card-body">
-                        <!-- Tìm kiếm bạn bè chuyển vào bên trong khối Bạn bè -->
-                        <div class="mb-3">
-                            <div class="input-group">
-                                <input id="searchFriend" type="text" class="form-control" placeholder="Nhập tên/email...">
-                                <button id="searchFriendBtn" class="btn"><i class="fa fa-search"></i></button>
+                        <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
+                            <span>Bạn bè</span>
+                            <span class="small text-muted" th:text="${friendsCount}">0</span>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${friends != null and !friends.isEmpty()}" class="row g-3">
+                                <div th:each="friend : ${friends}" class="col-md-6 col-lg-4">
+                                    <div class="d-flex align-items-center p-3 border rounded">
+                                        <img th:src="${friend.avatar}"
+                                             th:alt="${friend.username}"
+                                             class="rounded-circle me-3" width="40" height="40"
+                                             onerror="this.src='https://i.pravatar.cc/40?u=' + Math.random()">
+                                        <div>
+                                            <h6 class="mb-0" th:text="${friend.username}">Tên bạn</h6>
+                                            <small class="text-muted" th:text="'@' + ${friend.username}">@username</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${friends == null or friends.isEmpty()}" class="text-center text-muted py-5">
+                                <i class="fa fa-users fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">Chưa có bạn bè</h5>
+                                <p class="text-muted">Kết bạn để xem danh sách bạn bè ở đây</p>
+                                <a href="/users" class="btn btn-primary mt-3">
+                                    <i class="fa fa-user-plus me-2"></i>Tìm bạn bè
+                                </a>
                             </div>
                         </div>
-                        <div id="friendsList" class="row g-3"></div>
-                        <div id="friendsEmpty" class="text-center text-muted py-4 d-none">Chưa có bạn bè</div>
                     </div>
                 </div>
 
                 <!-- Tab Groups -->
-                <div id="groups" th:class="${activeTab == 'groups' ? 'tab-pane fade show active' : 'tab-pane fade'}">
+                <div id="groups" th:class="${activeTab == 'groups'} ? 'tab-content active' : 'tab-content'">
                     <div class="card mb-4 border-0">
-                        <div class="card-header border-0 fw-bold fs-5 bg-white">
+                        <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
                             <span>Nhóm</span>
+                            <span class="small text-muted" th:text="${groupsCount}">0</span>
                         </div>
-                        <div class="card-body text-center text-muted py-5">
-                            <i class="fa fa-users fa-3x mb-3"></i>
-                            <h5>Tính năng nhóm đang phát triển</h5>
-                            <p>Chức năng này sẽ được cập nhật trong tương lai</p>
+                        <div class="card-body">
+                            <div th:if="${userGroups != null and !userGroups.isEmpty()}" class="row g-3">
+                                <div th:each="group : ${userGroups}" class="col-md-6 col-lg-4">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body text-center">
+                                            <img th:src="${group.avatar}"
+                                                 th:alt="${group.firstName}"
+                                                 class="rounded-circle mb-3" width="60" height="60"
+                                                 onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('${group.firstName}') + '&background=007bff&color=ffffff&size=60'">
+                                            <h6 class="card-title" th:text="${group.firstName}">Tên nhóm</h6>
+                                            <p class="card-text text-muted small" th:text="'Vai trò: ' + ${group.role}">Vai trò</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${userGroups == null or userGroups.isEmpty()}" class="text-center text-muted py-5">
+                                <i class="fa fa-users fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">Chưa tham gia nhóm nào</h5>
+                                <p class="text-muted">Tham gia các nhóm để xem danh sách ở đây</p>
+                                <a href="/groups" class="btn btn-primary mt-3">
+                                    <i class="fa fa-plus me-2"></i>Khám phá nhóm
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab Photos -->
-                <div id="photos" th:class="${activeTab == 'photos' ? 'tab-pane fade show active' : 'tab-pane fade'}">
+                <!-- Tab Documents -->
+                <div id="documents" th:class="${activeTab == 'documents'} ? 'tab-content active' : 'tab-content'">
                     <div class="card mb-4 border-0">
-                        <div class="card-header border-0 fw-bold fs-5 bg-white">
-                            <span>Ảnh</span>
+                        <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
+                            <span>Tài liệu</span>
+                            <span class="small text-muted" th:text="${documentsCount}">0</span>
                         </div>
-                        <div class="card-body text-center text-muted py-5">
-                            <i class="fa fa-images fa-3x mb-3"></i>
-                            <h5>Tính năng ảnh đang phát triển</h5>
-                            <p>Chức năng này sẽ được cập nhật trong tương lai</p>
+                        <div class="card-body">
+                            <div th:if="${userDocuments != null and !userDocuments.isEmpty()}" class="row g-3">
+                                <div th:each="document : ${userDocuments}" class="col-md-6 col-lg-4">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fa fa-file-pdf text-danger me-2" th:if="${document.fileName != null and document.fileName.endsWith('.pdf')}"></i>
+                                                <i class="fa fa-file-word text-primary me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.doc') or document.fileName.endsWith('.docx'))}"></i>
+                                                <i class="fa fa-file-excel text-success me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.xls') or document.fileName.endsWith('.xlsx'))}"></i>
+                                                <i class="fa fa-file-powerpoint text-warning me-2" th:if="${document.fileName != null and (document.fileName.endsWith('.ppt') or document.fileName.endsWith('.pptx'))}"></i>
+                                                <i class="fa fa-file me-2" th:if="${document.fileName == null or (!document.fileName.endsWith('.pdf') and !document.fileName.endsWith('.doc') and !document.fileName.endsWith('.docx') and !document.fileName.endsWith('.xls') and !document.fileName.endsWith('.xlsx') and !document.fileName.endsWith('.ppt') and !document.fileName.endsWith('.pptx'))}"></i>
+                                                <h6 class="card-title mb-0" th:text="${document.originalName}">Tên tài liệu</h6>
+                                            </div>
+                                            <p class="card-text text-muted small mb-2" th:text="${document.fileSize} + ' bytes'">Kích thước</p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted" th:text="${document.mimeType}">Loại file</small>
+                                                <a th:href="${document.downloadUrl}" class="btn btn-sm btn-outline-primary" download>
+                                                    <i class="fa fa-download me-1"></i>Tải xuống
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${userDocuments == null or userDocuments.isEmpty()}" class="text-center text-muted py-5">
+                                <i class="fa fa-file fa-3x mb-3 text-muted"></i>
+                                <h5 class="text-muted">Chưa có tài liệu nào</h5>
+                                <p class="text-muted">Chia sẻ tài liệu để xem chúng ở đây</p>
+                                <a href="#" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#postModal">
+                                    <i class="fa fa-upload me-2"></i>Chia sẻ tài liệu
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -448,7 +672,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <textarea class="form-control border-0 fs-6" id="postContent" rows="6" placeholder="Bạn đang nghĩ gì?" style="resize:none; background:transparent;" maxlength="2000"></textarea>
+                        <textarea class="form-control border-0 fs-6" id="postContent" rows="6" placeholder="Bạn muốn chia sẻ điều gì?" style="resize:none; background:transparent;" maxlength="2000"></textarea>
                         <div class="text-muted small text-end mt-1">
                             <span id="contentCount">0</span>/2000
                         </div>
@@ -459,7 +683,7 @@
                         <label for="topic" class="form-label fw-semibold">
                             <i class="bi bi-hash text-primary"></i> Chủ đề (Hashtag)
                         </label>
-                        <input type="text" class="form-control" id="topic" 
+                        <input type="text" class="form-control" id="topic"
                                placeholder="Nhập hashtag và ấn Enter, hoặc click để xem gợi ý (tối đa 5 hashtag)">
                         <div class="hashtag-container mt-2">
                             <div class="hashtag-list" id="hashtag-list"></div>
@@ -483,8 +707,8 @@
                             <span>Gắn thẻ</span>
                         </button>
                         <button type="button" class="btn btn-light d-flex align-items-center gap-2">
-                            <i class="fa-regular fa-calendar text-warning"></i>
-                            <span>Sự kiện</span>
+                            <i class="fa-regular fa-file text-warning"></i>
+                            <span>Tài liệu</span>
                         </button>
                     </div>
 
@@ -521,7 +745,7 @@
             Bài viết đã được đăng thành công!
         </div>
     </div>
-    
+
     <div id="errorToast" class="toast" role="alert">
         <div class="toast-header bg-danger text-white">
             <i class="fa fa-exclamation-circle me-2"></i>
@@ -532,7 +756,7 @@
             Có lỗi xảy ra khi đăng bài viết.
         </div>
     </div>
-    
+
     <!-- Toast cho thông báo kết bạn -->
     <div id="friendshipToast" class="toast" role="alert">
         <div class="toast-header bg-info text-white">
@@ -547,8 +771,8 @@
 </div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/topics.js"></script>
@@ -558,7 +782,85 @@
 <script src="/js/websocket-manager.js"></script>
 <script src="/js/notifications.js"></script>
 <script src="/js/profile-friendship.js"></script>
+<script src="/js/group-indicator.js"></script>
+<script src="/js/user/profile-navigation.js"></script>
+<script src="/js/download-utils.js"></script>
+<script src="/js/gallery-manager.js"></script>
 
+<!-- Initialize global data storage -->
+<script>
+    // Initialize global data storage for post files
+    window.postFilesData = window.postFilesData || {};
+    
+    // Store post files data from server
+    document.addEventListener('DOMContentLoaded', function() {
+        // This will be populated when files are loaded from server
+        console.log('Gallery manager initialized');
+    });
+</script>
+
+<!-- Lightbox Modal for Images -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-0">
+                <div class="d-flex align-items-center">
+                    <h5 class="modal-title text-white" id="lightboxTitle">Hình ảnh</h5>
+                    <span class="badge bg-primary ms-2" id="lightboxCounter">1 / 1</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="forceCloseModal()"></button>
+            </div>
+            <div class="modal-body d-flex align-items-center justify-content-center p-0" onclick="closeLightboxOnClick(event)">
+                <div class="lightbox-container position-relative">
+                    <img id="lightboxImage" class="img-fluid" style="max-height: 80vh; max-width: 100%;">
+                    <div class="lightbox-controls">
+                        <button class="btn btn-light btn-lg rounded-circle" id="prevBtn" onclick="changeLightboxImage(-1)">
+                            <i class="fa fa-chevron-left"></i>
+                        </button>
+                        <button class="btn btn-light btn-lg rounded-circle" id="nextBtn" onclick="changeLightboxImage(1)">
+                            <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light" id="downloadBtn" onclick="downloadCurrentImage()">
+                        <i class="fa fa-download me-1"></i>Tải về
+                    </button>
+                    <button class="btn btn-outline-light" id="fullscreenBtn" onclick="toggleFullscreen()">
+                        <i class="fa fa-expand me-1"></i>Toàn màn hình
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Files Modal -->
+<div class="modal fade" id="allFilesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa fa-files-o me-2"></i>Tất cả tệp đính kèm
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="allFilesGrid" class="row g-3">
+                    <!-- Files will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="downloadAllBtn" onclick="downloadAllFilesFromModal()">
+                    <i class="fa fa-download me-1"></i>Tải tất cả
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
