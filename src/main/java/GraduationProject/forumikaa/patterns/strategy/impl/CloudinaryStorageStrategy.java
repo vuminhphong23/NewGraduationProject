@@ -352,7 +352,16 @@ public class CloudinaryStorageStrategy implements FileStorageStrategy {
         if (mimeType == null) return "unknown";
         if (mimeType.startsWith("image/")) return "image";
         if (mimeType.startsWith("video/")) return "video";
-        if (mimeType.startsWith("application/") || mimeType.startsWith("text/")) return "document";
+        if (mimeType.startsWith("text/")) return "text";
+        
+        // Specific application types
+        if (mimeType.equals("application/pdf")) return "pdf";
+        if (mimeType.equals("application/msword") || mimeType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document")) return "doc";
+        if (mimeType.equals("application/vnd.ms-excel") || mimeType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) return "xls";
+        if (mimeType.equals("application/vnd.ms-powerpoint") || mimeType.equals("application/vnd.openxmlformats-officedocument.presentationml.presentation")) return "ppt";
+        
+        // Generic document for other application types
+        if (mimeType.startsWith("application/")) return "document";
         return "other";
     }
 }

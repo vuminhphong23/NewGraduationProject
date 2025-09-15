@@ -383,6 +383,28 @@ hr.my-2 {
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
+.document-preview {
+    background: #ffffff !important;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.document-preview:hover {
+    background: #e9ecef !important;
+    border-color: #007bff;
+}
+
+
+.document-preview small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #495057;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
 .more-items-overlay {
     position: relative;
 }

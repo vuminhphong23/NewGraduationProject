@@ -35,10 +35,6 @@
             color: #6c757d;
             letter-spacing: 0.5px;
         }
-        .modal-content {
-            font-family: 'Montserrat', sans-serif;
-            border-radius: 18px;
-        }
         .modal-header .btn-close {
             background: none;
         }
@@ -98,13 +94,13 @@
             </a>
             <a class="nav-link" th:classappend="${activeTab == 'documents'} ? 'active' : ''"
                th:href="@{'/profile/' + ${user.username} + '?tab=documents'}">
-                <i class="bi bi-file-earmark"></i> Tài liệu
+                <i class="fa fa-file"></i> Tài liệu
             </a>
         </nav>
     </div>
     <div class="row g-4">
         <!-- Sidebar trái: About, Contact, Groups, Stats -->
-        <aside class="col-lg-4 d-none d-lg-block">
+        <aside class="col-lg-4 d-none d-lg-block pe-4">
 
             <div class="card bg-white mb-4 py-2">
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Giới thiệu</div>
@@ -163,7 +159,7 @@
             </div>
         </aside>
         <!-- Main content -->
-        <main class="col-lg-8">
+        <main class="col-lg-8 ps-4">
 
             <!-- Thông báo không có bài viết nếu danh sách rỗng -->
             <div th:if="${posts == null or #lists.isEmpty(posts)}" class="text-center text-muted my-5">
@@ -350,11 +346,20 @@
                                         </div>
                                         
                                         <!-- Document Preview -->
-                                        <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
+                                        <div th:if="${doc.fileType == 'document' or doc.fileType == 'doc' or doc.fileType == 'docx' or doc.fileType == 'pdf' or doc.fileType == 'xls' or doc.fileType == 'xlsx' or doc.fileType == 'ppt' or doc.fileType == 'pptx' or doc.fileType == 'txt'}" class="gallery-document"
                                              th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\', ' + ${doc.id} + ')'">
-                                            <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
+                                            <div class="document-preview rounded d-flex flex-column align-items-center justify-content-center" 
                                                  style="width: 100%; height: 120px; cursor: pointer;">
-                                                <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
+                                                <!-- File type specific icons -->
+                                                <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x mb-2" style="color: #dc3545;"></i>
+                                                <i th:if="${doc.fileType == 'doc' or doc.fileType == 'docx' or doc.fileType == 'word'}" class="fa fa-file-word fa-2x mb-2" style="color: #007bff;"></i>
+                                                <i th:if="${doc.fileType == 'xls' or doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x mb-2" style="color: #28a745;"></i>
+                                                <i th:if="${doc.fileType == 'ppt' or doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x mb-2" style="color: #ffc107;"></i>
+                                                <i th:if="${doc.fileType == 'image'}" class="fa fa-file-image fa-2x mb-2" style="color: #17a2b8;"></i>
+                                                <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x mb-2" style="color: #6f42c1;"></i>
+                                                <i th:if="${doc.fileType == 'text' or doc.fileType == 'txt'}" class="fa fa-file-text fa-2x mb-2" style="color: #17a2b8;"></i>
+                                                <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
+                                                <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
                                                 <small class="text-muted text-center px-2" th:text="${doc.originalName}">filename</small>
                                             </div>
                                         </div>
@@ -542,7 +547,7 @@
                             <h4 class="mb-0">Tài liệu cá nhân</h4>
                             <div class="document-count">
                                 <span class="badge bg-warning">
-                                    <i class="bi bi-file-earmark me-1"></i><span th:text="${documentsCount}">0</span> tài liệu
+                                    <i class="fa fa-file me-1"></i><span th:text="${documentsCount}">0</span> tài liệu
                                 </span>
                             </div>
                         </div>
@@ -593,25 +598,25 @@
                             <!-- Quick Filter Tags -->
                             <div class="quick-filters mt-3">
                                 <button class="btn btn-sm btn-outline-danger me-2 quick-doc-filter" data-filter="pdf">
-                                    <i class="bi bi-file-pdf me-1"></i>PDF
+                                    <i class="fa fa-file-pdf me-1"></i>PDF
                                 </button>
                                 <button class="btn btn-sm btn-outline-primary me-2 quick-doc-filter" data-filter="doc">
-                                    <i class="bi bi-file-word me-1"></i>Word
+                                    <i class="fa fa-file-word me-1"></i>Word
                                 </button>
                                 <button class="btn btn-sm btn-outline-success me-2 quick-doc-filter" data-filter="xls">
-                                    <i class="bi bi-file-excel me-1"></i>Excel
+                                    <i class="fa fa-file-excel me-1"></i>Excel
                                 </button>
                                 <button class="btn btn-sm btn-outline-warning me-2 quick-doc-filter" data-filter="image">
-                                    <i class="bi bi-image me-1"></i>Hình ảnh
+                                    <i class="fa fa-file-image me-1"></i>Hình ảnh
                                 </button>
                                 <button class="btn btn-sm btn-outline-secondary me-2 quick-doc-filter" data-filter="video">
-                                    <i class="bi bi-play-circle me-1"></i>Video
+                                    <i class="fa fa-file-video me-1"></i>Video
                                 </button>
                                 <button class="btn btn-sm btn-outline-dark me-2 quick-doc-filter" data-filter="text">
-                                    <i class="bi bi-file-text me-1"></i>Text
+                                    <i class="fa fa-file-text me-1"></i>Text
                                 </button>
                                 <button class="btn btn-sm btn-outline-info me-2 quick-doc-filter" data-filter="recent">
-                                    <i class="bi bi-clock me-1"></i>Gần đây
+                                    <i class="fa fa-clock me-1"></i>Gần đây
                                 </button>
                             </div>
                         </div>
@@ -620,7 +625,7 @@
                         <div class="documents-grid" id="documentsList">
                             <!-- No documents message -->
                             <div th:if="${userDocuments == null or userDocuments.isEmpty()}" class="no-documents text-center py-5">
-                                <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
+                                <i class="fa fa-file text-muted" style="font-size: 3rem;"></i>
                                 <p class="text-muted mt-3">Chưa có tài liệu nào</p>
                                 <p class="text-muted small">Chia sẻ tài liệu để xem chúng ở đây</p>
                                 <a href="#" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#postModal">
@@ -636,15 +641,15 @@
                                           data-date=${doc.uploadDate ?: '01/01/2024'},
                                           data-downloads=${doc.downloadCount ?: 0}">
                                 <div class="document-icon">
-                                    <i th:if="${doc.fileType == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
-                                    <i th:if="${doc.fileType == 'doc'}" class="bi bi-file-earmark-word text-primary"></i>
-                                    <i th:if="${doc.fileType == 'xls'}" class="bi bi-file-earmark-excel text-success"></i>
-                                    <i th:if="${doc.fileType == 'ppt'}" class="bi bi-file-earmark-ppt text-warning"></i>
-                                    <i th:if="${doc.fileType == 'image'}" class="bi bi-file-earmark-image text-info"></i>
-                                    <i th:if="${doc.fileType == 'video'}" class="bi bi-file-earmark-play text-secondary"></i>
-                                    <i th:if="${doc.fileType == 'text'}" class="bi bi-file-earmark-text text-dark"></i>
-                                    <i th:if="${doc.fileType == 'document'}" class="bi bi-file-earmark text-primary"></i>
-                                    <i th:if="${doc.fileType == 'other'}" class="bi bi-file-earmark text-muted"></i>
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
+                                    <i th:if="${doc.fileType == 'image'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
                                 </div>
                                 <div class="document-info">
                                     <div class="document-name" th:text="${doc.originalName}">Document Name</div>

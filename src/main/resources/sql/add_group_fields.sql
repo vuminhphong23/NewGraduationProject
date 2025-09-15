@@ -12,3 +12,5 @@ ADD COLUMN lecturer VARCHAR(255);
 -- WHERE id = 1;
 
 
+
+

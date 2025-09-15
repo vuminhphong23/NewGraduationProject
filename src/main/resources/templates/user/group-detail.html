@@ -17,6 +17,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
     <link rel="stylesheet" href="/css/user/group-detail.css">
+    <link rel="stylesheet" href="/css/user/group-documents.css">
     <link rel="stylesheet" href="/css/post-modal.css">
     <link rel="stylesheet" href="/css/post-interactions.css">
     <link rel="stylesheet" href="/css/file-upload.css">
@@ -242,12 +243,18 @@
                                                     </div>
                                                     
                                                     <!-- Document Preview -->
-                                                    <div th:if="${doc.fileType == 'document'}" class="gallery-document" 
+                                                    <div th:if="${doc.fileType == 'document' or doc.fileType == 'doc' or doc.fileType == 'docx' or doc.fileType == 'pdf' or doc.fileType == 'xls' or doc.fileType == 'xlsx' or doc.fileType == 'ppt' or doc.fileType == 'pptx' or doc.fileType == 'txt'}" class="gallery-document"
                                                          th:attr="onclick='downloadFile(\'' + ${doc.downloadUrl} + '\', ' + (${doc.id} ?: 0) + ')'"
                                                          style="cursor: pointer;">
-                                                        <div class="document-preview bg-light rounded d-flex flex-column align-items-center justify-content-center" 
+                                                        <div class="document-preview rounded d-flex flex-column align-items-center justify-content-center" 
                                                              style="width: 100%; height: 120px; cursor: pointer;">
-                                                            <i class="fa fa-file-alt fa-2x text-muted mb-2"></i>
+                                                            <!-- File type specific icons -->
+                                                            <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x mb-2" style="color: #dc3545;"></i>
+                                                            <i th:if="${doc.fileType == 'doc' or doc.fileType == 'docx' or doc.fileType == 'word'}" class="fa fa-file-word fa-2x mb-2" style="color: #007bff;"></i>
+                                                            <i th:if="${doc.fileType == 'xls' or doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x mb-2" style="color: #28a745;"></i>
+                                                            <i th:if="${doc.fileType == 'ppt' or doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x mb-2" style="color: #ffc107;"></i>
+                                                            <i th:if="${doc.fileType == 'txt'}" class="fa fa-file-text fa-2x mb-2" style="color: #17a2b8;"></i>
+                                                            <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x mb-2" style="color: #6c757d;"></i>
                                                             <small class="text-muted text-center px-2" th:text="${doc.originalName}">filename</small>
                                                         </div>
                                                     </div>
@@ -594,10 +601,10 @@
             <div id="documents" class="tab-content" th:classappend="${currentTab == 'documents'} ? 'active' : ''">
                 <!-- Member Content -->
                 <div th:if="${isMember}">
-                    <div class="documents-card">
+                    <div class="group-documents-card">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0">Tài liệu nhóm</h4>
-                            <div class="document-count">
+                            <div class="group-document-count">
                                 <span class="badge bg-warning">
                                     <i class="bi bi-file-earmark me-1"></i><span th:text="${documentCount}">12</span> tài liệu
                                 </span>
@@ -605,21 +612,21 @@
                         </div>
                         
                         <!-- Smart Filter Section -->
-                        <div class="filter-section mb-4">
+                        <div class="group-filter-section mb-4">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="search-box">
+                                    <div class="group-search-box">
                                         <div class="input-group">
                                             <span class="input-group-text">
                                                 <i class="bi bi-search"></i>
                                             </span>
-                                            <input type="text" class="form-control" id="documentSearch" 
+                                            <input type="text" class="form-control" id="groupDocumentSearch" 
                                                    placeholder="Tìm kiếm tài liệu...">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <select class="form-select" id="typeFilter">
+                                    <select class="form-select" id="groupDocumentTypeFilter">
                                         <option value="">Tất cả loại</option>
                                         <option value="pdf">PDF</option>
                                         <option value="doc">Word</option>
@@ -627,10 +634,13 @@
                                         <option value="ppt">PowerPoint</option>
                                         <option value="image">Hình ảnh</option>
                                         <option value="video">Video</option>
+                                        <option value="text">Text</option>
+                                        <option value="document">Tài liệu khác</option>
+                                        <option value="other">Khác</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <select class="form-select" id="documentSortFilter">
+                                    <select class="form-select" id="groupDocumentSortFilter">
                                         <option value="name">Sắp xếp theo tên</option>
                                         <option value="date">Ngày tạo</option>
                                         <option value="size">Kích thước</option>
@@ -638,35 +648,40 @@
                                     </select>
                                 </div>
                                 <div class="col-md-2">
-                                    <button class="btn btn-outline-secondary w-100" id="clearDocFilters">
+                                    <button class="btn btn-outline-secondary w-100" id="clearGroupDocFilters">
                                         <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
                                     </button>
                                 </div>
                             </div>
                             
                             <!-- Quick Filter Tags -->
-                            <div class="quick-filters mt-3">
-                                <span class="text-muted me-2">Lọc nhanh:</span>
-                                <button class="btn btn-sm btn-outline-danger me-2 quick-doc-filter" data-filter="pdf">
+                            <div class="group-quick-filters mt-3">
+                                <button class="btn btn-sm btn-outline-danger me-2 group-quick-doc-filter" data-filter="pdf">
                                     <i class="bi bi-file-pdf me-1"></i>PDF
                                 </button>
-                                <button class="btn btn-sm btn-outline-primary me-2 quick-doc-filter" data-filter="doc">
+                                <button class="btn btn-sm btn-outline-primary me-2 group-quick-doc-filter" data-filter="doc">
                                     <i class="bi bi-file-word me-1"></i>Word
                                 </button>
-                                <button class="btn btn-sm btn-outline-success me-2 quick-doc-filter" data-filter="xls">
+                                <button class="btn btn-sm btn-outline-success me-2 group-quick-doc-filter" data-filter="xls">
                                     <i class="bi bi-file-excel me-1"></i>Excel
                                 </button>
-                                <button class="btn btn-sm btn-outline-warning me-2 quick-doc-filter" data-filter="image">
+                                <button class="btn btn-sm btn-outline-warning me-2 group-quick-doc-filter" data-filter="image">
                                     <i class="bi bi-image me-1"></i>Hình ảnh
                                 </button>
-                                <button class="btn btn-sm btn-outline-info me-2 quick-doc-filter" data-filter="recent">
+                                <button class="btn btn-sm btn-outline-secondary me-2 group-quick-doc-filter" data-filter="video">
+                                    <i class="bi bi-play-circle me-1"></i>Video
+                                </button>
+                                <button class="btn btn-sm btn-outline-dark me-2 group-quick-doc-filter" data-filter="text">
+                                    <i class="bi bi-file-text me-1"></i>Text
+                                </button>
+                                <button class="btn btn-sm btn-outline-info me-2 group-quick-doc-filter" data-filter="recent">
                                     <i class="bi bi-clock me-1"></i>Gần đây
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Documents Grid -->
-                        <div class="documents-grid" id="documentsList">
+                        <div class="group-documents-grid" id="groupDocumentsList">
                             <!-- No documents message -->
                             <div th:if="${#lists.isEmpty(groupDocuments)}" class="no-documents text-center py-5">
                                 <i class="bi bi-file-earmark text-muted" style="font-size: 3rem;"></i>
@@ -674,32 +689,36 @@
                             </div>
                             
                             <!-- Document items -->
-                            <div th:each="doc : ${groupDocuments}" class="document-item" 
+                            <div th:each="doc : ${groupDocuments}" class="group-document-item" 
                                  th:attr="data-name=${doc.originalName},
-                                          data-type=${doc.type ?: 'unknown'},
+                                          data-type=${doc.fileType ?: 'unknown'},
                                           data-size=${doc.fileSize ?: 0},
-                                          data-date=${doc.uploadDate ?: '01/01/2024'}">
-                                <div class="document-icon">
-                                    <i th:if="${doc.type == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
-                                    <i th:if="${doc.type == 'doc' || doc.type == 'docx'}" class="bi bi-file-earmark-word text-primary"></i>
-                                    <i th:if="${doc.type == 'xls' || doc.type == 'xlsx'}" class="bi bi-file-earmark-excel text-success"></i>
-                                    <i th:if="${doc.type == 'ppt' || doc.type == 'pptx'}" class="bi bi-file-earmark-ppt text-warning"></i>
-                                    <i th:if="${doc.type == 'jpg' || doc.type == 'jpeg' || doc.type == 'png' || doc.type == 'gif'}" class="bi bi-file-earmark-image text-info"></i>
-                                    <i th:if="${doc.type != 'pdf' && doc.type != 'doc' && doc.type != 'docx' && doc.type != 'xls' && doc.type != 'xlsx' && doc.type != 'ppt' && doc.type != 'pptx' && doc.type != 'jpg' && doc.type != 'jpeg' && doc.type != 'png' && doc.type != 'gif'}" class="bi bi-file-earmark text-secondary"></i>
+                                          data-date=${doc.uploadDate ?: '01/01/2024'},
+                                          data-downloads=${doc.downloadCount ?: 0}">
+                                <div class="group-document-icon">
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
+                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
                                 </div>
-                                <div class="document-info">
-                                    <div class="document-name" th:text="${doc.originalName}">Document Name</div>
-                                    <div class="document-meta">
-                                        <span class="document-size" th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">1.2 MB</span>
-                                        <span class="document-date" th:text="${doc.uploadDate}">15/01/2024</span>
+                                <div class="group-document-info">
+                                    <div class="group-document-name" th:text="${doc.originalName}">Document Name</div>
+                                    <div class="group-document-meta">
+                                        <span class="group-document-size" th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">1.2 MB</span>
+                                        <span class="group-document-date" th:text="${doc.uploadDate}">15/01/2024</span>
                                     </div>
-                                    <div class="document-stats">
+                                    <div class="group-document-stats">
                                         <span class="downloads">
                                             <i class="bi bi-download me-1"></i><span th:text="${doc.downloadCount}">25</span> lượt tải
                                         </span>
                                     </div>
                                 </div>
-                                <div class="document-actions">
+                                <div class="group-document-actions">
                                     <button class="btn btn-sm btn-outline-primary" 
                                             th:data-download-url="${doc.downloadUrl}" 
                                             th:data-document-id="${doc.id}" 
@@ -764,17 +783,20 @@
                         </div>
                         <div class="pinned-documents">
                             <div th:each="doc : ${pinnedDocuments}" class="document-item">
-                                <div class="document-icon">
-                                    <i th:if="${doc.type == 'pdf'}" class="bi bi-file-earmark-pdf text-danger"></i>
-                                    <i th:if="${doc.type == 'doc' || doc.type == 'docx'}" class="bi bi-file-earmark-word text-primary"></i>
-                                    <i th:if="${doc.type == 'xls' || doc.type == 'xlsx'}" class="bi bi-file-earmark-excel text-success"></i>
-                                    <i th:if="${doc.type == 'ppt' || doc.type == 'pptx'}" class="bi bi-file-earmark-ppt text-warning"></i>
-                                    <i th:if="${doc.type == 'jpg' || doc.type == 'jpeg' || doc.type == 'png' || doc.type == 'gif'}" class="bi bi-file-earmark-image text-info"></i>
-                                    <i th:if="${doc.type != 'pdf' && doc.type != 'doc' && doc.type != 'docx' && doc.type != 'xls' && doc.type != 'xlsx' && doc.type != 'ppt' && doc.type != 'pptx' && doc.type != 'jpg' && doc.type != 'jpeg' && doc.type != 'png' && doc.type != 'gif'}" class="bi bi-file-earmark text-secondary"></i>
+                                <div class="group-document-icon">
+                                    <i th:if="${doc.fileType == 'pdf'}" class="fa fa-file-pdf fa-2x" style="color: #dc3545;"></i>
+                                    <i th:if="${doc.fileType == 'doc' || doc.fileType == 'docx' || doc.fileType == 'word'}" class="fa fa-file-word fa-2x" style="color: #007bff;"></i>
+                                    <i th:if="${doc.fileType == 'xls' || doc.fileType == 'xlsx'}" class="fa fa-file-excel fa-2x" style="color: #28a745;"></i>
+                                    <i th:if="${doc.fileType == 'ppt' || doc.fileType == 'pptx'}" class="fa fa-file-powerpoint fa-2x" style="color: #ffc107;"></i>
+                                    <i th:if="${doc.fileType == 'image' || doc.fileType == 'jpg' || doc.fileType == 'jpeg' || doc.fileType == 'png' || doc.fileType == 'gif'}" class="fa fa-file-image fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'video'}" class="fa fa-file-video fa-2x" style="color: #6f42c1;"></i>
+                                    <i th:if="${doc.fileType == 'text' || doc.fileType == 'txt'}" class="fa fa-file-text fa-2x" style="color: #17a2b8;"></i>
+                                    <i th:if="${doc.fileType == 'document'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
+                                    <i th:if="${doc.fileType == 'other'}" class="fa fa-file fa-2x" style="color: #6c757d;"></i>
                                 </div>
-                                <div class="document-info">
-                                    <div class="document-name" th:text="${doc.name}">Document Name</div>
-                                    <div class="document-size" th:text="${doc.size}">2.4 MB</div>
+                                <div class="group-document-info">
+                                    <div class="group-document-name" th:text="${doc.originalName}">Document Name</div>
+                                    <div class="group-document-size" th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1)} + ' KB'">2.4 MB</div>
                                 </div>
                                 <button class="btn btn-sm btn-outline-primary" 
                                         th:data-download-url="${doc.downloadUrl}"
@@ -1041,6 +1063,8 @@
 <script src="/js/user/group-detail.js"></script>
 
 <!-- Initialize global data storage -->
+<script src="/js/user/group-documents.js"></script>
+
 <script>
     // Initialize global data storage for post files
     window.postFilesData = window.postFilesData || {};

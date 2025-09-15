@@ -12,3 +12,5 @@ CREATE INDEX IF NOT EXISTS idx_group_topics_group_id ON group_topics(group_id);
 CREATE INDEX IF NOT EXISTS idx_group_topics_topic_id ON group_topics(topic_id);
 
 
+
+
