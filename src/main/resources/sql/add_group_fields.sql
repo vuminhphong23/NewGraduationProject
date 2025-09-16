@@ -14,3 +14,4 @@ ADD COLUMN lecturer VARCHAR(255);
 
 
 
+

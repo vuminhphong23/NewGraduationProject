@@ -200,6 +200,258 @@ body {
     }
 }
 
+/* HEADER RESPONSIVE */
+@media (max-width: 1200px) {
+    .header {
+        padding: 0 1.5rem;
+    }
+    
+    .logo {
+        font-size: 1.8rem;
+        margin-right: 1.5rem;
+    }
+    
+    .logo i {
+        font-size: 1.9rem;
+    }
+    
+    .logo span {
+        font-size: 1.5rem;
+    }
+    
+    .search-bar {
+        margin-left: 1rem;
+        margin-right: 3rem;
+    }
+    
+    .search-bar input {
+        font-size: 1rem;
+        padding: 0.6rem 1rem 0.6rem 2.2rem;
+    }
+    
+    .search-bar .fa-search {
+        left: 0.9rem;
+        font-size: 1rem;
+    }
+    
+    .header-menu {
+        gap: 1rem;
+    }
+    
+    .header-menu a {
+        font-size: 1rem;
+        padding: 0.25rem 0.6rem;
+    }
+    
+    .header-menu i {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .header {
+        padding: 0 1rem;
+    }
+    
+    .logo {
+        font-size: 1.6rem;
+        margin-right: 1rem;
+    }
+    
+    .logo i {
+        font-size: 1.7rem;
+    }
+    
+    .logo span {
+        font-size: 1.3rem;
+    }
+    
+    .search-bar {
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+    
+    .search-bar input {
+        font-size: 0.95rem;
+        padding: 0.5rem 0.8rem 0.5rem 2rem;
+    }
+    
+    .search-bar .fa-search {
+        left: 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .header-menu {
+        gap: 0.5rem;
+    }
+    
+    .header-menu a {
+        font-size: 0.95rem;
+        padding: 0.2rem 0.5rem;
+    }
+    
+    .header-menu i {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 0 0.75rem;
+        height: 60px;
+    }
+
+    .logo span {
+        display: none;
+    }
+    
+    .logo {
+        font-size: 1.4rem;
+        margin-right: 0.75rem;
+    }
+    
+    .logo i {
+        font-size: 1.5rem;
+    }
+    
+    .logo span {
+        font-size: 1.1rem;
+    }
+    
+    .search-bar {
+        margin-left: -2rem;
+        margin-right: 2rem;
+    }
+    
+    .search-bar input {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.6rem 0.4rem 1.8rem;
+        border-radius: 25px;
+    }
+    
+    .search-bar .fa-search {
+        left: 0.7rem;
+        font-size: 0.85rem;
+    }
+    
+    .header-menu {
+        gap: 0.75rem;
+    }
+    
+    .header-menu a {
+        font-size: 0.9rem;
+        padding: 0.15rem 0.4rem;
+    }
+    
+    .header-menu i {
+        font-size: 0.85rem;
+    }
+    
+    .header-menu .menu-text {
+        display: none; /* Hide text labels on mobile */
+    }
+}
+
+@media (max-width: 576px) {
+    .header {
+        padding: 0 0.5rem;
+        height: 55px;
+    }
+
+    .logo span {
+        display: none;
+    }
+    
+    .logo {
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+    }
+    
+    .logo i {
+        font-size: 1.3rem;
+    }
+    
+    .logo span {
+        font-size: 1rem;
+    }
+    
+    .search-bar {
+        margin-left: -2rem;
+        margin-right: 3rem;
+    }
+    
+    .search-bar input {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.5rem 0.35rem 1.6rem;
+        border-radius: 20px;
+    }
+    
+    .search-bar .fa-search {
+        left: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .header-menu {
+        gap: 0.5rem;
+    }
+    
+    .header-menu a {
+        font-size: 0.85rem;
+        padding: 0.1rem 0.3rem;
+    }
+    
+    .header-menu i {
+        font-size: 0.8rem;
+    }
+}
+
+/* Mobile menu toggle for very small screens */
+@media (max-width: 480px) {
+    .header {
+        position: relative;
+        padding: 0 0.3rem;
+    }
+    
+    .logo {
+        font-size: 1rem;
+        margin-right: 0.3rem;
+    }
+    
+    .logo i {
+        font-size: 1.1rem;
+    }
+    
+    .search-bar {
+        flex: 0 0 120px; /* Fixed small width */
+        max-width: 120px;
+        margin-right: 0.3rem;
+    }
+    
+    .search-bar input {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.3rem 0.25rem 1.2rem;
+        border-radius: 15px;
+    }
+    
+    .search-bar .fa-search {
+        left: 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .header-menu {
+        gap: 0.2rem;
+    }
+    
+    .header-menu a {
+        padding: 0.05rem 0.15rem;
+        font-size: 0.8rem;
+    }
+    
+    .header-menu i {
+        font-size: 0.75rem;
+    }
+}
+
 .card {
     box-shadow: 0 2px 8px rgba(35,50,107,0.08) !important;
     border: none !important;
@@ -799,5 +1051,66 @@ a, .btn-link, .sidebar-link, .sidebar-link-block, .card a {
     to {
         transform: translateX(0);
         opacity: 1;
+    }
+}
+
+
+/* Pinned Sidebar Layout for Index Page */
+.container.pinned-layout .row {
+    position: relative;
+    min-height: calc(100vh - 70px);
+}
+
+/* Left Sidebar - Pinned */
+.container.pinned-layout aside:first-of-type {
+    position: fixed;
+    left: 45px;
+    width: 25%; /* 25% of viewport width */
+    overflow-y: auto;
+    z-index: 5;
+}
+
+/* Right Sidebar - Pinned */
+.container.pinned-layout aside:last-of-type {
+    position: fixed;
+    right: 45px;
+    width: 25%; /* 25% of viewport width */
+    overflow-y: auto;
+    z-index: 5;
+}
+
+/* Main Content - Scrollable */
+.container.pinned-layout main {
+    margin-left: 25%; /* Space for left sidebar */
+    margin-right: 25%; /* Space for right sidebar */
+    top: 70px;
+    width: 50%; /* 50% of viewport width */
+}
+
+/* Hide scrollbars but keep scroll functionality */
+.container.pinned-layout aside::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.container.pinned-layout aside {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.container.pinned-layout main::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+.container.pinned-layout main {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+@media (max-width: 1000px) {
+    .container.pinned-layout main {
+        width: 100%;
+        margin: 0;
     }
 }

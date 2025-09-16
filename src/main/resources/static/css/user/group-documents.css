@@ -136,7 +136,7 @@
 
 .group-document-name {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: #212529;
     margin-bottom: 0.5rem;
     white-space: nowrap;
@@ -148,12 +148,13 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     color: #6c757d;
 }
 
 .group-document-size {
-    font-weight: 500;
+    color: gray;
+    font-size: 0.75rem;
 }
 
 .group-document-date {
