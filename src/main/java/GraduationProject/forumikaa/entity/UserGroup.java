@@ -38,7 +38,7 @@ public class UserGroup {
     private LocalDateTime createdAt;
     
     // Transient field for member count (not persisted to database)
-    @Transient
+    @Column(name = "member_count")
     private Long memberCount;
     
     // Many-to-many relationship with topics (hashtags)

@@ -5,8 +5,94 @@
         <span>Forumi<span class="logo-orange">kaa</span></span>
     </div>
     <div class="col-6 search-bar px-0">
-        <i class="fa fa-search"></i>
-        <input type="text" placeholder="Tìm kiếm trên Forumikaa...">
+        <div class="smart-search-container">
+            <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="smartSearchInput" placeholder="Tìm kiếm trên Forumikaa..." autocomplete="off">
+                <button class="search-clear-btn" id="searchClearBtn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Smart Search Dropdown -->
+            <div class="smart-search-dropdown" id="smartSearchDropdown">
+                <!-- Search Categories -->
+                <div class="search-categories" id="searchCategories">
+                    <div class="category-item active" data-category="all">
+                        <i class="fas fa-globe"></i>
+                        <span>Tất cả</span>
+                    </div>
+                    <div class="category-item" data-category="posts">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Bài viết</span>
+                    </div>
+                    <div class="category-item" data-category="users">
+                        <i class="fas fa-users"></i>
+                        <span>Người dùng</span>
+                    </div>
+                    <div class="category-item" data-category="groups">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Nhóm</span>
+                    </div>
+                    <div class="category-item" data-category="events">
+                        <i class="fas fa-calendar"></i>
+                        <span>Sự kiện</span>
+                    </div>
+                </div>
+                
+                <!-- Search Results -->
+                <div class="search-results" id="searchResults">
+                    <!-- Recent Searches -->
+                    <div class="search-section" id="recentSearches">
+                        <div class="section-header">
+                            <h6><i class="fas fa-clock"></i> Tìm kiếm gần đây</h6>
+                            <button class="clear-recent-btn" id="clearRecentBtn">Xóa tất cả</button>
+                        </div>
+                        <div class="recent-searches-list" id="recentSearchesList">
+                            <!-- Recent searches will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Trending Searches -->
+                    <div class="search-section" id="trendingSearches">
+                        <div class="section-header">
+                            <h6><i class="fas fa-fire"></i> Xu hướng tìm kiếm</h6>
+                        </div>
+                        <div class="trending-searches-list" id="trendingSearchesList">
+                            <!-- Trending searches will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Live Search Results -->
+                    <div class="search-section" id="liveSearchResults" style="display: none;">
+                        <div class="section-header">
+                            <h6><i class="fas fa-search"></i> Kết quả tìm kiếm</h6>
+                        </div>
+                        <div class="live-results-list" id="liveResultsList">
+                            <!-- Live search results will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- No Results -->
+                    <div class="no-results" id="noResults" style="display: none;">
+                        <div class="no-results-content">
+                            <i class="fas fa-search"></i>
+                            <h6>Không tìm thấy kết quả</h6>
+                            <p>Thử tìm kiếm với từ khóa khác</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Search Footer -->
+                <div class="search-footer">
+                    <div class="search-shortcuts">
+                        <span class="shortcut"><kbd>↑</kbd><kbd>↓</kbd> Điều hướng</span>
+                        <span class="shortcut"><kbd>Enter</kbd> Chọn</span>
+                        <span class="shortcut"><kbd>Esc</kbd> Đóng</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-4 header-menu d-flex justify-content-end" data-user-id="${#authentication.principal.id}">
         <a th:href="@{/}"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>

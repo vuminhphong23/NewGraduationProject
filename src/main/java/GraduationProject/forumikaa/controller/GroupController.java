@@ -87,9 +87,8 @@ public class GroupController {
         
         UserGroup group = groupOpt.get();
         
-        // Get member count
-        Long memberCount = groupService.getMemberCount(groupId);
-        group.setMemberCount(memberCount);
+        // Get member count (now stored in entity)
+        Long memberCount = group.getMemberCount() != null ? group.getMemberCount() : groupService.getMemberCount(groupId);
         
         // Get group members for display
         List<UserDisplayDto> recentMembers = groupService.getGroupMembers(groupId).stream()

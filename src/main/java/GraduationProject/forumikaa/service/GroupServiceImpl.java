@@ -103,6 +103,11 @@ public class GroupServiceImpl implements GroupService {
         member.setRole(GroupMemberRole.valueOf(role));
         
         groupMemberDao.save(member);
+        
+        // Update member count in group entity
+        Long newMemberCount = groupMemberDao.countByGroupId(groupId);
+        group.setMemberCount(newMemberCount);
+        groupDao.save(group);
     }
 
     @Override
@@ -113,6 +118,13 @@ public class GroupServiceImpl implements GroupService {
         }
         
         groupMemberDao.deleteByGroupIdAndUserId(groupId, userId);
+        
+        // Update member count in group entity
+        UserGroup group = groupDao.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+        Long newMemberCount = groupMemberDao.countByGroupId(groupId);
+        group.setMemberCount(newMemberCount);
+        groupDao.save(group);
     }
 
     @Override
@@ -156,7 +168,27 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Transactional(readOnly = true)
     public Long getMemberCount(Long groupId) {
+        // First try to get from entity field
+        Optional<UserGroup> groupOpt = groupDao.findById(groupId);
+        if (groupOpt.isPresent() && groupOpt.get().getMemberCount() != null) {
+            return groupOpt.get().getMemberCount();
+        }
+        
+        // Fallback to counting from database
         return groupMemberDao.countByGroupId(groupId);
+    }
+    
+    /**
+     * Sync member count for all groups (useful after adding memberCount field)
+     */
+    @Transactional
+    public void syncAllMemberCounts() {
+        List<UserGroup> allGroups = groupDao.findAll();
+        for (UserGroup group : allGroups) {
+            Long actualCount = groupMemberDao.countByGroupId(group.getId());
+            group.setMemberCount(actualCount);
+            groupDao.save(group);
+        }
     }
 
     @Override

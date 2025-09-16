@@ -664,15 +664,9 @@ public class PostServiceImpl implements PostService {
                     "&background=007bff&color=ffffff&size=64");
             }
             
-            // Get member count from database
-            try {
-                Long memberCount = groupService.getMemberCount(post.getGroup().getId());
-                dto.setGroupMemberCount(memberCount != null ? memberCount : 0L);
-            } catch (Exception e) {
-                // Log error but don't fail the entire post
-                System.err.println("Error loading member count for group " + post.getGroup().getId() + ": " + e.getMessage());
-                dto.setGroupMemberCount(0L);
-            }
+            // Get member count from group entity
+            Long memberCount = post.getGroup().getMemberCount();
+            dto.setGroupMemberCount(memberCount != null ? memberCount : 0L);
         }
 
         return dto;

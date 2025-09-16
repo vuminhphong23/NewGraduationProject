@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Kết quả tìm kiếm: ' + ${query} + ' - Forumikaa'">Kết quả tìm kiếm - Forumikaa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/user/layout.css">
+    <link rel="stylesheet" href="/css/post-modal.css">
+    <link rel="stylesheet" href="/css/post-interactions.css">
+    <link rel="stylesheet" href="/css/file-upload.css">
+    <link rel="stylesheet" href="/css/group-indicator.css">
+    <link rel="stylesheet" href="/css/search-results.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/smart-search-global.js"></script>
+    <script src="/js/search-results.js"></script>
+</head>
+<body class="search-results-page">
+    <!-- HEADER -->
+    <div th:replace="~{fragments/user/header :: header}"></div>
+
+    <!-- Search Header -->
+    <div class="search-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="search-query-display">
+                        <i class="fas fa-search me-2"></i>
+                        <span th:text="${query}">Từ khóa tìm kiếm</span>
+                    </div>
+                    <div class="search-stats" th:if="${hasResults}">
+                        <span th:text="${totalResults}">0</span> kết quả tìm được trong 
+                        <span th:text="${searchTime}">0</span>ms
+                    </div>
+                    <div class="search-stats" th:unless="${hasResults}">
+                        Không tìm thấy kết quả nào cho từ khóa này
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Search Filters -->
+        <div class="search-filters" th:if="${hasResults}">
+            <div class="filter-tabs">
+                <a href="#" class="filter-tab" th:classappend="${category == 'all'} ? 'active'" 
+                   th:href="@{/search(q=${query}, category='all')}">
+                    <i class="fas fa-globe"></i>
+                    <span>Tất cả</span>
+                    <span class="section-count" th:text="${totalResults}">0</span>
+                </a>
+                <a href="#" class="filter-tab" th:classappend="${category == 'posts'} ? 'active'"
+                   th:href="@{/search(q=${query}, category='posts')}">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Bài viết</span>
+                    <span class="section-count" th:text="${posts != null ? #lists.size(posts) : 0}">0</span>
+                </a>
+                <a href="#" class="filter-tab" th:classappend="${category == 'users'} ? 'active'"
+                   th:href="@{/search(q=${query}, category='users')}">
+                    <i class="fas fa-users"></i>
+                    <span>Người dùng</span>
+                    <span class="section-count" th:text="${users != null ? #lists.size(users) : 0}">0</span>
+                </a>
+                <a href="#" class="filter-tab" th:classappend="${category == 'groups'} ? 'active'"
+                   th:href="@{/search(q=${query}, category='groups')}">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Nhóm</span>
+                    <span class="section-count" th:text="${groups != null ? #lists.size(groups) : 0}">0</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div th:if="${hasResults}">
+            <!-- Posts Results -->
+            <div class="results-section" th:if="${posts != null && !posts.isEmpty()}">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-newspaper text-success"></i>
+                        Bài viết
+                    </h3>
+                    <span class="section-count" th:text="${#lists.size(posts)}">0</span>
+                </div>
+                
+                <div th:each="post : ${posts}">
+                    <div class="result-card post-result">
+                        <div class="result-header">
+                            <div class="flex-grow-1">
+                                <h4 class="result-title">
+                                    <a th:href="@{/posts/{id}(id=${post.id})}" 
+                                       th:text="${post.title}" 
+                                       class="text-decoration-none text-dark">
+                                        Tiêu đề bài viết
+                                    </a>
+                                </h4>
+                                <div class="result-meta">
+                                    <span>
+                                        <i class="fas fa-user"></i>
+                                        <span th:text="${post.user != null ? (post.user.firstName != null ? post.user.firstName : '') + ' ' + (post.user.lastName != null ? post.user.lastName : '') : 'Người dùng'}">
+                                            Tác giả
+                                        </span>
+                                    </span>
+                                    <span>
+                                        <i class="fas fa-calendar"></i>
+                                        <span th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                            Ngày tạo
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-content" th:text="${post.content != null ? #strings.abbreviate(post.content, 200) : 'Không có nội dung'}">
+                            Nội dung bài viết...
+                        </div>
+                        
+                        <div class="result-actions">
+                            <div class="result-stats">
+                                <div class="result-stat">
+                                    <i class="fas fa-heart text-danger"></i>
+                                    <span th:text="${post.likeCount != null ? post.likeCount : 0}">0</span>
+                                </div>
+                                <div class="result-stat">
+                                    <i class="fas fa-comment text-primary"></i>
+                                    <span th:text="${post.commentCount != null ? post.commentCount : 0}">0</span>
+                                </div>
+                            </div>
+                            <a th:href="@{/posts/{id}(id=${post.id})}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-external-link-alt"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Results -->
+            <div class="results-section" th:if="${users != null && !users.isEmpty()}">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-users text-primary"></i>
+                        Người dùng
+                    </h3>
+                    <span class="section-count" th:text="${#lists.size(users)}">0</span>
+                </div>
+                
+                <div th:each="user : ${users}">
+                    <div class="result-card user-result">
+                        <div class="result-header">
+                            <div class="d-flex align-items-center">
+                                <img th:src="${user.userProfile != null && user.userProfile.getAvatar() != null ? user.userProfile.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                     class="user-avatar me-3" 
+                                     th:alt="${user.username}">
+                                <div class="flex-grow-1">
+                                    <h4 class="result-title">
+                                        <a th:text="${user.firstName} + ' ' + ${user.lastName}"
+                                           class="text-decoration-none text-dark">
+                                            Tên người dùng
+                                        </a>
+                                    </h4>
+                                    <div class="result-meta">
+                                        <span>
+                                            <i class="fas fa-at"></i>
+                                            <span th:text="${user.username}">@username</span>
+                                        </span>
+                                        <span th:if="${user.email != null and user.email != ''}">
+                                            <i class="fas fa-envelope"></i>
+                                            <span th:text="${user.email}">email@example.com</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-actions">
+                            <a th:href="@{/profile/{username}(username=${user.username})}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-user"></i> Xem hồ sơ
+                            </a>
+                            <button class="btn btn-outline-success btn-sm" 
+                                    th:onclick="'addFriend(' + ${user.id} + ')'">
+                                <i class="fas fa-user-plus"></i> Kết bạn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Results -->
+            <div class="results-section" th:if="${groups != null && !groups.isEmpty()}">
+                <div class="section-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-layer-group text-warning"></i>
+                        Nhóm
+                    </h3>
+                    <span class="section-count" th:text="${#lists.size(groups)}">0</span>
+                </div>
+                
+                <div th:each="group : ${groups}">
+                    <div class="result-card group-result">
+                        <div class="result-header">
+                            <div class="d-flex align-items-center">
+                                <img th:src="${group.avatar}"
+                                     class="group-icon me-3"
+                                     th:alt="${group.avatar}">
+                                <div class="flex-grow-1">
+                                    <h4 class="result-title">
+                                        <a th:href="@{/groups/{id}(id=${group.id})}" 
+                                           th:text="${group.name}" 
+                                           class="text-decoration-none text-dark">
+                                            Tên nhóm
+                                        </a>
+                                    </h4>
+                                    <div class="result-meta">
+                                        <span>
+                                            <i class="fas fa-users"></i>
+                                            <span th:text="${group.memberCount}">0</span> thành viên
+                                        </span>
+                                        <span th:if="${group.createdAt != null}">
+                                            <i class="fas fa-calendar"></i>
+                                            <span th:text="${#temporals.format(group.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                                Ngày tạo
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-content" th:text="${group.description != null ? #strings.abbreviate(group.description, 150) : 'Không có mô tả'}">
+                            Mô tả nhóm...
+                        </div>
+                        
+                        <div class="result-actions">
+                            <a th:href="@{/groups/{id}(id=${group.id})}" class="btn btn-warning btn-sm">
+                                <i class="fas fa-eye"></i> Xem nhóm
+                            </a>
+                            <button class="btn btn-outline-warning btn-sm"
+                                    th:if="${groupMembership != null && !groupMembership[group.id]}"
+                                    th:onclick="'joinGroup(' + ${group.id} + ')'">
+                                <i class="fas fa-user-plus"></i> Tham gia
+                            </button>
+                            <span class="btn btn-success btn-sm" 
+                                  th:if="${groupMembership != null && groupMembership[group.id]}">
+                                <i class="fas fa-check"></i> Đã tham gia
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div th:unless="${hasResults}" class="no-results">
+            <i class="fas fa-search"></i>
+            <h4>Không tìm thấy kết quả nào</h4>
+            <p>Thử tìm kiếm với từ khóa khác hoặc kiểm tra chính tả</p>
+            
+            <div class="search-suggestions">
+                <a href="#" class="suggestion-tag">Spring Boot</a>
+                <a href="#" class="suggestion-tag">Java</a>
+                <a href="#" class="suggestion-tag">JavaScript</a>
+                <a href="#" class="suggestion-tag">React</a>
+                <a href="#" class="suggestion-tag">Vue.js</a>
+                <a href="#" class="suggestion-tag">Angular</a>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error != null}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Có lỗi xảy ra</span>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        // Highlight search terms in results
+        document.addEventListener('DOMContentLoaded', function() {
+            const query = /*[[${query}]]*/ '';
+            if (query && query.length > 0) {
+                highlightSearchTerms(query);
+            }
+        });
+
+        function highlightSearchTerms(query) {
+            const terms = query.toLowerCase().split(' ').filter(term => term.length > 2);
+            const elements = document.querySelectorAll('.result-title, .result-content');
+            
+            elements.forEach(element => {
+                let html = element.innerHTML;
+                terms.forEach(term => {
+                    const regex = new RegExp(`(${term})`, 'gi');
+                    html = html.replace(regex, '<span class="highlight">$1</span>');
+                });
+                element.innerHTML = html;
+            });
+        }
+
+        // Add click handlers for suggestion tags
+        document.querySelectorAll('.suggestion-tag').forEach(tag => {
+            tag.addEventListener('click', function(e) {
+                e.preventDefault();
+                const suggestion = this.textContent.trim();
+                window.location.href = `/search?q=${encodeURIComponent(suggestion)}&category=all`;
+            });
+        });
+    </script>
+
+    <script>
+        // Debug: Check if functions are loaded
+        console.log('Search results script loaded');
+        
+        // Join Group Function - theo pattern trong explore-groups.html
+        function joinGroup(groupId) {
+            fetch(`/groups/${groupId}/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    // Update UI immediately instead of reload
+                    updateGroupButtonAfterJoin(groupId);
+                    showToast('Đã tham gia nhóm thành công!', 'success');
+                } else {
+                    showToast('Có lỗi xảy ra khi tham gia nhóm', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Có lỗi xảy ra khi tham gia nhóm', 'error');
+            });
+        }
+        
+        // Update group button after joining
+        function updateGroupButtonAfterJoin(groupId) {
+            const joinButton = document.querySelector(`button[onclick="joinGroup(${groupId})"]`);
+            if (joinButton) {
+                // Replace button with "Đã tham gia" span
+                const joinedSpan = document.createElement('span');
+                joinedSpan.className = 'btn btn-success btn-sm';
+                joinedSpan.innerHTML = '<i class="fas fa-check"></i> Đã tham gia';
+                
+                joinButton.parentNode.replaceChild(joinedSpan, joinButton);
+            }
+        }
+
+        // Add Friend Function - theo pattern trong recommendations.html
+        async function addFriend(userId) {
+            console.log('addFriend called with userId:', userId);
+            try {
+                const response = await fetch(`/api/friends/request/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response && response.ok) {
+                    showToast('Đã gửi lời mời kết bạn!', 'success');
+                    // Update button state
+                    updateButtonAfterRequest(userId);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
+                    showToast(error.message || 'Có lỗi xảy ra khi gửi yêu cầu kết bạn', 'error');
+                }
+            } catch (error) {
+                console.error('Error in addFriend:', error);
+                showToast('Không thể gửi lời mời kết bạn', 'error');
+            }
+        }
+
+        // Update button after friend request - theo pattern thực tế
+        function updateButtonAfterRequest(userId) {
+            const button = document.querySelector(`button[onclick="addFriend(${userId})"]`);
+            if (button) {
+                button.innerHTML = '<i class="fas fa-clock"></i> Đã gửi yêu cầu';
+                button.classList.remove('btn-outline-success');
+                button.classList.add('btn-secondary');
+                button.disabled = true;
+            }
+        }
+
+        // Show Toast Function - theo pattern trong smart-search-global.js
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
