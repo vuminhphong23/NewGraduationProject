@@ -45,4 +45,9 @@ public class SecurityUtil {
             return null;
         }
     }
+
+    public User getAdminUser() {
+        return userDao.findByUsername("admin")
+                .orElseThrow(() -> new RuntimeException("Admin user not found"));
+    }
 }

@@ -9,14 +9,7 @@ public class CrawlingConfigResponse {
     private String name;
     private String description;
     private String baseUrl;
-    private String titleSelector;
-    private String contentSelector;
-    private String linkSelector;
-    private String imageSelector;
-    private String authorSelector;
-    private String dateSelector;
     private String topicName;
-    private String topicSelector;
     private Integer maxPosts;
     private Integer intervalMinutes;
     private Boolean enabled;
@@ -33,6 +26,7 @@ public class CrawlingConfigResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
+    private java.util.List<Long> groupIds;
 }
 
 

@@ -28,11 +28,37 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
 public class AdminController {
+
+    // Static maps for status and privacy mapping
+    private static final Map<PostStatus, String> STATUS_TEXT_MAP = Map.of(
+        PostStatus.PENDING, "Chờ duyệt",
+        PostStatus.APPROVED, "Đã duyệt", 
+        PostStatus.REJECTED, "Từ chối"
+    );
+    
+    private static final Map<PostStatus, String> STATUS_CLASS_MAP = Map.of(
+        PostStatus.PENDING, "badge badge-status-pending",
+        PostStatus.APPROVED, "badge badge-status-approved",
+        PostStatus.REJECTED, "badge badge-status-rejected"
+    );
+    
+    private static final Map<PostPrivacy, String> PRIVACY_TEXT_MAP = Map.of(
+        PostPrivacy.PUBLIC, "Công khai",
+        PostPrivacy.PRIVATE, "Riêng tư",
+        PostPrivacy.FRIENDS, "Bạn bè"
+    );
+    
+    private static final Map<PostPrivacy, String> PRIVACY_CLASS_MAP = Map.of(
+        PostPrivacy.PUBLIC, "badge badge-privacy-public",
+        PostPrivacy.PRIVATE, "badge badge-privacy-private", 
+        PostPrivacy.FRIENDS, "badge badge-privacy-friends"
+    );
 
     private UserService userService;
 
@@ -204,6 +230,12 @@ public class AdminController {
         model.addAttribute("allStatuses", PostStatus.values());
         model.addAttribute("allPrivacies", PostPrivacy.values());
         
+        // Add maps for status and privacy display
+        model.addAttribute("statusTextMap", STATUS_TEXT_MAP);
+        model.addAttribute("statusClassMap", STATUS_CLASS_MAP);
+        model.addAttribute("privacyTextMap", PRIVACY_TEXT_MAP);
+        model.addAttribute("privacyClassMap", PRIVACY_CLASS_MAP);
+        
         return "admin/post-management";
     }
 
@@ -277,6 +309,13 @@ public class AdminController {
             model.addAttribute("post", post);
             model.addAttribute("allStatuses", PostStatus.values());
             model.addAttribute("allPrivacies", PostPrivacy.values());
+            
+            // Add maps for status and privacy display
+            model.addAttribute("statusTextMap", STATUS_TEXT_MAP);
+            model.addAttribute("statusClassMap", STATUS_CLASS_MAP);
+            model.addAttribute("privacyTextMap", PRIVACY_TEXT_MAP);
+            model.addAttribute("privacyClassMap", PRIVACY_CLASS_MAP);
+            
             return "admin/post-form";
         } catch (Exception e) {
             return "redirect:/admin/posts?error=" + e.getMessage();
@@ -287,6 +326,12 @@ public class AdminController {
     public String savePost(@ModelAttribute("post") @Valid Post post, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         model.addAttribute("allStatuses", PostStatus.values());
         model.addAttribute("allPrivacies", PostPrivacy.values());
+        
+        // Add maps for status and privacy display
+        model.addAttribute("statusTextMap", STATUS_TEXT_MAP);
+        model.addAttribute("statusClassMap", STATUS_CLASS_MAP);
+        model.addAttribute("privacyTextMap", PRIVACY_TEXT_MAP);
+        model.addAttribute("privacyClassMap", PRIVACY_CLASS_MAP);
         
         if (bindingResult.hasErrors()) {
             return "admin/post-form";
@@ -326,6 +371,12 @@ public class AdminController {
             model.addAttribute("keyword", keyword);
             model.addAttribute("status", status);
             model.addAttribute("allStatuses", PostStatus.values());
+            
+            // Add maps for status and privacy display
+            model.addAttribute("statusTextMap", STATUS_TEXT_MAP);
+            model.addAttribute("statusClassMap", STATUS_CLASS_MAP);
+            model.addAttribute("privacyTextMap", PRIVACY_TEXT_MAP);
+            model.addAttribute("privacyClassMap", PRIVACY_CLASS_MAP);
             
             return "admin/group-post-management";
         } catch (Exception e) {
@@ -512,9 +563,13 @@ public class AdminController {
             
             // Add admin as member
             try {
-                System.out.println("DEBUG: Adding admin as member");
+                System.out.println("DEBUG: Adding admin as member to group: " + savedGroup.getName());
                 groupService.addMember(savedGroup.getId(), currentUserId, "ADMIN");
-                System.out.println("DEBUG: Admin added as member successfully");
+                System.out.println("DEBUG: Admin added as member successfully to group: " + savedGroup.getName());
+                
+                // Verify admin is member
+                boolean isMember = groupService.isGroupMember(savedGroup.getId(), currentUserId);
+                System.out.println("DEBUG: Verification - Admin is member of group " + savedGroup.getName() + ": " + isMember);
             } catch (Exception e) {
                 System.err.println("DEBUG: Error adding admin as member: " + e.getMessage());
                 redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm admin vào nhóm: " + e.getMessage());
@@ -530,6 +585,54 @@ public class AdminController {
     }
     
     // ========== NEW ADMIN FEATURES ==========
+    
+    @PostMapping("/admin/posts/bulk-delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> bulkDeletePosts(@RequestBody Map<String, Object> request) {
+        try {
+            System.out.println("DEBUG: Received request: " + request);
+            
+            @SuppressWarnings("unchecked")
+            List<Object> postIdsObj = (List<Object>) request.get("postIds");
+            
+            if (postIdsObj == null || postIdsObj.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Không có bài viết nào được chọn"));
+            }
+            
+            // Convert to Long list
+            List<Long> postIds = postIdsObj.stream()
+                    .map(obj -> {
+                        if (obj instanceof Number) {
+                            return ((Number) obj).longValue();
+                        } else if (obj instanceof String) {
+                            return Long.parseLong((String) obj);
+                        }
+                        throw new IllegalArgumentException("Cannot convert to Long: " + obj);
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            
+            System.out.println("DEBUG: PostIds to delete: " + postIds);
+            
+            int deletedCount = 0;
+            for (Long postId : postIds) {
+                try {
+                    postService.deleteById(postId);
+                    deletedCount++;
+                } catch (Exception e) {
+                    // Log error but continue with other posts
+                    System.err.println("Error deleting post " + postId + ": " + e.getMessage());
+                }
+            }
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true, 
+                "message", "Đã xóa " + deletedCount + " bài viết thành công",
+                "deletedCount", deletedCount
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Lỗi khi xóa bài viết: " + e.getMessage()));
+        }
+    }
     
     @PostMapping("/admin/groups/bulk-delete")
     @ResponseBody
@@ -615,7 +718,17 @@ public class AdminController {
             
             UserGroup savedGroup = groupService.save(group);
             // Add admin as member
-            groupService.addMember(savedGroup.getId(), currentUserId, "ADMIN");
+            try {
+                System.out.println("DEBUG: Adding admin as member to group: " + savedGroup.getName());
+                groupService.addMember(savedGroup.getId(), currentUserId, "ADMIN");
+                System.out.println("DEBUG: Admin added as member successfully to group: " + savedGroup.getName());
+                
+                // Verify admin is member
+                boolean isMember = groupService.isGroupMember(savedGroup.getId(), currentUserId);
+                System.out.println("DEBUG: Verification - Admin is member of group " + savedGroup.getName() + ": " + isMember);
+            } catch (Exception e) {
+                System.err.println("DEBUG: Error adding admin as member: " + e.getMessage());
+            }
             redirectAttributes.addFlashAttribute("successMessage", "Tạo nhóm thành công.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi tạo nhóm: " + e.getMessage());

@@ -40,8 +40,7 @@
                             <select class="form-select" id="status" th:field="*{status}">
                                 <option th:each="status : ${allStatuses}" 
                                         th:value="${status}" 
-                                        th:text="${status == T(GraduationProject.forumikaa.entity.PostStatus).PENDING ? 'Chờ duyệt' : 
-                                                  status == T(GraduationProject.forumikaa.entity.PostStatus).APPROVED ? 'Đã duyệt' : 'Từ chối'}">
+                                        th:text="${statusTextMap[status]}">
                                 </option>
                             </select>
                         </div>
@@ -53,8 +52,7 @@
                             <select class="form-select" id="privacy" th:field="*{privacy}">
                                 <option th:each="privacy : ${allPrivacies}" 
                                         th:value="${privacy}" 
-                                        th:text="${privacy == T(GraduationProject.forumikaa.entity.PostPrivacy).PUBLIC ? 'Công khai' : 
-                                                  privacy == T(GraduationProject.forumikaa.entity.PostPrivacy).PRIVATE ? 'Riêng tư' : 'Bạn bè'}">
+                                        th:text="${privacyTextMap[privacy]}">
                                 </option>
                             </select>
                         </div>

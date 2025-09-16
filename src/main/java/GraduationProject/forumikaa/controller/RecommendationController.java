@@ -3,7 +3,7 @@ package GraduationProject.forumikaa.controller;
 import GraduationProject.forumikaa.dto.*;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.RecommendationService;
-import GraduationProject.forumikaa.service.CrawledContentRecommendationService;
+import GraduationProject.forumikaa.service.PostRecommendationServiceImpl;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class RecommendationController {
     private RecommendationService recommendationService;
     
     @Autowired
-    private CrawledContentRecommendationService crawledContentService;
+    private PostRecommendationServiceImpl crawledContentService;
 
     @Autowired
     private SecurityUtil securityUtil;

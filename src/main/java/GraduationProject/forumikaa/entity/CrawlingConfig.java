@@ -27,29 +27,8 @@ public class CrawlingConfig {
     @Column(nullable = false, length = 500)
     private String baseUrl;
     
-    @Column(nullable = false, length = 200)
-    private String titleSelector;
-    
-    @Column(length = 200)
-    private String contentSelector;
-    
-    @Column(length = 200)
-    private String linkSelector;
-    
-    @Column(length = 200)
-    private String imageSelector;
-    
-    @Column(length = 200)
-    private String authorSelector;
-    
-    @Column(length = 200)
-    private String dateSelector;
-    
     @Column(nullable = false, length = 100)
     private String topicName;
-    
-    @Column(length = 200)
-    private String topicSelector;
     
     @Column(nullable = false)
     private Integer maxPosts = 10;
@@ -102,13 +81,9 @@ public class CrawlingConfig {
     @JoinColumn(name = "created_by")
     private User createdBy;
     
-    // Constructor
-    public CrawlingConfig(String name, String baseUrl, String titleSelector, String topicName) {
-        this.name = name;
-        this.baseUrl = baseUrl;
-        this.titleSelector = titleSelector;
-        this.topicName = topicName;
-    }
+    @Column(length = 1000)
+    private String groupIds; // JSON string of group IDs
+    
 }
 
 

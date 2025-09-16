@@ -17,19 +17,8 @@ public class CrawlingConfigRequest {
     @NotBlank(message = "URL không được để trống")
     private String baseUrl;
     
-    @NotBlank(message = "Title selector không được để trống")
-    private String titleSelector;
-    
-    private String contentSelector;
-    private String linkSelector;
-    private String imageSelector;
-    private String authorSelector;
-    private String dateSelector;
-    
     @NotBlank(message = "Topic name không được để trống")
     private String topicName;
-    
-    private String topicSelector;
     
     @NotNull(message = "Max posts không được để trống")
     @Min(value = 1, message = "Max posts phải lớn hơn 0")
@@ -46,6 +35,8 @@ public class CrawlingConfigRequest {
     private Integer timeout = 10000;
     private String additionalHeaders;
     private String postProcessingRules;
+    
+    private java.util.List<Long> groupIds;
 }
 
 

@@ -1,5 +1,6 @@
 package GraduationProject.forumikaa.controller;
 
+import GraduationProject.forumikaa.dto.ApiResponse;
 import GraduationProject.forumikaa.dto.CrawlingConfigRequest;
 import GraduationProject.forumikaa.dto.CrawlingConfigResponse;
 import GraduationProject.forumikaa.entity.CrawlingConfig;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/crawling")
@@ -29,15 +31,28 @@ public class AdminCrawlingController {
     private SecurityUtil securityUtil;
     
     /**
+     * Lấy danh sách groups để chọn
+     */
+    @GetMapping("/groups")
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> getGroups() {
+        try {
+            List<Map<String, Object>> groups = crawlingConfigService.getGroupsForSelection();
+            return ResponseEntity.ok(ApiResponse.success("Groups loaded successfully", groups));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Failed to load groups", e.getMessage()));
+        }
+    }
+    
+    /**
      * Lấy tất cả configs
      */
     @GetMapping("/configs")
-    public ResponseEntity<List<CrawlingConfigResponse>> getAllConfigs() {
+    public ResponseEntity<ApiResponse<List<CrawlingConfigResponse>>> getAllConfigs() {
         try {
             List<CrawlingConfigResponse> configs = crawlingConfigService.getAllConfigs();
-            return ResponseEntity.ok(configs);
+            return ResponseEntity.ok(ApiResponse.success("Configs loaded successfully", configs));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(ApiResponse.error("Failed to load configs", e.getMessage()));
         }
     }
     
@@ -121,37 +136,6 @@ public class AdminCrawlingController {
     }
     
     /**
-     * Test config
-     */
-    @PostMapping("/configs/{id}/test")
-    public ResponseEntity<String> testConfig(@PathVariable Long id) {
-        try {
-            CrawlingConfigResponse configResponse = crawlingConfigService.getConfigById(id);
-            
-            // Convert response to entity for testing
-            CrawlingConfig config = new CrawlingConfig();
-            config.setId(configResponse.getId());
-            config.setName(configResponse.getName());
-            config.setBaseUrl(configResponse.getBaseUrl());
-            config.setTitleSelector(configResponse.getTitleSelector());
-            config.setContentSelector(configResponse.getContentSelector());
-            config.setLinkSelector(configResponse.getLinkSelector());
-            config.setImageSelector(configResponse.getImageSelector());
-            config.setAuthorSelector(configResponse.getAuthorSelector());
-            config.setDateSelector(configResponse.getDateSelector());
-            config.setTopicSelector(configResponse.getTopicSelector());
-            config.setUserAgent(configResponse.getUserAgent());
-            config.setTimeout(configResponse.getTimeout());
-            config.setAdditionalHeaders(configResponse.getAdditionalHeaders());
-            
-            String result = dynamicCrawlingService.testCrawlConfig(config);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Test failed: " + e.getMessage());
-        }
-    }
-    
-    /**
      * Crawl config ngay lập tức
      */
     @PostMapping("/configs/{id}/crawl")
@@ -164,18 +148,23 @@ public class AdminCrawlingController {
             config.setId(configResponse.getId());
             config.setName(configResponse.getName());
             config.setBaseUrl(configResponse.getBaseUrl());
-            config.setTitleSelector(configResponse.getTitleSelector());
-            config.setContentSelector(configResponse.getContentSelector());
-            config.setLinkSelector(configResponse.getLinkSelector());
-            config.setImageSelector(configResponse.getImageSelector());
-            config.setAuthorSelector(configResponse.getAuthorSelector());
-            config.setDateSelector(configResponse.getDateSelector());
             config.setTopicName(configResponse.getTopicName());
-            config.setTopicSelector(configResponse.getTopicSelector());
             config.setMaxPosts(configResponse.getMaxPosts());
             config.setUserAgent(configResponse.getUserAgent());
             config.setTimeout(configResponse.getTimeout());
             config.setAdditionalHeaders(configResponse.getAdditionalHeaders());
+            
+            // Convert groupIds from response to JSON string for entity
+            if (configResponse.getGroupIds() != null && !configResponse.getGroupIds().isEmpty()) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String groupIdsJson = objectMapper.writeValueAsString(configResponse.getGroupIds());
+                    config.setGroupIds(groupIdsJson);
+                    System.out.println("🔍 DEBUG: Set groupIds for crawling: " + groupIdsJson);
+                } catch (Exception e) {
+                    System.err.println("❌ Error converting groupIds: " + e.getMessage());
+                }
+            }
             
             dynamicCrawlingService.crawlConfig(config);
             return ResponseEntity.ok("Crawling started successfully");

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class CrawledContentRecommendationService {
+public class PostRecommendationServiceImpl implements PostRecommendationService{
     
     @Autowired private PostDao postDao;
     @Autowired private LikeDao likeDao;
@@ -24,6 +24,7 @@ public class CrawledContentRecommendationService {
     /**
      * Gợi ý crawled content dựa trên mối quan tâm và tương tác của user
      */
+    @Override
     public List<PostResponse> getRecommendedCrawledContent(Long userId, Integer limit) {
         System.out.println("=== CRAWLED CONTENT RECOMMENDATION ===");
         System.out.println("User ID: " + userId);
@@ -65,6 +66,7 @@ public class CrawledContentRecommendationService {
     /**
      * Gợi ý crawled content theo trending topics
      */
+    @Override
     public List<PostResponse> getTrendingCrawledContent(Long userId, Integer limit) {
         // Lấy trending topics
         List<Topic> trendingTopics = topicService.getTopTopics(10);
@@ -91,6 +93,7 @@ public class CrawledContentRecommendationService {
     /**
      * Gợi ý crawled content theo mối quan tâm cụ thể
      */
+    @Override
     public List<PostResponse> getCrawledContentByInterest(Long userId, String interest, Integer limit) {
         // Tìm topic tương ứng với interest
         Optional<Topic> topic = topicDao.findByNameIgnoreCase(interest);

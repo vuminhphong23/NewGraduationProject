@@ -406,13 +406,9 @@ function bulkDelete() {
     }
     
     if (confirm(`Bạn có chắc chắn muốn xóa ${groupIds.length} nhóm đã chọn?`)) {
-        // Gửi request xóa bulk
-        fetch('/admin/groups/bulk-delete', {
+        // Sử dụng JWT authentication
+        window.authenticatedFetch('/admin/groups/bulk-delete', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
-            },
             body: JSON.stringify({ groupIds: groupIds })
         })
         .then(response => response.json())

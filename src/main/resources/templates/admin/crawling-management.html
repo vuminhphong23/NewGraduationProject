@@ -19,7 +19,7 @@
         .status-badge {
             font-size: 0.8em;
         }
-        .selector-preview {
+        .test-result-preview {
             background-color: #f8f9fa;
             border: 1px solid #dee2e6;
             border-radius: 4px;
@@ -37,6 +37,199 @@
         .config-form {
             max-height: 80vh;
             overflow-y: auto;
+        }
+        
+        /* Custom Combobox Styles */
+        .custom-combobox-container {
+            position: relative;
+        }
+        
+        .custom-combobox {
+            position: relative;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-combobox:hover {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .custom-combobox.open {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        .combobox-selected {
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 38px;
+        }
+        
+        .combobox-selected .placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .combobox-selected .selected-text {
+            color: #212529;
+        }
+        
+        .combobox-arrow {
+            transition: transform 0.3s ease;
+            color: #6c757d;
+        }
+        
+        .custom-combobox.open .combobox-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .combobox-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-height: 200px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .custom-combobox.open .combobox-dropdown {
+            display: block;
+        }
+        
+        .combobox-search {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .combobox-options {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .combobox-option {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .combobox-option:last-child {
+            border-bottom: none;
+        }
+        
+        .combobox-option:hover {
+            background-color: #f8f9fa;
+            transform: translateX(2px);
+        }
+        
+        .combobox-option.selected {
+            background-color: #e7f3ff;
+            color: #0d6efd;
+        }
+        
+        .combobox-option label {
+            cursor: pointer;
+            margin: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .combobox-option input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+        
+        .selected-groups {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .selected-group-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .selected-group-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .selected-group-badge .remove-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 0.25rem;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            transition: all 0.2s ease;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .selected-group-badge .remove-btn:hover {
+            opacity: 1;
+            background-color: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+        
+        .no-groups-message {
+            color: #6c757d;
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            margin: 0.5rem;
+        }
+        
+        /* Custom scrollbar for combobox options */
+        .combobox-options::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .combobox-options::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .combobox-options::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .combobox-options::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
         }
     </style>
 </head>
@@ -180,56 +373,51 @@
                             </div>
                         </div>
 
-                        <h6 class="mt-4 mb-3">CSS Selectors</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configTitleSelector" class="form-label">Title Selector *</label>
-                                    <input type="text" class="form-control" id="configTitleSelector" required>
-                                    <div class="form-text">Ví dụ: h3 a, .title, article h2</div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fa fa-users me-1"></i>
+                                Chọn Groups để tạo posts
+                            </label>
+                            
+                            <!-- Custom Combobox -->
+                            <div class="custom-combobox-container">
+                                <div class="custom-combobox" id="customGroupSelect">
+                                    <div class="combobox-selected" id="comboboxSelected">
+                                        <span class="placeholder">Chọn groups...</span>
+                                        <i class="fa fa-chevron-down combobox-arrow"></i>
+                                    </div>
+                                    <div class="combobox-dropdown" id="comboboxDropdown">
+                                        <div class="combobox-search">
+                                            <input type="text" class="form-control form-control-sm" id="groupSearch" placeholder="Tìm kiếm group...">
+                                        </div>
+                                        <div class="combobox-options" id="comboboxOptions">
+                                            <!-- Options will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Selected Groups Display -->
+                                <div class="selected-groups mt-2" id="selectedGroups">
+                                    <!-- Selected groups will be displayed here -->
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configContentSelector" class="form-label">Content Selector</label>
-                                    <input type="text" class="form-control" id="configContentSelector">
-                                    <div class="form-text">Ví dụ: .content, p, .description</div>
-                                </div>
+                            
+                            <div class="form-text">
+                                <i class="fa fa-info-circle me-1"></i>
+                                Có thể chọn nhiều groups. Posts sẽ được tạo trên các groups đã chọn. 
+                                <strong>Nếu không chọn group nào, posts sẽ được tạo công khai.</strong>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configLinkSelector" class="form-label">Link Selector</label>
-                                    <input type="text" class="form-control" id="configLinkSelector">
-                                    <div class="form-text">Ví dụ: a, .link</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configImageSelector" class="form-label">Image Selector</label>
-                                    <input type="text" class="form-control" id="configImageSelector">
-                                    <div class="form-text">Ví dụ: img, .image</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configAuthorSelector" class="form-label">Author Selector</label>
-                                    <input type="text" class="form-control" id="configAuthorSelector">
-                                    <div class="form-text">Ví dụ: .author, .byline</div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="configDateSelector" class="form-label">Date Selector</label>
-                                    <input type="text" class="form-control" id="configDateSelector">
-                                    <div class="form-text">Ví dụ: .date, time</div>
-                                </div>
-                            </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-robot me-2"></i>
+                            <strong>Smart Crawling với Bộ Lọc Thông Minh:</strong><br>
+                            • Tự động detect và extract title, content, link từ website<br>
+                            • Lọc data rác và spam content<br>
+                            • Kiểm tra title phải liên quan đến topic name<br>
+                            • Chỉ lưu bài viết có chất lượng cao (≥60/100 điểm)<br>
+                            • <strong>Tự động tạo posts trong các groups đã chọn</strong><br>
+                            • Tự động phát hiện nội dung chất lượng!
                         </div>
 
                         <div class="row">
@@ -287,7 +475,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <pre id="testResult" class="selector-preview"></pre>
+                    <pre id="testResult" class="test-result-preview"></pre>
                 </div>
             </div>
         </div>

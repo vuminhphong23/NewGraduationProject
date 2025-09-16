@@ -63,7 +63,6 @@ public class PostServiceImpl implements PostService {
     @Autowired private FileUploadService fileUploadService;
     @Autowired private FileStorageStrategyFactory strategyFactory;
     @Autowired private GroupDao groupDao;
-    @Autowired private GroupService groupService;
 
     @Override
     public PostResponse createPost(CreatePostRequest request, Long userId) {
@@ -753,7 +752,46 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void deleteById(Long id) {
-        postDao.deleteById(id);
+        // Find the post first to get topics before deletion
+        Optional<Post> postOpt = postDao.findById(id);
+        if (postOpt.isPresent()) {
+            Post post = postOpt.get();
+            
+            // Get documents before deleting post (for file cleanup)
+            List<Document> documents = new ArrayList<>(post.getDocuments());
+            
+            // Decrement topic usage counts
+            post.getTopics().forEach(topicService::decrementUsageCount);
+            
+            // Delete the post first (documents will be deleted by cascade due to orphanRemoval=true)
+            postDao.delete(post);
+            
+            // Now delete physical files from storage (after database cleanup)
+            try {
+                for (Document document : documents) {
+                    // Delete from storage using the appropriate strategy
+                    if (strategyFactory.getCurrentStrategyType().equals("local")) {
+                        // For local storage, delete physical file
+                        Path filePath = Paths.get(System.getProperty("user.dir"), "uploads", document.getFilePath());
+                        if (Files.exists(filePath)) {
+                            Files.deleteIfExists(filePath);
+                        }
+                    } else if (strategyFactory.getCurrentStrategyType().equals("cloudinary")) {
+                        // For Cloudinary, delete using the correct public_id
+                        try {
+                            deleteFromCloudinary(document.getFileName());
+                        } catch (Exception ex) {
+                            System.err.println("Failed to delete Cloudinary file: " + ex.getMessage());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to delete physical files for post " + id + ": " + e.getMessage());
+            }
+        } else {
+            // Post not found, just delete by ID (in case of orphaned records)
+            postDao.deleteById(id);
+        }
     }
 
     @Override

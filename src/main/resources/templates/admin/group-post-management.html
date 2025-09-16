@@ -247,9 +247,8 @@
                                 <div th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}" class="small"></div>
                             </td>
                             <td>
-                                <span th:if="${post.status == 'PENDING'}" class="badge badge-status-pending">Chờ duyệt</span>
-                                <span th:if="${post.status == 'APPROVED'}" class="badge badge-status-approved">Đã duyệt</span>
-                                <span th:if="${post.status == 'REJECTED'}" class="badge badge-status-rejected">Từ chối</span>
+                                <span th:class="${statusClassMap[post.status] ?: 'badge badge-secondary'}" 
+                                      th:text="${statusTextMap[post.status] ?: 'Không xác định'}"></span>
                             </td>
                             <td>
                                 <div class="btn-group" role="group">

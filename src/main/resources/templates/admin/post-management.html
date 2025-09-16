@@ -87,8 +87,12 @@
                             <option value="FRIENDS" th:selected="${privacy == 'FRIENDS'}">Bạn bè</option>
                         </select>
                         <button type="submit" class="btn filter-btn"><i class="bi bi-funnel"></i> Lọc</button>
+                        <button type="button" class="btn btn-outline-danger" id="bulkDeleteBtn" disabled onclick="bulkDelete()">
+                            <i class="bi bi-trash"></i> Xóa đã chọn
+                        </button>
                     </div>
                 </form>
+                
 
                 <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
                 <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
@@ -97,7 +101,7 @@
                     <table class="table align-middle">
                         <thead>
                         <tr>
-                            <th><input class="form-check-input" type="checkbox"></th>
+                            <th><input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()"></th>
                             <th>Bài viết</th>
                             <th>Tác giả</th>
                             <th>Trạng thái</th>
@@ -109,7 +113,7 @@
                         </thead>
                         <tbody>
                         <tr th:each="post : ${postPage.content}">
-                            <td><input class="form-check-input" type="checkbox"></td>
+                            <td><input class="form-check-input post-checkbox" type="checkbox" th:value="${post.id}" onchange="updateBulkDeleteButton()"></td>
                             <td>
                                 <div class="d-flex flex-column">
                                     <div class="post-title fw-bold" th:text="${post.title}" title="${post.title}"></div>
@@ -132,24 +136,12 @@
                                 </div>
                             </td>
                             <td>
-                                <span th:if="${post.status != null and post.status == T(GraduationProject.forumikaa.entity.PostStatus).PENDING}" 
-                                      class="badge badge-status-pending">Chờ duyệt</span>
-                                <span th:if="${post.status != null and post.status == T(GraduationProject.forumikaa.entity.PostStatus).APPROVED}" 
-                                      class="badge badge-status-approved">Đã duyệt</span>
-                                <span th:if="${post.status != null and post.status == T(GraduationProject.forumikaa.entity.PostStatus).REJECTED}" 
-                                      class="badge badge-status-rejected">Từ chối</span>
-                                <span th:if="${post.status == null}" 
-                                      class="badge badge-secondary">Không xác định</span>
+                                <span th:class="${statusClassMap[post.status] ?: 'badge badge-secondary'}" 
+                                      th:text="${statusTextMap[post.status] ?: 'Không xác định'}"></span>
                             </td>
                             <td>
-                                <span th:if="${post.privacy != null and post.privacy == T(GraduationProject.forumikaa.entity.PostPrivacy).PUBLIC}" 
-                                      class="badge badge-privacy-public">Công khai</span>
-                                <span th:if="${post.privacy != null and post.privacy == T(GraduationProject.forumikaa.entity.PostPrivacy).PRIVATE}" 
-                                      class="badge badge-privacy-private">Riêng tư</span>
-                                <span th:if="${post.privacy != null and post.privacy == T(GraduationProject.forumikaa.entity.PostPrivacy).FRIENDS}" 
-                                      class="badge badge-privacy-friends">Bạn bè</span>
-                                <span th:if="${post.privacy == null}" 
-                                      class="badge badge-secondary">Không xác định</span>
+                                <span th:class="${privacyClassMap[post.privacy] ?: 'badge badge-secondary'}" 
+                                      th:text="${privacyTextMap[post.privacy] ?: 'Không xác định'}"></span>
                             </td>
                             <td>
                                 <div th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy HH:mm')}" class="small"></div>
@@ -169,7 +161,7 @@
                                     
                                     <form th:action="@{/admin/posts/{id}/approve(id=${post.id})}" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-approve border-0" 
-                                                th:if="${post.status == null or post.status != T(GraduationProject.forumikaa.entity.PostStatus).APPROVED}"
+                                                th:if="${post.status == null or post.status.name() != 'APPROVED'}"
                                                 title="Duyệt bài viết">
                                             <i class="bi bi-check-circle"></i>
                                         </button>
@@ -177,7 +169,7 @@
                                     
                                     <form th:action="@{/admin/posts/{id}/reject(id=${post.id})}" method="post" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-reject border-0" 
-                                                th:if="${post.status == null or post.status != T(GraduationProject.forumikaa.entity.PostStatus).REJECTED}"
+                                                th:if="${post.status == null or post.status.name() != 'REJECTED'}"
                                                 title="Từ chối bài viết">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
@@ -235,5 +227,70 @@
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/admin/post-management.js"></script>
+
+<script>
+// Bulk delete functionality
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const postCheckboxes = document.querySelectorAll('.post-checkbox');
+    
+    postCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateBulkDeleteButton();
+}
+
+function updateBulkDeleteButton() {
+    const checkedBoxes = document.querySelectorAll('.post-checkbox:checked');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
+    if (checkedBoxes.length > 0) {
+        bulkDeleteBtn.disabled = false;
+        bulkDeleteBtn.textContent = `Xóa đã chọn (${checkedBoxes.length})`;
+    } else {
+        bulkDeleteBtn.disabled = true;
+        bulkDeleteBtn.textContent = 'Xóa đã chọn';
+    }
+}
+
+function bulkDelete() {
+    const checkedBoxes = document.querySelectorAll('.post-checkbox:checked');
+    const postIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (postIds.length === 0) {
+        alert('Vui lòng chọn ít nhất một bài viết để xóa');
+        return;
+    }
+    
+    if (confirm(`Bạn có chắc chắn muốn xóa ${postIds.length} bài viết đã chọn?`)) {
+        // Sử dụng JWT authentication
+        window.authenticatedFetch('/admin/posts/bulk-delete', {
+            method: 'POST',
+            body: JSON.stringify({ postIds: postIds })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Có lỗi xảy ra khi xóa bài viết: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Có lỗi xảy ra khi xóa bài viết: ' + error.message);
+        });
+    }
+}
+</script>
+
 </body>
 </html>
