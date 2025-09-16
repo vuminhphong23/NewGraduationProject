@@ -45,12 +45,7 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
         config.setBaseUrl(request.getBaseUrl());
         config.setTopicName(request.getTopicName());
         config.setMaxPosts(request.getMaxPosts());
-        config.setIntervalMinutes(request.getIntervalMinutes());
         config.setEnabled(request.getEnabled());
-        config.setUserAgent(request.getUserAgent());
-        config.setTimeout(request.getTimeout());
-        config.setAdditionalHeaders(request.getAdditionalHeaders());
-        config.setPostProcessingRules(request.getPostProcessingRules());
         config.setStatus("ACTIVE");
         config.setCreatedBy(adminUser);
         
@@ -82,12 +77,7 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
         config.setBaseUrl(request.getBaseUrl());
         config.setTopicName(request.getTopicName());
         config.setMaxPosts(request.getMaxPosts());
-        config.setIntervalMinutes(request.getIntervalMinutes());
         config.setEnabled(request.getEnabled());
-        config.setUserAgent(request.getUserAgent());
-        config.setTimeout(request.getTimeout());
-        config.setAdditionalHeaders(request.getAdditionalHeaders());
-        config.setPostProcessingRules(request.getPostProcessingRules());
         
         // Convert groupIds to JSON string
         if (request.getGroupIds() != null && !request.getGroupIds().isEmpty()) {
@@ -172,22 +162,26 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
      */
     @Override
     public void updateCrawlingStats(Long configId, int crawledCount, boolean success) {
-        CrawlingConfig config = crawlingConfigDao.findById(configId)
-                .orElseThrow(() -> new RuntimeException("Config not found"));
-        
-        config.setLastCrawledAt(LocalDateTime.now());
-        config.setTotalCrawled(config.getTotalCrawled() + crawledCount);
-        
-        if (success) {
-            config.setSuccessCount(config.getSuccessCount() + 1);
-            config.setStatus("ACTIVE");
-            config.setLastError(null);
-        } else {
-            config.setErrorCount(config.getErrorCount() + 1);
-            config.setStatus("ERROR");
+        try {
+            CrawlingConfig config = crawlingConfigDao.findById(configId)
+                    .orElseThrow(() -> new RuntimeException("Config not found"));
+            
+            config.setLastCrawledAt(LocalDateTime.now());
+            config.setTotalCrawled(config.getTotalCrawled() + crawledCount);
+            
+            if (success) {
+                config.setStatus("ACTIVE");
+                System.out.println("✅ Updated stats for config " + configId + ": SUCCESS, crawled " + crawledCount + " posts");
+            } else {
+                config.setStatus("ERROR");
+                System.out.println("❌ Updated stats for config " + configId + ": ERROR, failed to crawl");
+            }
+            
+            crawlingConfigDao.save(config);
+        } catch (Exception e) {
+            System.err.println("❌ Failed to update crawling stats for config " + configId + ": " + e.getMessage());
+            e.printStackTrace();
         }
-        
-        crawlingConfigDao.save(config);
     }
     
     /**
@@ -227,20 +221,11 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
         response.setBaseUrl(config.getBaseUrl());
         response.setTopicName(config.getTopicName());
         response.setMaxPosts(config.getMaxPosts());
-        response.setIntervalMinutes(config.getIntervalMinutes());
         response.setEnabled(config.getEnabled());
-        response.setUserAgent(config.getUserAgent());
-        response.setTimeout(config.getTimeout());
-        response.setAdditionalHeaders(config.getAdditionalHeaders());
-        response.setPostProcessingRules(config.getPostProcessingRules());
         response.setStatus(config.getStatus());
-        response.setLastError(config.getLastError());
         response.setLastCrawledAt(config.getLastCrawledAt());
         response.setTotalCrawled(config.getTotalCrawled());
-        response.setSuccessCount(config.getSuccessCount());
-        response.setErrorCount(config.getErrorCount());
         response.setCreatedAt(config.getCreatedAt());
-        response.setUpdatedAt(config.getUpdatedAt());
         response.setCreatedBy(config.getCreatedBy() != null ? config.getCreatedBy().getUsername() : null);
 
         // Parse groupIds from JSON string

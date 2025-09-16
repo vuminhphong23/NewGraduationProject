@@ -25,16 +25,7 @@ public class CrawlingConfigRequest {
     @Max(value = 100, message = "Max posts không được vượt quá 100")
     private Integer maxPosts = 10;
     
-    @NotNull(message = "Interval không được để trống")
-    @Min(value = 5, message = "Interval phải lớn hơn 5 phút")
-    @Max(value = 1440, message = "Interval không được vượt quá 1440 phút")
-    private Integer intervalMinutes = 60;
-    
     private Boolean enabled = true;
-    private String userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-    private Integer timeout = 10000;
-    private String additionalHeaders;
-    private String postProcessingRules;
     
     private java.util.List<Long> groupIds;
 }

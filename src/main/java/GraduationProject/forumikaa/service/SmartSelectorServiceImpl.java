@@ -14,40 +14,50 @@ public class SmartSelectorServiceImpl implements SmartSelectorService {
     
     @Autowired
     private ContentFilterUtil contentFilterUtil;
-    
+
     // Các selector phổ biến cho title
     private static final String[] TITLE_SELECTORS = {
-        "h1", "h2", "h3", "h4", "h5", "h6",
-        ".title", ".headline", ".post-title", ".article-title",
-        ".entry-title", ".news-title", ".item-title",
-        "a[title]", ".title a", "h1 a", "h2 a", "h3 a",
-        ".card-title", ".content-title", ".main-title"
+            "h1", "h2", "h3", "h4", "h5", "h6",
+            ".title", ".headline", ".post-title", ".article-title",
+            ".entry-title", ".news-title", ".item-title",
+            "a[title]", ".title a", "h1 a", "h2 a", "h3 a",
+            ".card-title", ".content-title", ".main-title",
+            ".story-title", ".post-header h1", ".page-title",
+            ".post-heading", ".entry-header h1"
     };
-    
+
     // Các selector phổ biến cho content
     private static final String[] CONTENT_SELECTORS = {
-        ".content", ".description", ".excerpt", ".summary",
-        ".post-content", ".article-content", ".entry-content",
-        ".news-content", ".item-content", ".card-content",
-        ".text", ".body", ".main-content", ".content-body",
-        "p", ".paragraph", ".intro", ".lead"
+            ".content", ".description", ".excerpt", ".summary",
+            ".post-content", ".article-content", ".entry-content",
+            ".news-content", ".item-content", ".card-content",
+            ".text", ".body", ".main-content", ".content-body",
+            "p", ".paragraph", ".intro", ".lead",
+            ".post-body", ".story-content", ".entry-text",
+            ".article-body", ".post-description", ".content-detail",
+            ".post-entry"
     };
-    
+
     // Các selector phổ biến cho link
     private static final String[] LINK_SELECTORS = {
-        "a", ".link", ".read-more", ".more-link",
-        ".post-link", ".article-link", ".item-link",
-        ".title a", "h1 a", "h2 a", "h3 a",
-        ".card-link", ".news-link"
+            "a", ".link", ".read-more", ".more-link",
+            ".post-link", ".article-link", ".item-link",
+            ".title a", "h1 a", "h2 a", "h3 a",
+            ".card-link", ".news-link", ".entry-link",
+            ".story-link", ".headline a", ".post-title a"
     };
-    
+
     // Các selector phổ biến cho container của bài viết
     private static final String[] ARTICLE_CONTAINERS = {
-        "article", ".post", ".item", ".news-item",
-        ".card", ".entry", ".story", ".article-item",
-        ".content-item", ".blog-post", ".news-article",
-        ".list-item", ".feed-item"
+            "article", ".post", ".item", ".news-item",
+            ".card", ".entry", ".story", ".article-item",
+            ".content-item", ".blog-post", ".news-article",
+            ".list-item", ".feed-item", ".post-wrapper",
+            ".post-block", ".entry-item", ".article-block",
+            ".story-item", ".result-item", ".post-card",
+            "entry-content"
     };
+
 
     /**
      * Tự động detect và extract thông tin từ trang web với topic filter

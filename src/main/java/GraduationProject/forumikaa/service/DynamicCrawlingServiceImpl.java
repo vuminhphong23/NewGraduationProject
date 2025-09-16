@@ -66,14 +66,35 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
     @Override
     public void crawlConfig(CrawlingConfig config) {
         try {
-            // Kết nối và lấy HTML
+            System.out.println("🕷️ Starting crawling: " + config.getName() + " -> " + config.getBaseUrl());
+            
+
+            
+            // Kết nối và lấy HTML với cấu hình tối ưu
             Document doc = Jsoup.connect(config.getBaseUrl())
-                    .userAgent(config.getUserAgent())
-                    .timeout(config.getTimeout())
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .timeout(60000) // 60 giây timeout
+                    .followRedirects(true)
+                    .ignoreHttpErrors(true)
+                    .ignoreContentType(true)
+                    .maxBodySize(0) // Không giới hạn kích thước
+                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+                    .header("Accept-Language", "vi-VN,vi;q=0.9,en;q=0.8")
+                    .header("Accept-Encoding", "gzip, deflate, br")
+                    .header("Connection", "keep-alive")
+                    .header("Upgrade-Insecure-Requests", "1")
+                    .header("Sec-Fetch-Dest", "document")
+                    .header("Sec-Fetch-Mode", "navigate")
+                    .header("Sec-Fetch-Site", "none")
+                    .header("Cache-Control", "max-age=0")
                     .get();
+            
+            System.out.println("✅ Connected successfully");
             
             // Sử dụng Smart Selector với topic filter để tự động extract articles
             List<Map<String, String>> articles = smartSelectorService.extractArticles(doc, config.getMaxPosts(), config.getTopicName());
+            System.out.println("📰 Found " + articles.size() + " articles");
+            
             int crawledCount = 0;
             
             for (Map<String, String> article : articles) {
@@ -83,18 +104,27 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
                     String link = article.get("link");
                     
                     if (title != null && !title.trim().isEmpty()) {
+                        System.out.println("📝 Creating post: " + title.substring(0, Math.min(50, title.length())) + "...");
                         createPostFromCrawledData(config, title, content, link);
                         crawledCount++;
                     }
                 } catch (Exception e) {
+                    System.err.println("❌ Error creating post: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
             
             // Cập nhật thống kê
+            System.out.println("✅ Crawling completed. Created " + crawledCount + " posts.");
             crawlingConfigService.updateCrawlingStats(config.getId(), crawledCount, true);
 
         } catch (IOException e) {
+            System.err.println("❌ Network error: " + e.getMessage());
+            e.printStackTrace();
+            crawlingConfigService.updateCrawlingStats(config.getId(), 0, false);
+        } catch (Exception e) {
+            System.err.println("❌ Unexpected error: " + e.getMessage());
+            e.printStackTrace();
             crawlingConfigService.updateCrawlingStats(config.getId(), 0, false);
         }
     }

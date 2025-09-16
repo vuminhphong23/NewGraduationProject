@@ -218,11 +218,11 @@ async function loadConfigs() {
             configs = apiResponse.data;
             displayConfigs(configs);
         } else {
-            showToast(apiResponse.error || 'Không thể tải danh sách configs', 'error');
+            showToast(apiResponse.error || 'Không thể tải danh sách cấu hình', 'error');
         }
     } catch (error) {
         console.error('Error loading configs:', error);
-        showToast('Không thể tải danh sách configs', 'error');
+        showToast('Không thể tải danh sách cấu hình', 'error');
     }
 }
 
@@ -235,7 +235,7 @@ function displayConfigs(configs) {
         container.innerHTML = `
             <div class="col-12 text-center text-muted py-5">
                 <i class="fa fa-inbox fa-3x mb-3"></i>
-                <p>Chưa có config nào. Hãy tạo config đầu tiên!</p>
+                <p>Chưa có cấu hình nào. Hãy tạo cấu hình đầu tiên!</p>
             </div>
         `;
         return;
@@ -256,79 +256,86 @@ function createConfigCard(config) {
     const enabledClass = config.enabled ? 'success' : 'secondary';
     
     col.innerHTML = `
-        <div class="card config-card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">${config.name}</h6>
+        <div class="card config-card h-100 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center bg-light">
+                <h6 class="mb-0 fw-bold text-primary">${config.name}</h6>
                 <div>
                     <span class="badge bg-${statusClass} status-badge me-1">${config.status}</span>
                     <span class="badge bg-${enabledClass} status-badge">${config.enabled ? 'ON' : 'OFF'}</span>
                 </div>
             </div>
             <div class="card-body">
-                <p class="text-muted small mb-2">${config.description || 'Không có mô tả'}</p>
-                <div class="mb-2">
-                    <strong>URL:</strong><br>
-                    <small class="text-break">${config.baseUrl}</small>
+                <p class="text-muted small mb-3 fst-italic">${config.description || 'Không có mô tả'}</p>
+                
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fa fa-link text-muted me-2"></i>
+                        <strong class="text-dark">URL nguồn:</strong>
+                    </div>
+                    <small class="text-break text-primary">${config.baseUrl}</small>
                 </div>
-                <div class="mb-2">
-                    <strong>Topic:</strong> ${config.topicName}
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fa fa-tag text-muted me-2"></i>
+                            <strong class="text-dark">Chủ đề:</strong>
+                        </div>
+                        <span class="badge bg-info">${config.topicName}</span>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fa fa-list text-muted me-2"></i>
+                            <strong class="text-dark">Số bài tối đa:</strong>
+                        </div>
+                        <span class="badge bg-secondary">${config.maxPosts}</span>
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <strong>Max Posts:</strong> ${config.maxPosts}
-                </div>
-                <div class="mb-2">
-                    <strong>Interval:</strong> ${config.intervalMinutes} phút
-                </div>
-                <div class="mb-2">
-                    <strong><i class="fa fa-users me-1"></i>Groups đã chọn:</strong><br>
+                
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fa fa-users text-muted me-2"></i>
+                        <strong class="text-dark">Nhóm đã chọn:</strong>
+                    </div>
                     ${config.groupIds && config.groupIds.length > 0 ? 
                         config.groupIds.map(id => {
                             const group = groups.find(g => g.id === id);
                             return group ? `<span class="badge bg-primary me-1 mb-1">${group.name}</span>` : '';
                         }).join('') : 
-                        '<span class="text-muted"><i class="fa fa-info-circle me-1"></i>Posts sẽ được tạo công khai</span>'
+                        '<span class="text-muted small"><i class="fa fa-info-circle me-1"></i>Bài viết sẽ được tạo công khai</span>'
                     }
                 </div>
-                <div class="row text-center mb-2">
-                    <div class="col-4">
-                        <small class="text-muted">Total</small><br>
-                        <strong>${config.totalCrawled || 0}</strong>
+                
+                <div class="row text-center bg-light rounded p-2 mb-3">
+                    <div class="col-6">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fa fa-database text-primary mb-1"></i>
+                            <small class="text-muted">Tổng bài viết</small>
+                            <strong class="text-primary fs-5">${config.totalCrawled || 0}</strong>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <small class="text-muted">Success</small><br>
-                        <strong class="text-success">${config.successCount || 0}</strong>
-                    </div>
-                    <div class="col-4">
-                        <small class="text-muted">Errors</small><br>
-                        <strong class="text-danger">${config.errorCount || 0}</strong>
+                    <div class="col-6">
+                        <div class="d-flex flex-column align-items-center">
+                            <i class="fa fa-clock text-success mb-1"></i>
+                            <small class="text-muted">Lần crawl cuối</small>
+                            <small class="text-success">${config.lastCrawledAt ? new Date(config.lastCrawledAt).toLocaleString('vi-VN') : 'Chưa crawl'}</small>
+                        </div>
                     </div>
                 </div>
-                <div class="mb-2">
-                    <small class="text-muted">Last crawled:</small><br>
-                    <small>${config.lastCrawledAt ? new Date(config.lastCrawledAt).toLocaleString('vi-VN') : 'Chưa crawl'}</small>
-                </div>
-                ${config.lastError ? `
-                    <div class="alert alert-danger alert-sm mb-2">
-                        <small><strong>Lỗi:</strong> ${config.lastError}</small>
-                    </div>
-                ` : ''}
             </div>
-            <div class="card-footer">
+            <div class="card-footer bg-light">
                 <div class="btn-group w-100" role="group">
                     <button class="btn btn-sm btn-outline-primary" onclick="editConfig(${config.id})" title="Chỉnh sửa">
-                        <i class="fa fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-info" onclick="testConfig(${config.id})" title="Test">
-                        <i class="fa fa-flask"></i>
+                        <i class="fa fa-edit me-1"></i>Sửa
                     </button>
                     <button class="btn btn-sm btn-outline-success" onclick="crawlConfig(${config.id})" title="Crawl ngay">
-                        <i class="fa fa-play"></i>
+                        <i class="fa fa-play me-1"></i>Crawl
                     </button>
                     <button class="btn btn-sm btn-outline-warning" onclick="toggleConfig(${config.id})" title="Bật/Tắt">
-                        <i class="fa fa-power-off"></i>
+                        <i class="fa fa-power-off me-1"></i>Bật/Tắt
                     </button>
                     <button class="btn btn-sm btn-outline-danger" onclick="deleteConfig(${config.id})" title="Xóa">
-                        <i class="fa fa-trash"></i>
+                        <i class="fa fa-trash me-1"></i>Xóa
                     </button>
                 </div>
             </div>
@@ -357,12 +364,12 @@ async function editConfig(configId) {
         currentConfig = config;
         fillConfigForm(config);
         
-        document.getElementById('modalTitle').textContent = 'Chỉnh sửa Config';
+        document.getElementById('modalTitle').textContent = 'Chỉnh sửa cấu hình';
         const modal = new bootstrap.Modal(document.getElementById('configModal'));
         modal.show();
     } catch (error) {
         console.error('Error loading config:', error);
-        showToast('Không thể tải config', 'error');
+        showToast('Không thể tải cấu hình', 'error');
     }
 }
 
@@ -374,10 +381,6 @@ function fillConfigForm(config) {
     document.getElementById('configBaseUrl').value = config.baseUrl || '';
     document.getElementById('configTopicName').value = config.topicName || '';
     document.getElementById('configMaxPosts').value = config.maxPosts || 10;
-    document.getElementById('configIntervalMinutes').value = config.intervalMinutes || 60;
-    document.getElementById('configTimeout').value = config.timeout || 10000;
-    document.getElementById('configUserAgent').value = config.userAgent || '';
-    document.getElementById('configAdditionalHeaders').value = config.additionalHeaders || '';
     document.getElementById('configEnabled').checked = config.enabled || false;
     
     // Set selected groups for custom combobox
@@ -396,19 +399,12 @@ function fillConfigForm(config) {
 // Save config
 async function saveConfig() {
     try {
-        // Get selected group IDs from custom combobox
-        
         const configData = {
             name: document.getElementById('configName').value,
             description: document.getElementById('configDescription').value,
             baseUrl: document.getElementById('configBaseUrl').value,
             topicName: document.getElementById('configTopicName').value,
             maxPosts: parseInt(document.getElementById('configMaxPosts').value),
-            intervalMinutes: parseInt(document.getElementById('configIntervalMinutes').value),
-            timeout: parseInt(document.getElementById('configTimeout').value),
-            userAgent: document.getElementById('configUserAgent').value,
-            additionalHeaders: document.getElementById('configAdditionalHeaders').value,
-            postProcessingRules: '', // Không sử dụng post processing rules
             enabled: document.getElementById('configEnabled').checked,
             groupIds: selectedGroupIds
         };
@@ -591,7 +587,7 @@ document.getElementById('configModal').addEventListener('hidden.bs.modal', funct
     document.getElementById('configForm').reset();
     document.getElementById('configId').value = '';
     currentConfig = null;
-    document.getElementById('modalTitle').textContent = 'Thêm Config Crawling';
+    document.getElementById('modalTitle').textContent = 'Thêm cấu hình crawling';
     
     // Clear group selection for custom combobox
     selectedGroupIds = [];
