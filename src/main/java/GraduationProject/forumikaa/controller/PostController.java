@@ -261,8 +261,9 @@ public class PostController {
         try {
             Long userId = getCurrentUserId();
             String message = request != null ? request.get("message") : null;
+            String privacy = request != null ? request.get("privacy") : "PUBLIC";
             
-            Map<String, Object> sharedPost = postService.sharePost(postId, userId, message);
+            Map<String, Object> sharedPost = postService.sharePost(postId, userId, message, privacy);
             Long shareCount = postService.getPostShareCount(postId);
             
             return ResponseEntity.ok(Map.of(

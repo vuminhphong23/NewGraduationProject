@@ -216,6 +216,7 @@ class FileUploadManager {
         try {
             const response = await authenticatedFetch('/api/files/upload-multiple', {
                 method: 'POST',
+                credentials: 'include',
                 body: formData
             });
 

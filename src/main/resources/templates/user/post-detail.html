@@ -94,7 +94,10 @@
                     <div class="card-footer bg-white border-0 pt-0">
                         <div class="d-flex justify-content-between text-muted small mb-2">
                             <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
-                            <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                            <div class="d-flex gap-3">
+                                <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                                <span class="share-count" th:text="${post.shareCount ?: '0'} + ' lượt chia sẻ'">0 lượt chia sẻ</span>
+                            </div>
                         </div>
                         <hr class="my-2" style="color: #c3d2e0;">
                         <div class="d-flex justify-content-around">

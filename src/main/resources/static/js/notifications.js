@@ -238,7 +238,9 @@
             case 'MENTION':
                 return `
                     <div class="notification-actions">
-                        <button class="btn btn-sm btn-primary" onclick="window.location.href='${notification.link}'">
+                        <button class="btn btn-sm btn-primary view-detail-btn" 
+                                data-notification-id="${notification.id}"
+                                data-link="${notification.link}">
                             Xem chi tiết
                         </button>
                         ${!notification.isRead ? `
@@ -255,7 +257,9 @@
                 if (notification.link) {
                     return `
                         <div class="notification-actions">
-                            <button class="btn btn-sm btn-primary" onclick="window.location.href='${notification.link}'">
+                            <button class="btn btn-sm btn-primary view-detail-btn" 
+                                    data-notification-id="${notification.id}"
+                                    data-link="${notification.link}">
                                 Xem chi tiết
                             </button>
                             ${!notification.isRead ? `
@@ -279,6 +283,21 @@
                 e.stopPropagation();
                 const notificationId = btn.getAttribute('data-notification-id');
                 await markAsRead(notificationId);
+            });
+        });
+
+        // View detail buttons
+        notificationList.querySelectorAll('.view-detail-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const notificationId = btn.getAttribute('data-notification-id');
+                const link = btn.getAttribute('data-link');
+                
+                // Mark as read trước khi chuyển trang
+                await markAsRead(notificationId);
+                
+                // Chuyển trang
+                window.location.href = link;
             });
         });
 
@@ -558,6 +577,9 @@
             });
             
             if (response && response.ok) {
+                // Đánh dấu notification là đã đọc
+                await markAsRead(notificationId);
+                
                 // Cập nhật ngay lập tức để UI responsive
                 updateNotificationStatus(notificationId, 'accepted', 'ACCEPTED');
                 
@@ -597,6 +619,9 @@
             });
             
             if (response && response.ok) {
+                // Đánh dấu notification là đã đọc
+                await markAsRead(notificationId);
+                
                 // Cập nhật ngay lập tức để UI responsive
                 updateNotificationStatus(notificationId, 'rejected', 'REJECTED');
                 
@@ -636,10 +661,13 @@
             });
             
             if (response && response.ok) {
-                // Cập nhật ngay lập tức để UI responsive
                 // Tìm notification có senderId này và cập nhật
                 const notification = notifications.find(n => n.senderId === senderId && n.type && n.type.includes('FRIENDSHIP'));
                 if (notification) {
+                    // Đánh dấu notification là đã đọc
+                    await markAsRead(notification.id);
+                    
+                    // Cập nhật ngay lập tức để UI responsive
                     updateNotificationStatus(notification.id, 'cancelled', 'CANCELLED');
                 }
                 

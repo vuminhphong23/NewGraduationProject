@@ -1,9 +1,11 @@
 package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dao.FriendshipDao;
+import GraduationProject.forumikaa.dao.NotificationDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.entity.Friendship;
 import GraduationProject.forumikaa.entity.FriendshipStatus;
+import GraduationProject.forumikaa.entity.Notification;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Autowired private FriendshipDao friendshipDao;
     @Autowired private UserDao userDao;
     @Autowired private NotificationService notificationService;
+    @Autowired private NotificationDao notificationDao;
 
     @Override
     public void sendFriendRequest(Long requesterId, Long targetUserId) {
@@ -63,6 +66,12 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendship.setStatus(FriendshipStatus.ACCEPTED);
         friendshipDao.save(friendship);
 
+        // Cập nhật notification gốc (FRIENDSHIP_REQUEST) thành FRIENDSHIP_ACCEPTED
+        updateOriginalNotification(requesterId, currentUserId, 
+            Notification.NotificationType.FRIENDSHIP_REQUEST, 
+            Notification.NotificationType.FRIENDSHIP_ACCEPTED,
+            "đã chấp nhận lời mời kết bạn");
+
         // Tạo thông báo cho người gửi yêu cầu
         notificationService.createFriendshipAcceptedNotification(friendship.getUser().getId(), currentUserId);
     }
@@ -72,6 +81,12 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship friendship = friendshipDao.findByUserIdAndFriendId(requesterId, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Yêu cầu kết bạn không tồn tại"));
         friendshipDao.delete(friendship);
+
+        // Cập nhật notification gốc (FRIENDSHIP_REQUEST) thành FRIENDSHIP_REJECTED
+        updateOriginalNotification(requesterId, currentUserId, 
+            Notification.NotificationType.FRIENDSHIP_REQUEST, 
+            Notification.NotificationType.FRIENDSHIP_REJECTED,
+            "đã từ chối lời mời kết bạn");
 
         // Tạo thông báo cho người gửi yêu cầu
         notificationService.createFriendshipRejectedNotification(friendship.getUser().getId(), currentUserId);
@@ -119,6 +134,36 @@ public class FriendshipServiceImpl implements FriendshipService {
             m.put("createdAt", f.getCreatedAt());
             return m;
         }).collect(Collectors.toList());
+    }
+
+    // Helper method để cập nhật notification gốc
+    private void updateOriginalNotification(Long senderId, Long recipientId, 
+                                         Notification.NotificationType originalType, 
+                                         Notification.NotificationType newType, 
+                                         String newMessage) {
+        try {
+            // Tìm notification gốc (FRIENDSHIP_REQUEST) từ senderId đến recipientId
+            Optional<Notification> originalNotification = notificationDao
+                .findBySenderIdAndRecipientIdAndType(senderId, recipientId, originalType);
+            
+            if (originalNotification.isPresent()) {
+                Notification notification = originalNotification.get();
+                // Lấy tên người gửi để tạo message mới
+                Optional<User> sender = userDao.findById(senderId);
+                String senderName = sender.map(User::getUsername).orElse("Người dùng");
+                String updatedMessage = senderName + " " + newMessage;
+                
+                // Cập nhật notification
+                notificationService.updateNotificationType(
+                    notification.getId(), 
+                    newType, 
+                    updatedMessage
+                );
+            }
+        } catch (Exception e) {
+            // Log lỗi nhưng không throw để không ảnh hưởng đến flow chính
+            System.err.println("Lỗi khi cập nhật notification gốc: " + e.getMessage());
+        }
     }
 }
 

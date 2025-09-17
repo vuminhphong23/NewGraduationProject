@@ -28,5 +28,8 @@ public interface NotificationService {
     Notification createMentionNotification(Long mentionedUserId, Long mentionerId, Long entityId, String entityType);
     Notification createSystemNotification(Long userId, String message);
     Notification createWelcomeNotification(Long userId);
+    
+    // Method để cập nhật notification type
+    void updateNotificationType(Long notificationId, Notification.NotificationType newType, String newMessage);
 }
 

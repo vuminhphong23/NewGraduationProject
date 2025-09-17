@@ -82,11 +82,16 @@ class JwtUtils {
             throw new Error('Không có JWT token');
         }
 
+        // Don't set Content-Type for FormData - let browser set it automatically
         const headers = {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
             ...options.headers
         };
+
+        // Only set Content-Type to application/json if body is not FormData
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         try {
             const response = await fetch(url, {
@@ -222,10 +227,14 @@ window.authenticatedFetch = async function(url, options = {}) {
         const token = localStorage.getItem('jwt_token');
         if (token) {
             options.headers = {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
                 ...options.headers
             };
+            
+            // Only set Content-Type to application/json if body is not FormData
+            if (!(options.body instanceof FormData)) {
+                options.headers['Content-Type'] = 'application/json';
+            }
         }
         return await fetch(url, options);
     }

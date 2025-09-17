@@ -312,25 +312,19 @@ class PostManager {
     sharePost(postId) {
         const url = `${window.location.origin}/posts/${postId}`;
         
-        if (navigator.share) {
-            navigator.share({
-                title: 'Bài viết từ Forumikaa',
-                url: url
-            });
-        } else {
-            navigator.clipboard.writeText(url).then(() => {
-                this.showToast('Đã copy link bài viết!', 'success');
-            }).catch(() => {
-                // Fallback
-                const textArea = document.createElement('textarea');
-                textArea.value = url;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                this.showToast('Đã copy link bài viết!', 'success');
-            });
-        }
+        // Chỉ sử dụng clipboard, không dùng Web Share API
+        navigator.clipboard.writeText(url).then(() => {
+            this.showToast('Đã copy link bài viết!', 'success');
+        }).catch(() => {
+            // Fallback
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            this.showToast('Đã copy link bài viết!', 'success');
+        });
     }
     
     resetForm() {

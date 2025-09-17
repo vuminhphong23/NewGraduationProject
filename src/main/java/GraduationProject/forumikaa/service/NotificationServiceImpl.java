@@ -327,4 +327,15 @@ public class NotificationServiceImpl implements NotificationService{
         notificationBroadcaster.publish(userId, saved);
         return saved;
     }
+
+    @Override
+    public void updateNotificationType(Long notificationId, Notification.NotificationType newType, String newMessage) {
+        Optional<Notification> notificationOpt = notificationDao.findById(notificationId);
+        if (notificationOpt.isPresent()) {
+            Notification notification = notificationOpt.get();
+            notification.setType(newType);
+            notification.setMessage(newMessage);
+            notificationDao.save(notification);
+        }
+    }
 }

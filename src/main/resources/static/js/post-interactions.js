@@ -449,53 +449,140 @@ class PostInteractions {
     async sharePost(button) {
         const postId = button.getAttribute('data-post-id');
         
-        // Show share modal
-        this.showShareModal(postId);
+        // Show share modal with post preview
+        await this.showShareModal(postId);
     }
     
-    showShareModal(postId) {
-        const modalHtml = `
-            <div class="modal fade" id="shareModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Chia sẻ bài viết</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label">Thêm tin nhắn (tùy chọn)</label>
-                                <textarea class="form-control" id="shareMessage" rows="3" 
-                                          placeholder="Viết gì đó về bài viết này..."></textarea>
+    async showShareModal(postId) {
+        try {
+            // Load post data for preview
+            const response = await authenticatedFetch(`/api/posts/${postId}`);
+            if (!response.ok) throw new Error('Failed to load post');
+            const postData = await response.json();
+            
+            const modalHtml = `
+                <div class="modal fade" id="shareModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fa fa-share-alt me-2"></i>Chia sẻ bài viết
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="button" class="btn btn-primary" onclick="confirmShare(${postId})">
-                                Chia sẻ
-                            </button>
+                            <div class="modal-body">
+                                <!-- Post Preview -->
+                                <div class="post-preview mb-4">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <img src="${postData.userAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}" 
+                                                     alt="avatar" class="rounded-circle me-2" width="32" height="32">
+                                                <div>
+                                                    <strong>${postData.userName}</strong>
+                                                    <small class="text-muted d-block">${this.formatTime(postData.createdAt)}</small>
+                                                </div>
+                                            </div>
+                                            <div class="post-content">
+                                                <h6 class="mb-2">${postData.title || ''}</h6>
+                                                <p class="mb-2 text-muted small">${postData.content ? postData.content.substring(0, 150) + (postData.content.length > 150 ? '...' : '') : ''}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Share Options -->
+                                <div class="share-options">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Thêm tin nhắn của bạn</label>
+                                        <textarea class="form-control" id="shareMessage" rows="3" 
+                                                  placeholder="Viết gì đó về bài viết này..."></textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Chia sẻ với</label>
+                                        <div class="privacy-options">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sharePrivacy" id="sharePublic" value="PUBLIC" checked>
+                                                <label class="form-check-label" for="sharePublic">
+                                                    <i class="fa fa-globe me-2"></i>Công khai
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sharePrivacy" id="shareFriends" value="FRIENDS">
+                                                <label class="form-check-label" for="shareFriends">
+                                                    <i class="fa fa-users me-2"></i>Bạn bè
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sharePrivacy" id="sharePrivate" value="PRIVATE">
+                                                <label class="form-check-label" for="sharePrivate">
+                                                    <i class="fa fa-lock me-2"></i>Chỉ mình tôi
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="share-methods">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-primary w-100" onclick="confirmShare(${postId})">
+                                                    <i class="fa fa-share me-2"></i>Chia sẻ nội bộ
+                                                </button>
+                                            </div>
+                                            <div class="col-6">
+                                                <button type="button" class="btn btn-outline-primary w-100" onclick="copyPostLink(${postId})">
+                                                    <i class="fa fa-link me-2"></i>Copy link
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        
-        // Remove existing modal if any
-        const existingModal = document.getElementById('shareModal');
-        if (existingModal) {
-            existingModal.remove();
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('shareModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add new modal
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+            modal.show();
+            
+        } catch (error) {
+            console.error('Error loading post for share:', error);
+            this.showToast('Có lỗi xảy ra khi tải bài viết', 'error');
         }
+    }
+    
+    formatTime(timestamp) {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Vừa xong';
+        if (diffMins < 60) return `${diffMins} phút trước`;
+        if (diffHours < 24) return `${diffHours} giờ trước`;
+        if (diffDays < 7) return `${diffDays} ngày trước`;
         
-        // Add new modal
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('shareModal'));
-        modal.show();
+        return date.toLocaleDateString('vi-VN');
     }
     
     async confirmShare(postId) {
         const message = document.getElementById('shareMessage')?.value?.trim() || null;
+        const privacy = document.querySelector('input[name="sharePrivacy"]:checked')?.value || 'PUBLIC';
         
         try {
             const response = await authenticatedFetch(`/api/posts/${postId}/share`, {
@@ -504,7 +591,10 @@ class PostInteractions {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ message })
+                body: JSON.stringify({ 
+                    message,
+                    privacy 
+                })
             });
             
             if (response.ok) {
@@ -531,6 +621,32 @@ class PostInteractions {
         } catch (error) {
             console.error('Share error:', error);
             this.showToast('Không thể kết nối đến máy chủ', 'error');
+        }
+    }
+    
+    async copyPostLink(postId) {
+        const url = `${window.location.origin}/posts/${postId}`;
+        
+        try {
+            // Chỉ sử dụng clipboard, không dùng Web Share API
+            await navigator.clipboard.writeText(url);
+            this.showToast('Đã copy link bài viết!', 'success');
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+        } catch (error) {
+            console.error('Copy link error:', error);
+            // Fallback
+            const textArea = document.createElement('textarea');
+            textArea.value = url;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            this.showToast('Đã copy link bài viết!', 'success');
+            
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
         }
     }
     
@@ -810,6 +926,10 @@ window.sharePost = (button) => {
 
 window.confirmShare = (postId) => {
     window.postInteractions?.confirmShare(postId);
+};
+
+window.copyPostLink = (postId) => {
+    window.postInteractions?.copyPostLink(postId);
 };
 
 // Global functions for HTML onclick

@@ -47,7 +47,30 @@ public class FileController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("postId") Long postId) {
         
-        Long userId = securityUtil.getCurrentUserId();
+        System.out.println("DEBUG: Upload multiple files called with postId: " + postId);
+        System.out.println("DEBUG: Files count: " + (files != null ? files.length : 0));
+        
+        Long userId;
+        try {
+            userId = securityUtil.getCurrentUserId();
+            System.out.println("DEBUG: User ID: " + userId);
+            
+            if (userId == null) {
+                System.err.println("DEBUG: User ID is null - user not authenticated");
+                return CompletableFuture.completedFuture(
+                    ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(null)
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("DEBUG: Error getting user ID: " + e.getMessage());
+            e.printStackTrace();
+            return CompletableFuture.completedFuture(
+                ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(null)
+            );
+        }
+        
         List<MultipartFile> fileList = Arrays.asList(files);
         
         // Upload files in parallel
@@ -64,8 +87,11 @@ public class FileController {
             List<FileUploadResponse> responses = uploadFutures.stream()
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
+            System.out.println("DEBUG: Upload successful, responses count: " + responses.size());
             return ResponseEntity.ok(responses);
         }).exceptionally(throwable -> {
+            System.err.println("DEBUG: Upload failed with exception: " + throwable.getMessage());
+            throwable.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(null);
         });

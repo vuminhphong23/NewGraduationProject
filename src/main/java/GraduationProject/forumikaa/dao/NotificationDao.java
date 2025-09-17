@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface NotificationDao extends JpaRepository<Notification, Long> {
@@ -32,7 +33,8 @@ public interface NotificationDao extends JpaRepository<Notification, Long> {
 
     List<Notification> findByTypeIn(List<Notification.NotificationType> types);
 
-
+    // Tìm notification theo senderId, recipientId và type
+    Optional<Notification> findBySenderIdAndRecipientIdAndType(Long senderId, Long recipientId, Notification.NotificationType type);
 
 }
 

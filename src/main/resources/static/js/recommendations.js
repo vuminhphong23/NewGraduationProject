@@ -194,9 +194,21 @@ function commentPost(postId) {
 }
 
 function sharePost(postId) {
-    // Implement share functionality
-    console.log('Sharing post:', postId);
-    toastManager.success('Đã chia sẻ bài viết!');
+    // Copy link to clipboard
+    const url = `${window.location.origin}/posts/${postId}`;
+    
+    navigator.clipboard.writeText(url).then(() => {
+        toastManager.success('Đã copy link bài viết!');
+    }).catch(() => {
+        // Fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        toastManager.success('Đã copy link bài viết!');
+    });
 }
 
 function showToast(message, type = 'info') {

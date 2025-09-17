@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/css/post-interactions.css">
     <link rel="stylesheet" href="/css/file-upload.css">
     <link rel="stylesheet" href="/css/group-indicator.css">
+    <link rel="stylesheet" href="/css/shared-post.css">
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -228,11 +229,8 @@
 
                     <!-- Body -->
                     <div class="card-body pt-2">
-                        <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
-                            th:text="${post.title}">Tiêu đề bài viết</h5>
-
-                        <p class="card-text" style="white-space: pre-wrap;"
-                           th:text="${post.content}">Nội dung bài viết...</p>
+                        <!-- Shared Post or Regular Post -->
+                        <div th:replace="fragments/user/shared-post :: shared-post"></div>
 
                         <!-- Documents Display -->
                         <div class="post-documents mt-3" th:if="${post.documents != null and !post.documents.isEmpty()}">
@@ -342,7 +340,10 @@
                     <div class="card-footer bg-white border-0 pt-0">
                         <div class="d-flex justify-content-between text-muted small mb-2">
                             <span class="like-count" th:text="${post.likeCount ?: '0'} + ' lượt thích'">0 lượt thích</span>
-                            <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                            <div class="d-flex gap-3">
+                                <span class="comment-count" th:text="${post.commentCount ?: '0'} + ' bình luận'">0 bình luận</span>
+                                <span class="share-count" th:text="${post.shareCount ?: '0'} + ' lượt chia sẻ'">0 lượt chia sẻ</span>
+                            </div>
                         </div>
                         <hr class="my-2" style="color: #c3d2e0;">
                         <div class="d-flex justify-content-around">

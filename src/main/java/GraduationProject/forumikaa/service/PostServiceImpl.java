@@ -533,7 +533,7 @@ public class PostServiceImpl implements PostService {
 
     // Share functionality
     @Override
-    public Map<String, Object> sharePost(Long postId, Long userId, String message) {
+    public Map<String, Object> sharePost(Long postId, Long userId, String message, String privacy) {
         Post originalPost = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         
@@ -542,11 +542,25 @@ public class PostServiceImpl implements PostService {
         
         // Create shared post
         Post sharedPost = new Post();
-        sharedPost.setTitle("Chia sẻ: " + (originalPost.getTitle() != null ? originalPost.getTitle() : "Bài viết"));
-        sharedPost.setContent(message != null ? message : "Đã chia sẻ bài viết này");
+        sharedPost.setTitle(originalPost.getTitle() != null ? originalPost.getTitle() : "Bài viết");
+        
+        // Tạo nội dung chia sẻ với format đẹp
+        StringBuilder sharedContent = new StringBuilder();
+        if (message != null && !message.trim().isEmpty()) {
+            sharedContent.append(message).append("\n");
+        }
+        // Thêm originalPostId để detect shared post
+        sharedContent.append("ORIGINAL_POST_ID:").append(originalPost.getId());
+        
+        sharedPost.setContent(sharedContent.toString());
         sharedPost.setUser(user);
-        sharedPost.setPrivacy(originalPost.getPrivacy()); // Use same privacy as original
+        sharedPost.setPrivacy(PostPrivacy.valueOf(privacy)); // Use privacy setting from request
         sharedPost.setStatus(PostStatus.APPROVED);
+        
+        // Copy topics từ bài viết gốc sang bài viết được chia sẻ
+        if (originalPost.getTopics() != null && !originalPost.getTopics().isEmpty()) {
+            sharedPost.setTopics(new HashSet<>(originalPost.getTopics()));
+        }
         
         // Update share count of original post
         originalPost.setShareCount(originalPost.getShareCount() + 1);
@@ -573,6 +587,25 @@ public class PostServiceImpl implements PostService {
         
         sharedPostData.put("createdAt", savedSharedPost.getCreatedAt());
         sharedPostData.put("originalPostId", postId);
+        
+        // Thêm thông tin bài viết gốc
+        Map<String, Object> originalPostInfo = new HashMap<>();
+        originalPostInfo.put("id", originalPost.getId());
+        originalPostInfo.put("title", originalPost.getTitle());
+        originalPostInfo.put("content", originalPost.getContent());
+        originalPostInfo.put("userName", originalPost.getUser().getUsername());
+        
+        // Avatar của người đăng bài gốc
+        String originalUserAvatar = null;
+        if (originalPost.getUser().getUserProfile() != null && originalPost.getUser().getUserProfile().getAvatar() != null && !originalPost.getUser().getUserProfile().getAvatar().trim().isEmpty()) {
+            originalUserAvatar = originalPost.getUser().getUserProfile().getAvatar();
+        } else {
+            originalUserAvatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+        }
+        originalPostInfo.put("userAvatar", originalUserAvatar);
+        originalPostInfo.put("createdAt", originalPost.getCreatedAt());
+        
+        sharedPostData.put("originalPost", originalPostInfo);
         
         return sharedPostData;
     }
@@ -620,6 +653,101 @@ public class PostServiceImpl implements PostService {
         dto.setShareCount(post.getShareCount() != null ? post.getShareCount() : 0L);
         dto.setStatus(post.getStatus());
         dto.setPrivacy(post.getPrivacy());
+        
+        // Check if this is a shared post by looking for originalPostId in content
+        // Pattern: "ORIGINAL_POST_ID:123" trong content
+        if (post.getContent() != null && post.getContent().contains("ORIGINAL_POST_ID:")) {
+            // This is a shared post, create originalPost info
+            Map<String, Object> originalPostInfo = new HashMap<>();
+            
+            // Parse thông tin từ content
+            String content = post.getContent();
+            String[] lines = content.split("\n");
+            
+            // Lấy originalPostId từ content
+            Long originalPostId = null;
+            String shareMessage = "";
+            
+            for (String line : lines) {
+                if (line.contains("ORIGINAL_POST_ID:")) {
+                    String[] parts = line.split("ORIGINAL_POST_ID:");
+                    if (parts.length > 1) {
+                        try {
+                            originalPostId = Long.parseLong(parts[1].trim());
+                        } catch (NumberFormatException e) {
+                            // Ignore
+                        }
+                    }
+                } else if (!line.trim().isEmpty() && !line.contains("ORIGINAL_POST_ID:")) {
+                    // Phần còn lại là message của người chia sẻ
+                    if (shareMessage.isEmpty()) {
+                        shareMessage = line.trim();
+                    }
+                }
+            }
+            
+            // Set message của người chia sẻ vào content chính
+            if (!shareMessage.isEmpty()) {
+                dto.setContent(shareMessage);
+            }
+            
+            // Tìm bài viết gốc bằng originalPostId
+            if (originalPostId != null) {
+                try {
+                    Post originalPost = postDao.findById(originalPostId).orElse(null);
+                    if (originalPost != null) {
+                        // Lấy thông tin thật từ bài viết gốc
+                        originalPostInfo.put("id", originalPost.getId());
+                        originalPostInfo.put("title", originalPost.getTitle());
+                        originalPostInfo.put("content", originalPost.getContent());
+                        originalPostInfo.put("userName", originalPost.getUser().getUsername());
+                        originalPostInfo.put("privacy", originalPost.getPrivacy()); // Privacy của bài viết gốc
+                        originalPostInfo.put("createdAt", originalPost.getCreatedAt());
+                        originalPostInfo.put("likeCount", originalPost.getLikeCount() != null ? originalPost.getLikeCount() : 0L);
+                        originalPostInfo.put("commentCount", originalPost.getCommentCount() != null ? originalPost.getCommentCount() : 0L);
+                        originalPostInfo.put("shareCount", originalPost.getShareCount() != null ? originalPost.getShareCount() : 0L);
+                        
+                        // Thông tin group nếu bài viết gốc thuộc group
+                        if (originalPost.getGroup() != null) {
+                            originalPostInfo.put("groupId", originalPost.getGroup().getId());
+                            originalPostInfo.put("groupName", originalPost.getGroup().getName());
+                            originalPostInfo.put("groupAvatar", originalPost.getGroup().getAvatar());
+                            originalPostInfo.put("groupDescription", originalPost.getGroup().getDescription());
+                        }
+                        
+                        // Thông tin topics của bài viết gốc
+                        if (originalPost.getTopics() != null && !originalPost.getTopics().isEmpty()) {
+                            originalPostInfo.put("topics", originalPost.getTopics());
+                        }
+                        
+                        // Avatar của người đăng bài gốc
+                        String originalUserAvatar = null;
+                        if (originalPost.getUser().getUserProfile() != null && originalPost.getUser().getUserProfile().getAvatar() != null && !originalPost.getUser().getUserProfile().getAvatar().trim().isEmpty()) {
+                            originalUserAvatar = originalPost.getUser().getUserProfile().getAvatar();
+                        } else {
+                            originalUserAvatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+                        }
+                        originalPostInfo.put("userAvatar", originalUserAvatar);
+                        
+                        // Documents của bài viết gốc
+                        if (originalPost.getDocuments() != null && !originalPost.getDocuments().isEmpty()) {
+                            originalPostInfo.put("documents", originalPost.getDocuments());
+                        }
+                        
+                        dto.setOriginalPost(originalPostInfo);
+                    }
+                } catch (Exception e) {
+                    // Fallback nếu không tìm thấy bài viết gốc
+                    originalPostInfo.put("id", post.getId());
+                    originalPostInfo.put("title", post.getTitle());
+                    originalPostInfo.put("content", "Nội dung bài viết gốc...");
+                    originalPostInfo.put("userName", "Tác giả gốc");
+                    originalPostInfo.put("userAvatar", userAvatar);
+                    originalPostInfo.put("createdAt", post.getCreatedAt());
+                    dto.setOriginalPost(originalPostInfo);
+                }
+            }
+        }
         
         // Set isLiked if currentUserId is provided
         if (currentUserId != null) {

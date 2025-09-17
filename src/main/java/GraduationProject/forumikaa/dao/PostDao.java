@@ -239,4 +239,8 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
                                @Param("status") String status,
                                @Param("statusEnum") PostStatus statusEnum,
                                Pageable pageable);
+    
+    // Find posts by title and not by specific user (for finding original posts)
+    @Query("SELECT p FROM Post p LEFT JOIN FETCH p.user u LEFT JOIN FETCH u.userProfile LEFT JOIN FETCH p.documents WHERE p.title = :title AND p.user.id != :userId ORDER BY p.createdAt ASC")
+    List<Post> findByTitleAndUserIdNot(@Param("title") String title, @Param("userId") Long userId);
 }

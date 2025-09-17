@@ -42,7 +42,7 @@ public interface PostService {
     Map<String, Object> updateComment(Long postId, Long commentId, Long userId, String content);
     
     // Share functionality
-    Map<String, Object> sharePost(Long postId, Long userId, String message);
+    Map<String, Object> sharePost(Long postId, Long userId, String message, String privacy);
     Long getPostShareCount(Long postId);
 
     // Admin management methods
