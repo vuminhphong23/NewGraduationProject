@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Download tracking
     function trackDownload(downloadUrl, fileName) {
         // Send download tracking request
-        fetch('/api/documents/track-download', {
+        authenticatedFetch('/api/documents/track-download', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

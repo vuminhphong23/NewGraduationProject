@@ -34,4 +34,8 @@ public class GroupMember {
     @CreationTimestamp
     @Column(name = "joined_at", nullable = false, updatable = false)
     private LocalDateTime joinedAt;
+    
+    // Transient field for post count (not persisted to database)
+    @Transient
+    private Long postCount;
 } 

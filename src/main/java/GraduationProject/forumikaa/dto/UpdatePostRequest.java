@@ -21,4 +21,7 @@ public class UpdatePostRequest {
     private List<String> topicNames;
     
     private PostPrivacy privacy;
+    
+    // Add groupId for group posts
+    private Long groupId;
 } 

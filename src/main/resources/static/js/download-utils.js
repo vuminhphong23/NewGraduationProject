@@ -28,7 +28,7 @@ async function downloadFile(url, fileId) {
         // For Cloudinary files, use fetch to download
         if (url && url.includes('cloudinary.com')) {
             try {
-                const response = await fetch(url);
+                const response = await authenticatedFetch(url);
                 const blob = await response.blob();
                 
                 const downloadUrl = window.URL.createObjectURL(blob);
@@ -63,7 +63,7 @@ async function downloadFile(url, fileId) {
 // Global update download count function
 async function updateDownloadCount(fileId) {
     try {
-        const response = await fetch(`/api/files/${fileId}/download`, {
+        const response = await authenticatedFetch(`/api/files/${fileId}/download`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

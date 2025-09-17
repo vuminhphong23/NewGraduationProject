@@ -1,6 +1,9 @@
 package GraduationProject.forumikaa.dao;
 
 import GraduationProject.forumikaa.entity.GroupMember;
+import GraduationProject.forumikaa.entity.GroupMemberRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -67,6 +70,31 @@ public interface GroupMemberDao extends JpaRepository<GroupMember, Long> {
         ORDER BY gm.joinedAt ASC
     """)
     List<GroupMember> findAdminsByGroupId(@Param("groupId") Long groupId);
+    
+    // Single optimized query for all member filtering needs
+    @Query("""
+        SELECT gm FROM GroupMember gm
+        JOIN FETCH gm.user u
+        LEFT JOIN FETCH u.userProfile up
+        WHERE gm.group.id = :groupId
+        AND (:search IS NULL OR :search = '' OR 
+             LOWER(u.username) LIKE LOWER(CONCAT('%', :search, '%')) OR
+             LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) OR
+             LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (:role IS NULL OR :role = '' OR gm.role = :roleEnum)
+    """)
+    List<GroupMember> findMembersWithFilters(@Param("groupId") Long groupId,
+                                           @Param("search") String search,
+                                           @Param("role") String role,
+                                           @Param("roleEnum") GroupMemberRole roleEnum);
+    
+    // Count total posts by user in a group
+    @Query("""
+        SELECT COUNT(p) FROM Post p
+        WHERE p.user.id = :userId AND p.group.id = :groupId
+    """)
+    Long countPostsByUserInGroup(@Param("userId") Long userId, 
+                                @Param("groupId") Long groupId);
     
     // Get user's joined group IDs
     @Query("SELECT gm.group.id FROM GroupMember gm WHERE gm.user.id = :userId")

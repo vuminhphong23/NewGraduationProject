@@ -271,7 +271,7 @@
             }
             
             // Gọi API /me để lấy thông tin user
-            const response = await fetch('/api/auth/me', {
+            const response = await authenticatedFetch('/api/auth/me', {
                 method: 'GET',
                 credentials: 'include'
             });

@@ -200,7 +200,7 @@ async function loadImagesForLightbox(postId, imageIndex) {
         window.postFilesData[postId] = files;
         
         if (currentImages.length === 0) {
-            showToast('Không có hình ảnh nào để hiển thị', 'warning');
+            toastManager.warning('Không có hình ảnh nào để hiển thị');
             return;
         }
         
@@ -227,7 +227,7 @@ async function loadImagesForLightbox(postId, imageIndex) {
         
     } catch (error) {
         console.error('Error loading images for lightbox:', error);
-        showToast('Không thể tải hình ảnh', 'error');
+        toastManager.error('Không thể tải hình ảnh');
     }
 }
 
@@ -551,7 +551,7 @@ function getFileIcon(fileName) {
 // Download all files as ZIP
 async function downloadAllFiles(postId) {
     try {
-        showToast('Đang tạo file ZIP...', 'info');
+        toastManager.info('Đang tạo file ZIP...');
         
         const response = await authenticatedFetch(`/api/files/download-all/${postId}`, {
             method: 'GET'
@@ -574,11 +574,11 @@ async function downloadAllFiles(postId) {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        showToast('Đã tải về file ZIP thành công!', 'success');
+        toastManager.success('Đã tải về file ZIP thành công!');
         
     } catch (error) {
         console.error('Error downloading ZIP:', error);
-        showToast('Không thể tải về file ZIP', 'error');
+        toastManager.error('Không thể tải về file ZIP');
     }
 }
 
@@ -587,7 +587,7 @@ async function downloadAllFiles(postId) {
 // Download all files from modal
 function downloadAllFilesFromModal(files) {
     if (!files || files.length === 0) {
-        showToast('Không có tệp nào để tải về', 'warning');
+        toastManager.warning('Không có tệp nào để tải về');
         return;
     }
     

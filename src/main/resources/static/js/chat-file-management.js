@@ -87,7 +87,7 @@ class ChatFileManagement {
 
     async fetchRoomMedia(roomId) {
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}/media`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}/media`, {
                 credentials: 'include'
             });
             
@@ -105,7 +105,7 @@ class ChatFileManagement {
 
     async fetchRoomDocuments(roomId) {
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}/documents`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}/documents`, {
                 credentials: 'include'
             });
             

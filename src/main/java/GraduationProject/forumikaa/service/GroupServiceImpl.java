@@ -12,6 +12,7 @@ import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.entity.UserProfile;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
@@ -19,6 +20,8 @@ import GraduationProject.forumikaa.exception.UnauthorizedException;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -196,6 +200,64 @@ public class GroupServiceImpl implements GroupService {
     public List<GroupMember> getGroupMembers(Long groupId) {
         return groupMemberDao.findByGroupId(groupId);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Page<GroupMember> getGroupMembersWithFilters(Long groupId, String search, String role, String sortBy, Pageable pageable) {
+        // Convert role string to enum
+        GroupMemberRole roleEnum = null;
+        if (role != null && !role.trim().isEmpty()) {
+            try {
+                roleEnum = GroupMemberRole.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                roleEnum = null;
+            }
+        }
+        
+        // Get all members with single optimized query
+        List<GroupMember> allMembers = groupMemberDao.findMembersWithFilters(groupId, search, role, roleEnum);
+        
+        // Sort members based on sortBy parameter
+        allMembers = sortMembers(allMembers, sortBy, groupId);
+        
+        // Manual pagination
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), allMembers.size());
+        
+        List<GroupMember> pageContent = allMembers.subList(start, end);
+        
+        return new org.springframework.data.domain.PageImpl<>(pageContent, pageable, allMembers.size());
+    }
+    
+    // Helper method to sort members
+    private List<GroupMember> sortMembers(List<GroupMember> members, String sortBy, Long groupId) {
+        if (sortBy == null || sortBy.isEmpty()) {
+            return members;
+        }
+        
+        return members.stream()
+            .sorted((m1, m2) -> {
+                switch (sortBy) {
+                    case "name":
+                        String name1 = (m1.getUser().getFirstName() + " " + m1.getUser().getLastName()).trim();
+                        String name2 = (m2.getUser().getFirstName() + " " + m2.getUser().getLastName()).trim();
+                        return name1.compareToIgnoreCase(name2);
+                    case "joinedAt":
+                        return m2.getJoinedAt().compareTo(m1.getJoinedAt());
+                    case "activity":
+                        Long count1 = groupMemberDao.countPostsByUserInGroup(m1.getUser().getId(), groupId);
+                        Long count2 = groupMemberDao.countPostsByUserInGroup(m2.getUser().getId(), groupId);
+                        int activityCompare = count2.compareTo(count1);
+                        if (activityCompare == 0) {
+                            return m2.getJoinedAt().compareTo(m1.getJoinedAt());
+                        }
+                        return activityCompare;
+                    default:
+                        return m2.getJoinedAt().compareTo(m1.getJoinedAt());
+                }
+            })
+            .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -296,6 +358,34 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public Long getTotalMemberCount() {
         return groupMemberDao.count();
+    }
+    
+    @Override
+    public Long getPostCountByUserInGroup(Long groupId, Long userId) {
+        return groupMemberDao.countPostsByUserInGroup(userId, groupId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupMember> getMostActiveMembers(Long groupId, int limit) {
+        // Get all members in the group
+        List<GroupMember> allMembers = groupMemberDao.findByGroupId(groupId);
+        
+        // Sort by post count (activity) and then by join date
+        return allMembers.stream()
+                .sorted((m1, m2) -> {
+                    Long count1 = groupMemberDao.countPostsByUserInGroup(m1.getUser().getId(), groupId);
+                    Long count2 = groupMemberDao.countPostsByUserInGroup(m2.getUser().getId(), groupId);
+                    
+                    // Sort by post count descending, then by join date descending
+                    int activityCompare = count2.compareTo(count1);
+                    if (activityCompare == 0) {
+                        return m2.getJoinedAt().compareTo(m1.getJoinedAt());
+                    }
+                    return activityCompare;
+                })
+                .limit(limit)
+                .collect(Collectors.toList());
     }
     
     

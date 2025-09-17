@@ -34,6 +34,9 @@ public interface GroupService {
     // Get group members
     List<GroupMember> getGroupMembers(Long groupId);
     
+    // Get group members with filters and pagination
+    Page<GroupMember> getGroupMembersWithFilters(Long groupId, String search, String role, String sortBy, Pageable pageable);
+    
     // Permission checks
     boolean canEditGroup(Long groupId, Long userId);
     boolean canDeleteGroup(Long groupId, Long userId);
@@ -53,5 +56,10 @@ public interface GroupService {
     List<Topic> getPopularTopics(int limit);
     Long getTotalGroupCount();
     Long getTotalMemberCount();
+    
+    // Activity methods
+    Long getPostCountByUserInGroup(Long groupId, Long userId);
+    
+    List<GroupMember> getMostActiveMembers(Long groupId, int limit);
     
 }

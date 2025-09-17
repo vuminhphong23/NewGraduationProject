@@ -156,4 +156,145 @@ body { background: #f6f8fb; }
     justify-content: center;
     color: #bbb;
     font-size: 1.1rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.chart-container canvas {
+    max-height: 100%;
+}
+
+/* Chart loading state */
+.chart-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.chart-loading .spinner-border {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.5rem;
+}
+
+/* Date picker styles */
+.date-range-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.date-range-picker input[type="date"] {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.date-range-picker input[type="date"]:focus {
+    border-color: #0F2E6F;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(15, 46, 111, 0.25);
+}
+
+.date-range-picker .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+.date-range-picker .text-muted {
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Badge styles for status and privacy - Light colors like user management */
+.badge-status-pending {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border-radius: 6px !important;
+}
+
+.badge-status-approved {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+    border-radius: 6px !important;
+}
+
+.badge-status-rejected {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-radius: 6px !important;
+}
+
+.badge-privacy-public {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+    border-radius: 6px !important;
+}
+
+.badge-privacy-private {
+    background-color: #f3e5f5 !important;
+    color: #7b1fa2 !important;
+    border-radius: 6px !important;
+}
+
+.badge-privacy-friends {
+    background-color: #e8f5e8 !important;
+    color: #2e7d32 !important;
+    border-radius: 6px !important;
+}
+
+/* Custom styles for post detail page */
+.post-detail-card {
+    transition: all 0.3s ease;
+}
+
+.post-detail-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.stats-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.content-area {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    padding: 2rem;
+    min-height: 200px;
+}
+
+.author-card {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.author-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 } 

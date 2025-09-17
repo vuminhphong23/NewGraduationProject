@@ -196,39 +196,6 @@ public class AdminCrawlingController {
         }
     }
     
-    /**
-     * Test kết nối
-     */
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        try {
-            System.out.println("🔍 Testing connection...");
-            
-            org.jsoup.nodes.Document doc = org.jsoup.Jsoup.connect("http://vnexpress.net")
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .timeout(30000)
-                    .followRedirects(true)
-                    .ignoreHttpErrors(true)
-                    .ignoreContentType(true)
-                    .maxBodySize(0)
-                    .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
-                    .header("Accept-Language", "vi-VN,vi;q=0.9,en;q=0.8")
-                    .header("Accept-Encoding", "gzip, deflate, br")
-                    .header("Connection", "keep-alive")
-                    .get();
-            
-            String title = doc.title();
-            System.out.println("✅ Test successful: " + title);
-            
-            return ResponseEntity.ok("Test successful! Title: " + title);
-        } catch (Exception e) {
-            System.err.println("❌ Test failed: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Test failed: " + e.getMessage());
-        }
-    }
-    
-    
     // ===== LEGACY ENDPOINTS FOR BACKWARD COMPATIBILITY =====
     
     /**

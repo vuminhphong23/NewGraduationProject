@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function performLiveSearch(query) {
         showLoading();
         
-        fetch(`/api/search/live?q=${encodeURIComponent(query)}&category=${currentCategory}`)
+        authenticatedFetch(`/api/search/live?q=${encodeURIComponent(query)}&category=${currentCategory}`)
             .then(response => response.json())
             .then(data => {
                 displayLiveResults(data);

@@ -46,79 +46,14 @@ function initializeGroupDetail() {
 }
 
 /**
- * Override PostManager để thêm groupId vào post data
+ * Configure PostManager để thêm groupId vào post data
  */
 function overridePostManagerForGroup() {
     // Đợi PostManager được khởi tạo
     setTimeout(() => {
-        if (window.postManager && window.postManager.submitPost) {
-            const originalSubmitPost = window.postManager.submitPost.bind(window.postManager);
-            
-            window.postManager.submitPost = async function() {
-                if (this.publishBtn.disabled) return;
-                
-                // Get selected topics
-                const selectedTopics = window.HashtagManager?.getSelected() || [];
-                
-                const postData = {
-                    title: this.titleInput.value.trim(),
-                    content: this.contentInput.value.trim(),
-                    topicNames: selectedTopics,
-                    privacy: this.currentPrivacy,
-                    groupId: groupId  // Add groupId here
-                };
-                
-                const url = this.editingPostId ? `/api/posts/${this.editingPostId}` : '/api/posts';
-                const method = this.editingPostId ? 'PUT' : 'POST';
-                
-                try {
-                    this.setLoading(true);
-                    
-                    const response = await authenticatedFetch(url, {
-                        method,
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(postData)
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        
-                        // Upload files if any are selected
-                        if (window.fileUploadManager && window.fileUploadManager.selectedFiles.length > 0) {
-                            try {
-                                await window.fileUploadManager.uploadFiles(result.id);
-                                this.showToast('File đã được đính kèm thành công!', 'success');
-                            } catch (fileError) {
-                                this.showToast('Bài viết đã được đăng nhưng có lỗi khi đính kèm file', 'warning');
-                            }
-                        }
-                        
-                        // Save topics
-                        if (selectedTopics.length > 0 && window.HashtagManager && typeof window.HashtagManager.saveTopics === 'function') {
-                            try {
-                                await window.HashtagManager.saveTopics(selectedTopics);
-                            } catch (topicError) {
-                                // Ignore topic save errors
-                            }
-                        }
-                        
-                        const message = this.editingPostId ? 'Cập nhật thành công!' : 'Đăng bài thành công!';
-                        this.showToast(message, 'success');
-                        this.closeModal();
-                        setTimeout(() => window.location.reload(), 1000);
-                    } else {
-                        const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
-                        this.showToast(error.message || 'Có lỗi xảy ra khi xử lý bài viết', 'error');
-                    }
-                } catch (error) {
-                    this.showToast('Không thể kết nối đến máy chủ', 'error');
-                } finally {
-                    this.setLoading(false);
-                }
-            };
+        if (window.postManager) {
+            // Set groupId for this group
+            window.postManager.setGroupId(groupId);
         }
     }, 100);
 }
@@ -141,14 +76,14 @@ function initializeGroupActions() {
             });
             
             if (response.ok) {
-                showToast('Đã tham gia nhóm thành công!', 'success');
+                toastManager.success('Đã tham gia nhóm thành công!');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
-                showToast(error.message || 'Không thể tham gia nhóm', 'error');
+                toastManager.error(error.message || 'Không thể tham gia nhóm');
             }
         } catch (error) {
-            showToast('Có lỗi xảy ra khi tham gia nhóm', 'error');
+            toastManager.error('Có lỗi xảy ra khi tham gia nhóm');
         }
     };
     
@@ -169,21 +104,19 @@ function initializeGroupActions() {
             });
             
             if (response.ok) {
-                showToast('Đã rời nhóm thành công!', 'success');
+                toastManager.success('Đã rời nhóm thành công!');
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
-                showToast(error.message || 'Không thể rời nhóm', 'error');
+                toastManager.error(error.message || 'Không thể rời nhóm');
             }
         } catch (error) {
-            showToast('Có lỗi xảy ra khi rời nhóm', 'error');
+            toastManager.error('Có lỗi xảy ra khi rời nhóm');
         }
     };
     
 }
 
-// Tất cả các chức năng post (like, comment, share) đã được định nghĩa trong post-interactions.js
-// Không cần định nghĩa lại ở đây
 
 // Smart Filter Functions
 function initializeSmartFilters() {
@@ -204,61 +137,263 @@ function initializeMembersFilter() {
     const clearBtn = document.getElementById('clearFilters');
     const quickFilters = document.querySelectorAll('.quick-filter');
     const membersList = document.getElementById('membersList');
+    const paginationContainer = document.getElementById('membersPagination');
     
     if (!membersList) return;
     
-    const memberItems = Array.from(membersList.querySelectorAll('.member-item'));
+    let currentPage = 0;
+    let currentSearch = '';
+    let currentRole = '';
+    let currentSort = 'name';
     
-    function filterMembers() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const roleValue = roleFilter.value;
-        const sortValue = sortFilter.value;
-        
-        let filtered = memberItems.filter(item => {
-            const name = item.dataset.name.toLowerCase();
-            const username = item.dataset.username.toLowerCase();
-            const role = item.dataset.role;
-            
-            const matchesSearch = name.includes(searchTerm) || username.includes(searchTerm);
-            const matchesRole = !roleValue || role === roleValue;
-            
-            return matchesSearch && matchesRole;
+    // Load members with current filters
+    function loadMembers(page = 0) {
+        const params = new URLSearchParams({
+            search: currentSearch,
+            role: currentRole,
+            sortBy: currentSort,
+            page: page,
+            size: 10
         });
         
-        // Sort
-        filtered.sort((a, b) => {
-            switch(sortValue) {
+        showLoading();
+        
+        authenticatedFetch(`/groups/${groupId}/members?${params}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Members data received:', data);
+                if (data && data.content) {
+                    // Set current user ID from response
+                    if (data.currentUserId) {
+                        window.currentUserId = data.currentUserId;
+                    }
+                    displayMembers(data.content);
+                    updatePagination(data);
+                } else {
+                    console.error('Invalid data structure:', data);
+                    displayMembers([]);
+                }
+                hideLoading();
+            })
+            .catch(error => {
+                console.error('Error loading members:', error);
+                toastManager.error('Không thể tải danh sách thành viên: ' + error.message);
+                displayMembers([]);
+                hideLoading();
+            });
+    }
+    
+    // Display members
+    function displayMembers(members) {
+        membersList.innerHTML = '';
+        
+        if (members.length === 0) {
+            membersList.innerHTML = `
+                <div class="col-12 text-center text-muted py-4">
+                    <i class="fa fa-users fa-3x mb-3"></i>
+                    <p>Không tìm thấy thành viên nào</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Create grid container
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'row g-3';
+        
+        // For activity sorting, we need to get post counts from server
+        if (currentSort === 'activity') {
+            // Server already handles activity sorting, just display
+            members.forEach(member => {
+                const memberElement = createMemberElement(member);
+                gridContainer.appendChild(memberElement);
+            });
+        } else {
+            // For other sorting, do client-side sorting
+            const sortedMembers = sortMembers(members, currentSort);
+            sortedMembers.forEach(member => {
+                const memberElement = createMemberElement(member);
+                gridContainer.appendChild(memberElement);
+            });
+        }
+        
+        membersList.appendChild(gridContainer);
+    }
+    
+    // Sort members based on sort option
+    function sortMembers(members, sortBy) {
+        const sorted = [...members];
+        
+            switch(sortBy) {
                 case 'name':
-                    return a.dataset.name.localeCompare(b.dataset.name);
+                    return sorted.sort((a, b) => {
+                        const nameA = (a.fullName || `${a.firstName || ''} ${a.lastName || ''}`.trim() || a.username).toLowerCase();
+                        const nameB = (b.fullName || `${b.firstName || ''} ${b.lastName || ''}`.trim() || b.username).toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
                 case 'joinedAt':
-                    return new Date(b.dataset.joinDate) - new Date(a.dataset.joinDate);
+                    return sorted.sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
                 case 'activity':
-                    // Mock activity - in real app, this would be based on actual data
-                    return Math.random() - 0.5;
+                    return sorted.sort((a, b) => {
+                        const activityA = a.postCount || 0;
+                        const activityB = b.postCount || 0;
+                        if (activityA === activityB) {
+                            return new Date(b.joinedAt) - new Date(a.joinedAt);
+                        }
+                        return activityB - activityA;
+                    });
                 default:
-                    return 0;
+                    return sorted;
             }
+    }
+    
+    // Create member element
+    function createMemberElement(member) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4 col-lg-3 col-xl-2';
+        
+        const fullName = member.fullName || `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.username;
+        const joinDate = new Date(member.joinedAt).toLocaleDateString('vi-VN');
+        const postCount = member.postCount || 0;
+        
+        // Check if this is current user
+        const isCurrentUser = member.userId === getCurrentUserId();
+        const currentUserIndicator = isCurrentUser ? 
+            '<div class="position-absolute top-0 end-0 m-1"><span class="badge bg-warning text-dark" style="font-size: 0.6rem;">Tôi</span></div>' : '';
+        
+        col.innerHTML = `
+            <div class="card member-item h-100 member-card-clickable position-relative" 
+                 data-name="${fullName.toLowerCase()}" 
+                 data-username="${member.username.toLowerCase()}" 
+                 data-role="${member.role}"
+                 data-activity="${postCount}"
+                 data-user-id="${member.userId}"
+                 style="cursor: pointer; transition: all 0.2s ease; ${isCurrentUser ? 'border: 2px solid #ffc107;' : ''}">
+                ${currentUserIndicator}
+                <div class="card-body text-center p-3">
+                    <img src="${member.avatar}" alt="${member.username}" 
+                         class="rounded-circle mb-2" width="45" height="45">
+                    <h6 class="card-title mb-1 small" style="font-size: 0.85rem; ${isCurrentUser ? 'color: #ffc107; font-weight: bold;' : ''}">${fullName}</h6>
+                    <p class="text-muted small mb-1" style="font-size: 0.75rem;">@${member.username}</p>
+                    <span class="badge bg-${member.role === 'ADMIN' ? 'primary' : 'secondary'} mb-2" style="font-size: 0.7rem;">
+                        ${member.role === 'ADMIN' ? 'Admin' : 'Member'}
+                    </span>
+                    <div class="member-info">
+                        <p class="text-muted small mb-1" style="font-size: 0.7rem;">
+                            <i class="fa fa-calendar me-1"></i>
+                            ${joinDate}
+                        </p>
+                        <p class="text-muted small mb-0" style="font-size: 0.7rem;">
+                            <i class="fa fa-pencil me-1"></i>
+                            ${postCount} bài
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add click event to navigate to profile
+        const card = col.querySelector('.member-card-clickable');
+        card.addEventListener('click', () => {
+            window.location.href = `/profile/${member.username}`;
         });
         
-        // Hide all items
-        memberItems.forEach(item => item.style.display = 'none');
+        // Add hover effects
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-2px)';
+            card.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        });
         
-        // Show filtered items
-        filtered.forEach(item => item.style.display = 'flex');
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+            card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        });
+        
+        return col;
+    }
+    
+    // Update pagination
+    function updatePagination(data) {
+        if (!paginationContainer) return;
+        
+        const { totalPages, currentPage: page, first, last } = data;
+        
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+        
+        let paginationHTML = '<nav><ul class="pagination justify-content-center">';
+        
+        // Previous button
+        paginationHTML += `
+            <li class="page-item ${first ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${page - 1})">Trước</a>
+            </li>
+        `;
+        
+        // Page numbers
+        const startPage = Math.max(0, page - 2);
+        const endPage = Math.min(totalPages - 1, page + 2);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHTML += `
+                <li class="page-item ${i === page ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i + 1}</a>
+                </li>
+            `;
+        }
+        
+        // Next button
+        paginationHTML += `
+            <li class="page-item ${last ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${page + 1})">Sau</a>
+            </li>
+        `;
+        
+        paginationHTML += '</ul></nav>';
+        paginationContainer.innerHTML = paginationHTML;
+    }
+    
+    // Change page function (global)
+    window.changePage = function(page) {
+        currentPage = page;
+        loadMembers(page);
+    };
+    
+    // Filter function
+    function applyFilters() {
+        currentPage = 0;
+        currentSearch = searchInput ? searchInput.value : '';
+        currentRole = roleFilter ? roleFilter.value : '';
+        currentSort = sortFilter ? sortFilter.value : 'name';
+        loadMembers();
     }
     
     // Event listeners
-    if (searchInput) searchInput.addEventListener('input', filterMembers);
-    if (roleFilter) roleFilter.addEventListener('change', filterMembers);
-    if (sortFilter) sortFilter.addEventListener('change', filterMembers);
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyFilters, 500); // Debounce
+        });
+    }
+    
+    if (roleFilter) roleFilter.addEventListener('change', applyFilters);
+    if (sortFilter) sortFilter.addEventListener('change', applyFilters);
     
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            roleFilter.value = '';
-            sortFilter.value = 'name';
+            if (searchInput) searchInput.value = '';
+            if (roleFilter) roleFilter.value = '';
+            if (sortFilter) sortFilter.value = 'name';
             quickFilters.forEach(btn => btn.classList.remove('active'));
-            memberItems.forEach(item => item.style.display = 'flex');
+            applyFilters();
         });
     }
     
@@ -271,18 +406,55 @@ function initializeMembersFilter() {
             const filter = btn.dataset.filter;
             switch(filter) {
                 case 'admin':
-                    roleFilter.value = 'ADMIN';
+                    if (roleFilter) roleFilter.value = 'ADMIN';
+                    if (sortFilter) sortFilter.value = 'name';
                     break;
                 case 'active':
-                    sortFilter.value = 'activity';
+                    if (sortFilter) sortFilter.value = 'activity';
+                    if (roleFilter) roleFilter.value = '';
                     break;
                 case 'new':
-                    sortFilter.value = 'joinedAt';
+                    if (sortFilter) sortFilter.value = 'joinedAt';
+                    if (roleFilter) roleFilter.value = '';
+                    break;
+                case 'all':
+                    if (roleFilter) roleFilter.value = '';
+                    if (sortFilter) sortFilter.value = 'name';
                     break;
             }
-            filterMembers();
+            applyFilters();
         });
     });
+    
+    // Load initial data
+    loadMembers();
+}
+
+// Helper function to get current user ID
+function getCurrentUserId() {
+    // Try to get from JWT token or global variable
+    if (typeof window.currentUserId !== 'undefined') {
+        return window.currentUserId;
+    }
+    
+    // Try to get from JWT utils if available
+    if (typeof JwtUtils !== 'undefined' && JwtUtils.getUserId) {
+        return JwtUtils.getUserId();
+    }
+    
+    // Try to get from meta tag
+    const metaUserId = document.querySelector('meta[name="current-user-id"]');
+    if (metaUserId) {
+        return parseInt(metaUserId.getAttribute('content'));
+    }
+    
+    // Fallback: try to get from data attribute
+    const bodyUserId = document.body.getAttribute('data-current-user-id');
+    if (bodyUserId) {
+        return parseInt(bodyUserId);
+    }
+    
+    return null;
 }
 
 function initializeDocumentsFilter() {
@@ -418,7 +590,7 @@ function viewFile(url) {
 // Start chat with user
 async function startChatWithUser(userId) {
     try {
-        const response = await fetch('/api/chat/private-chat', {
+        const response = await authenticatedFetch('/api/chat/private-chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -446,6 +618,31 @@ async function startChatWithUser(userId) {
 // View user profile
 function viewUserProfile(username) {
     window.location.href = `/profile/${username}`;
+}
+
+// Use global toastManager for notifications
+function showToast(message, type = 'info') {
+    if (window.toastManager) {
+        window.toastManager.show(message, type);
+    } else {
+        console.warn('ToastManager not available, falling back to console');
+        console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+}
+
+// Loading states
+function showLoading() {
+    const loadingElement = document.getElementById('loadingIndicator');
+    if (loadingElement) {
+        loadingElement.style.display = 'block';
+    }
+}
+
+function hideLoading() {
+    const loadingElement = document.getElementById('loadingIndicator');
+    if (loadingElement) {
+        loadingElement.style.display = 'none';
+    }
 }
 
 // Switch to specific tab

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function loadPersonalizedContent() {
     showLoading('personalizedContent');
     
-    fetch('/api/recommendations/crawled-content?limit=20')
+    authenticatedFetch('/api/recommendations/crawled-content?limit=20')
         .then(response => response.json())
         .then(data => {
             displayPosts(data, 'personalizedContent');
@@ -31,7 +31,7 @@ function loadPersonalizedContent() {
 function loadTrendingContent() {
     showLoading('trendingContent');
     
-    fetch('/api/recommendations/crawled-content/trending?limit=20')
+    authenticatedFetch('/api/recommendations/crawled-content/trending?limit=20')
         .then(response => response.json())
         .then(data => {
             displayPosts(data, 'trendingContent');
@@ -50,7 +50,7 @@ function loadInterestsContent() {
 function loadContentByInterest(interest) {
     showLoading('interestsContent');
     
-    fetch(`/api/recommendations/crawled-content/interest/${interest}?limit=20`)
+    authenticatedFetch(`/api/recommendations/crawled-content/interest/${interest}?limit=20`)
         .then(response => response.json())
         .then(data => {
             displayPosts(data, 'interestsContent');
@@ -178,25 +178,25 @@ function refreshRecommendations() {
     loadTrendingContent();
     
     // Show success message
-    showToast('Đã làm mới gợi ý thành công!', 'success');
+    toastManager.success('Đã làm mới gợi ý thành công!');
 }
 
 function likePost(postId) {
     // Implement like functionality
     console.log('Liking post:', postId);
-    showToast('Đã like bài viết!', 'success');
+    toastManager.success('Đã like bài viết!');
 }
 
 function commentPost(postId) {
     // Implement comment functionality
     console.log('Commenting on post:', postId);
-    showToast('Mở form comment...', 'info');
+    toastManager.info('Mở form comment...');
 }
 
 function sharePost(postId) {
     // Implement share functionality
     console.log('Sharing post:', postId);
-    showToast('Đã chia sẻ bài viết!', 'success');
+    toastManager.success('Đã chia sẻ bài viết!');
 }
 
 function showToast(message, type = 'info') {

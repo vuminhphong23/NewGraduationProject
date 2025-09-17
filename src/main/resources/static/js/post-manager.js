@@ -13,6 +13,7 @@ class PostManager {
         this.publishBtn = document.getElementById('publishBtn');
         this.currentPrivacy = 'PUBLIC';
         this.editingPostId = null;
+        this.groupId = null; // Add groupId property
         
         if (this.modal) this.init();
     }
@@ -111,6 +112,10 @@ class PostManager {
         }
     }
     
+    setGroupId(groupId) {
+        this.groupId = groupId;
+    }
+    
     async submitPost() {
         if (this.publishBtn.disabled) return;
         
@@ -121,7 +126,8 @@ class PostManager {
             title: this.titleInput.value.trim(),
             content: this.contentInput.value.trim(),
             topicNames: selectedTopics,
-            privacy: this.currentPrivacy
+            privacy: this.currentPrivacy,
+            groupId: this.groupId // Add groupId to post data
         };
         
         const url = this.editingPostId ? `/api/posts/${this.editingPostId}` : '/api/posts';
@@ -332,6 +338,7 @@ class PostManager {
         this.currentPrivacy = 'PUBLIC';
         this.setPrivacy('PUBLIC');
         this.editingPostId = null;
+        this.groupId = null; // Reset groupId
         this.publishBtn.textContent = 'Đăng bài';
         if (this.modalTitle) {
             this.modalTitle.textContent = 'Tạo bài viết';

@@ -120,30 +120,30 @@ window.HashtagManager = (function() {
         const cleanValue = value.trim().toLowerCase();
         
         if (!isValidHashtag(cleanValue)) {
-            showToast('Hashtag không hợp lệ! Chỉ được chứa chữ cái, số và dấu gạch dưới', 'error');
+            toastManager.error('Hashtag không hợp lệ! Chỉ được chứa chữ cái, số và dấu gạch dưới');
             return false;
         }
         
         if (selectedHashtags.length >= maxHashtags) {
-            showToast(`Chỉ được phép tối đa ${maxHashtags} hashtag`, 'error');
+            toastManager.error(`Chỉ được phép tối đa ${maxHashtags} hashtag`);
             return false;
         }
         
         if (selectedHashtags.includes(cleanValue)) {
-            showToast('Hashtag đã tồn tại!', 'warning');
+            toastManager.warning('Hashtag đã tồn tại!');
             return false;
         }
         
         selectedHashtags.push(cleanValue);
         updateDisplay();
-        showToast('Đã thêm hashtag thành công!', 'success');
+        toastManager.success('Đã thêm hashtag thành công!');
         return true;
     }
 
     function removeHashtag(hashtag) {
         selectedHashtags = selectedHashtags.filter(h => h !== hashtag);
         updateDisplay();
-        showToast('Đã xóa hashtag!', 'info');
+        toastManager.info('Đã xóa hashtag!');
     }
 
     function isValidHashtag(hashtag) {

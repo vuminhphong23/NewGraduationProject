@@ -24,7 +24,6 @@ public interface UserService {
     
     void save(User user);
     
-    @PreAuthorize("hasRole('ADMIN')")
     List<User> findAll();
 
     boolean existsByUsername(String username, Long userId) ;

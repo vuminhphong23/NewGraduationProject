@@ -48,7 +48,7 @@ class SimpleChatManager {
             }
             
             // Gọi API /me để lấy thông tin user
-            const response = await fetch('/api/auth/me', {
+            const response = await authenticatedFetch('/api/auth/me', {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -70,7 +70,7 @@ class SimpleChatManager {
 
     async loadChatRooms() {
         try {
-            const response = await fetch('/api/chat/rooms', {
+            const response = await authenticatedFetch('/api/chat/rooms', {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -310,7 +310,7 @@ class SimpleChatManager {
         }
         
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -415,7 +415,7 @@ class SimpleChatManager {
 
     async markRoomAsRead(roomId) {
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}/read`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}/read`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -468,7 +468,7 @@ class SimpleChatManager {
     // Đánh dấu đã đọc mà không reload messages
     async markRoomAsReadSilently(roomId) {
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}/read`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}/read`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -608,7 +608,7 @@ class SimpleChatManager {
 
     async loadRoomMessages(roomId) {
         try {
-            const response = await fetch(`/api/chat/rooms/${roomId}/messages`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${roomId}/messages`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -702,7 +702,7 @@ class SimpleChatManager {
         messageInput.value = '';
 
         try {
-            const response = await fetch(`/api/chat/rooms/${this.currentRoomId}/messages`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${this.currentRoomId}/messages`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -1729,7 +1729,7 @@ class SimpleChatManager {
             // Tìm kiếm tất cả kết quả (không phân trang)
             const apiUrl = `/api/users/search?q=${encodeURIComponent(searchParams.query)}`;
             
-            const response = await fetch(apiUrl, {
+            const response = await authenticatedFetch(apiUrl, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -2111,7 +2111,7 @@ class SimpleChatManager {
         try {
             const userIds = this.selectedUsers.map(user => user.id);
             
-            const response = await fetch('/api/chat/group-chat', {
+            const response = await authenticatedFetch('/api/chat/group-chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -2149,7 +2149,7 @@ class SimpleChatManager {
     // Bắt đầu chat với user
     async startChatWithUser(userId) {
         try {
-            const response = await fetch('/api/chat/private-chat', {
+            const response = await authenticatedFetch('/api/chat/private-chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

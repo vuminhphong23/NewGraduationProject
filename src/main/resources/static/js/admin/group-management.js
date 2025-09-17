@@ -149,7 +149,7 @@ function loadGroupMembers(groupId) {
     `;
     
     // Call actual API
-    fetch(`/admin/groups/${groupId}/members`)
+    authenticatedFetch(`/admin/groups/${groupId}/members`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');

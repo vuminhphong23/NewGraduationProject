@@ -11,6 +11,7 @@ import GraduationProject.forumikaa.service.RoleService;
 import GraduationProject.forumikaa.service.UserService;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.service.GroupService;
+import GraduationProject.forumikaa.service.StatisticsService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
-import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,29 +92,46 @@ public class AdminController {
 
 
     private SecurityUtil securityUtil;
+    private StatisticsService statisticsService;
 
     @Autowired
     public void setSecurityUtil(SecurityUtil securityUtil) {
         this.securityUtil = securityUtil;
     }
+    
+    @Autowired
+    public void setStatisticsService(StatisticsService statisticsService) {
+        this.statisticsService = statisticsService;
+    }
 
     @GetMapping("/admin")
     public String adminPage(Model model) {
-        long totalUsers = userService.findAll().size();
-        long totalPosts = postService.findAll().size();
-        long totalGroups = groupService.findAll().size();
-        long pendingPosts = postService.findAll().stream()
-                .filter(post -> post.getStatus() == PostStatus.PENDING)
-                .count();
-        long approvedPosts = postService.findAll().stream()
-                .filter(post -> post.getStatus() == PostStatus.APPROVED)
-                .count();
+        try {
+            // Lấy thống kê tổng quan từ StatisticsService
+            Map<String, Object> overview = statisticsService.getDashboardOverview();
+            
+            // Truyền dữ liệu vào model
+            model.addAttribute("totalUsers", overview.get("totalUsers"));
+            model.addAttribute("userChangePercent", overview.get("userChangePercent"));
+            model.addAttribute("totalPosts", overview.get("totalPosts"));
+            model.addAttribute("postChangePercent", overview.get("postChangePercent"));
+            model.addAttribute("totalGroups", overview.get("totalGroups"));
+            model.addAttribute("groupChangePercent", overview.get("groupChangePercent"));
+            model.addAttribute("pendingReports", overview.get("pendingReports"));
+            model.addAttribute("reportChangePercent", overview.get("reportChangePercent"));
+            
+        } catch (Exception e) {
+            // Nếu có lỗi, truyền dữ liệu mặc định
+            model.addAttribute("totalUsers", 0);
+            model.addAttribute("userChangePercent", 0.0);
+            model.addAttribute("totalPosts", 0);
+            model.addAttribute("postChangePercent", 0.0);
+            model.addAttribute("totalGroups", 0);
+            model.addAttribute("groupChangePercent", 0.0);
+            model.addAttribute("pendingReports", 0);
+            model.addAttribute("reportChangePercent", 0.0);
+        }
         
-        model.addAttribute("totalUsers", totalUsers);
-        model.addAttribute("totalPosts", totalPosts);
-        model.addAttribute("totalGroups", totalGroups);
-        model.addAttribute("pendingPosts", pendingPosts);
-        model.addAttribute("approvedPosts", approvedPosts);
         return "admin/admin";
     }
 
@@ -145,6 +162,30 @@ public class AdminController {
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         userService.deleteUser(id);
         redirectAttributes.addFlashAttribute("successMessage", "Xóa user thành công.");
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/admin/users/bulk-delete")
+    public String bulkDeleteUsers(@RequestParam("userIds") List<Long> userIds, RedirectAttributes redirectAttributes) {
+        try {
+            int deletedCount = 0;
+            for (Long userId : userIds) {
+                try {
+                    userService.deleteUser(userId);
+                    deletedCount++;
+                } catch (Exception e) {
+                    System.err.println("Error deleting user " + userId + ": " + e.getMessage());
+                }
+            }
+            
+            if (deletedCount > 0) {
+                redirectAttributes.addFlashAttribute("successMessage", "Đã xóa thành công " + deletedCount + " người dùng!");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa người dùng nào!");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa hàng loạt: " + e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
@@ -302,11 +343,14 @@ public class AdminController {
         return "redirect:/admin/posts";
     }
 
-    @GetMapping("/admin/posts/edit/{id}")
-    public String editPostForm(@PathVariable Long id, Model model) {
+    @GetMapping("/admin/posts/detail/{id}")
+    public String viewPostDetail(@PathVariable Long id, 
+                                @RequestParam(required = false) Long groupId,
+                                Model model) {
         try {
             Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết với id " + id));
             model.addAttribute("post", post);
+            model.addAttribute("groupId", groupId);
             model.addAttribute("allStatuses", PostStatus.values());
             model.addAttribute("allPrivacies", PostPrivacy.values());
             
@@ -322,30 +366,6 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/admin/posts/save")
-    public String savePost(@ModelAttribute("post") @Valid Post post, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
-        model.addAttribute("allStatuses", PostStatus.values());
-        model.addAttribute("allPrivacies", PostPrivacy.values());
-        
-        // Add maps for status and privacy display
-        model.addAttribute("statusTextMap", STATUS_TEXT_MAP);
-        model.addAttribute("statusClassMap", STATUS_CLASS_MAP);
-        model.addAttribute("privacyTextMap", PRIVACY_TEXT_MAP);
-        model.addAttribute("privacyClassMap", PRIVACY_CLASS_MAP);
-        
-        if (bindingResult.hasErrors()) {
-            return "admin/post-form";
-        }
-        
-        try {
-            postService.save(post);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật bài viết thành công.");
-            return "redirect:/admin/posts";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi lưu bài viết: " + e.getMessage());
-            return "admin/post-form";
-        }
-    }
 
     // ========== GROUP POST MANAGEMENT ==========
     
@@ -384,6 +404,30 @@ public class AdminController {
         }
     }
     
+    @PostMapping("/admin/groups/{groupId}/posts/{postId}/approve")
+    public String approveGroupPost(@PathVariable Long groupId, 
+                                  @PathVariable Long postId, 
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
+            
+            if (post.getStatus() == PostStatus.PENDING) {
+                post.setStatus(PostStatus.APPROVED);
+                redirectAttributes.addFlashAttribute("successMessage", "Duyệt bài viết thành công.");
+            } else if (post.getStatus() == PostStatus.REJECTED) {
+                post.setStatus(PostStatus.APPROVED);
+                redirectAttributes.addFlashAttribute("successMessage", "Duyệt lại bài viết thành công.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể duyệt bài viết ở trạng thái hiện tại.");
+            }
+            
+            postService.save(post);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi duyệt bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/groups/" + groupId + "/posts";
+    }
+    
     @PostMapping("/admin/groups/{groupId}/posts/{postId}/toggle-status")
     public String toggleGroupPostStatus(@PathVariable Long groupId, 
                                       @PathVariable Long postId, 
@@ -391,12 +435,14 @@ public class AdminController {
         try {
             Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bài viết"));
             
-            if (post.getStatus() == PostStatus.PENDING) {
-                post.setStatus(PostStatus.APPROVED);
-                redirectAttributes.addFlashAttribute("successMessage", "Duyệt bài viết thành công.");
-            } else if (post.getStatus() == PostStatus.APPROVED) {
+            if (post.getStatus() == PostStatus.APPROVED) {
                 post.setStatus(PostStatus.PENDING);
                 redirectAttributes.addFlashAttribute("successMessage", "Chuyển bài viết về trạng thái chờ duyệt.");
+            } else if (post.getStatus() == PostStatus.PENDING) {
+                post.setStatus(PostStatus.APPROVED);
+                redirectAttributes.addFlashAttribute("successMessage", "Duyệt bài viết thành công.");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể thay đổi trạng thái bài viết ở trạng thái hiện tại.");
             }
             
             postService.save(post);
@@ -430,6 +476,32 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("successMessage", "Xóa bài viết thành công.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa bài viết: " + e.getMessage());
+        }
+        return "redirect:/admin/groups/" + groupId + "/posts";
+    }
+    
+    @PostMapping("/admin/groups/{groupId}/posts/bulk-delete")
+    public String bulkDeleteGroupPosts(@PathVariable Long groupId, 
+                                     @RequestParam("postIds") List<Long> postIds, 
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            int deletedCount = 0;
+            for (Long postId : postIds) {
+                try {
+                    postService.deleteById(postId);
+                    deletedCount++;
+                } catch (Exception e) {
+                    System.err.println("Error deleting post " + postId + ": " + e.getMessage());
+                }
+            }
+            
+            if (deletedCount > 0) {
+                redirectAttributes.addFlashAttribute("successMessage", "Đã xóa thành công " + deletedCount + " bài viết!");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Không thể xóa bài viết nào!");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa hàng loạt: " + e.getMessage());
         }
         return "redirect:/admin/groups/" + groupId + "/posts";
     }
@@ -763,4 +835,5 @@ public class AdminController {
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi khi lấy danh sách thành viên: " + e.getMessage()));
         }
     }
+
 } 

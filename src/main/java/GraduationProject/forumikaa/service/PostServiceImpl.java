@@ -134,6 +134,13 @@ public class PostServiceImpl implements PostService {
         if (request.getPrivacy() != null) {
             post.setPrivacy(request.getPrivacy());
         }
+        
+        // Update group if groupId is provided
+        if (request.getGroupId() != null) {
+            UserGroup group = groupDao.findById(request.getGroupId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+            post.setGroup(group);
+        }
 
         // Process topics from topicNames (hashtags) first
         Set<Topic> newTopics = new HashSet<>();

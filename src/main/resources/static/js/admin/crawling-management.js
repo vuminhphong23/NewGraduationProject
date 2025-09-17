@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load statistics
 async function loadStatistics() {
     try {
-        const response = await fetch('/api/crawling/statistics');
+        const response = await authenticatedFetch('/api/crawling/statistics');
         const stats = await response.json();
         
         document.getElementById('totalConfigs').textContent = stats.totalConfigs || 0;
@@ -35,7 +35,7 @@ async function loadStatistics() {
 // Load groups
 async function loadGroups() {
     try {
-        const response = await fetch('/api/crawling/groups');
+        const response = await authenticatedFetch('/api/crawling/groups');
         const apiResponse = await response.json();
         
         if (apiResponse.success) {
@@ -43,14 +43,14 @@ async function loadGroups() {
             populateCustomCombobox();
             
             if (groups.length === 0) {
-                showToast('Không có group nào. Posts sẽ được tạo công khai.', 'warning');
+                toastManager.warning('Không có group nào. Posts sẽ được tạo công khai.');
             }
         } else {
-            showToast(apiResponse.error || 'Không thể tải danh sách groups', 'error');
+            toastManager.error(apiResponse.error || 'Không thể tải danh sách groups');
         }
     } catch (error) {
         console.error('Error loading groups:', error);
-        showToast('Không thể tải danh sách groups', 'error');
+        toastManager.error('Không thể tải danh sách groups');
     }
 }
 
@@ -211,18 +211,18 @@ function removeGroup(groupId) {
 // Load configs
 async function loadConfigs() {
     try {
-        const response = await fetch('/api/crawling/configs');
+        const response = await authenticatedFetch('/api/crawling/configs');
         const apiResponse = await response.json();
         
         if (apiResponse.success) {
             configs = apiResponse.data;
             displayConfigs(configs);
         } else {
-            showToast(apiResponse.error || 'Không thể tải danh sách cấu hình', 'error');
+            toastManager.error(apiResponse.error || 'Không thể tải danh sách cấu hình');
         }
     } catch (error) {
         console.error('Error loading configs:', error);
-        showToast('Không thể tải danh sách cấu hình', 'error');
+        toastManager.error('Không thể tải danh sách cấu hình');
     }
 }
 
@@ -358,7 +358,7 @@ function getStatusClass(status) {
 // Edit config
 async function editConfig(configId) {
     try {
-        const response = await fetch(`/api/crawling/configs/${configId}`);
+        const response = await authenticatedFetch(`/api/crawling/configs/${configId}`);
         const config = await response.json();
         
         currentConfig = config;
@@ -369,7 +369,7 @@ async function editConfig(configId) {
         modal.show();
     } catch (error) {
         console.error('Error loading config:', error);
-        showToast('Không thể tải cấu hình', 'error');
+        toastManager.error('Không thể tải cấu hình');
     }
 }
 
@@ -413,7 +413,7 @@ async function saveConfig() {
         const url = configId ? `/api/crawling/configs/${configId}` : '/api/crawling/configs';
         const method = configId ? 'PUT' : 'POST';
         
-        const response = await fetch(url, {
+        const response = await authenticatedFetch(url, {
             method: method,
             headers: {
                 'Content-Type': 'application/json'
@@ -422,83 +422,58 @@ async function saveConfig() {
         });
         
         if (response.ok) {
-            showToast('Config đã được lưu thành công!', 'success');
+            toastManager.success('Config đã được lưu thành công!');
             bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
             loadConfigs();
         } else {
-            showToast('Lỗi khi lưu config', 'error');
+            toastManager.error('Lỗi khi lưu config');
         }
     } catch (error) {
         console.error('Error saving config:', error);
-        showToast('Lỗi khi lưu config', 'error');
+        toastManager.error('Lỗi khi lưu config');
     }
 }
 
-// Test config
-async function testConfig(configId) {
-    try {
-        showToast('Đang test config...', 'info');
-        
-        const response = await fetch(`/api/crawling/configs/${configId}/test`, {
-            method: 'POST'
-        });
-        
-        const result = await response.text();
-        
-        document.getElementById('testResult').textContent = result;
-        const modal = new bootstrap.Modal(document.getElementById('testModal'));
-        modal.show();
-        
-        if (response.ok) {
-            showToast('Test config thành công!', 'success');
-        } else {
-            showToast('Test config thất bại: ' + result, 'error');
-        }
-    } catch (error) {
-        console.error('Error testing config:', error);
-        showToast('Lỗi khi test config', 'error');
-    }
-}
 
 // Crawl config
 async function crawlConfig(configId) {
     try {
-        showToast('Đang bắt đầu crawl...', 'info');
+        toastManager.info('Đang bắt đầu crawl...');
         
-        const response = await fetch(`/api/crawling/configs/${configId}/crawl`, {
+        const response = await authenticatedFetch(`/api/crawling/configs/${configId}/crawl`, {
             method: 'POST'
         });
         
         const result = await response.text();
         
         if (response.ok) {
-            showToast('Crawl đã bắt đầu thành công! Posts sẽ được tạo trong groups đã chọn.', 'success');
+            toastManager.success('Crawl đã bắt đầu thành công! Posts sẽ được tạo trong groups đã chọn.');
             loadConfigs();
         } else {
-            showToast('Lỗi khi crawl: ' + result, 'error');
+            toastManager.error('Lỗi khi crawl: ' + result);
         }
     } catch (error) {
         console.error('Error crawling config:', error);
-        showToast('Lỗi khi crawl config', 'error');
+        toastManager.error('Lỗi khi crawl config');
     }
 }
 
 // Toggle config
 async function toggleConfig(configId) {
     try {
-        const response = await fetch(`/api/crawling/configs/${configId}/toggle`, {
+        const response = await authenticatedFetch(`/api/crawling/configs/${configId}/toggle`, {
             method: 'POST'
         });
         
         if (response.ok) {
-            showToast('Config đã được cập nhật!', 'success');
+            toastManager.success('Config đã được cập nhật!');
             loadConfigs();
         } else {
-            showToast('Lỗi khi cập nhật config', 'error');
+            toastManager.error('Lỗi khi cập nhật config');
         }
     } catch (error) {
         console.error('Error toggling config:', error);
-        showToast('Lỗi khi cập nhật config', 'error');
+        toastManager.error('Lỗi khi cập nhật config');
     }
 }
 
@@ -509,19 +484,19 @@ async function deleteConfig(configId) {
     }
     
     try {
-        const response = await fetch(`/api/crawling/configs/${configId}`, {
+        const response = await authenticatedFetch(`/api/crawling/configs/${configId}`, {
             method: 'DELETE'
         });
         
         if (response.ok) {
-            showToast('Config đã được xóa!', 'success');
+            toastManager.success('Config đã được xóa!');
             loadConfigs();
         } else {
-            showToast('Lỗi khi xóa config', 'error');
+            toastManager.error('Lỗi khi xóa config');
         }
     } catch (error) {
         console.error('Error deleting config:', error);
-        showToast('Lỗi khi xóa config', 'error');
+        toastManager.error('Lỗi khi xóa config');
     }
 }
 
@@ -529,56 +504,39 @@ async function deleteConfig(configId) {
 function refreshData() {
     loadStatistics();
     loadConfigs();
-    showToast('Đã làm mới dữ liệu!', 'success');
+    toastManager.success('Đã làm mới dữ liệu!');
 }
 
 // Crawl all active configs
 async function crawlAllActive() {
     try {
-        showToast('Đang bắt đầu crawl tất cả configs...', 'info');
+        toastManager.info('Đang bắt đầu crawl tất cả configs...');
         
-        const response = await fetch('/api/crawling/crawl-all', {
+        const response = await authenticatedFetch('/api/crawling/crawl-all', {
             method: 'POST'
         });
         
         const result = await response.text();
         
         if (response.ok) {
-            showToast('Crawl tất cả configs đã bắt đầu! Posts sẽ được tạo trong các groups đã chọn.', 'success');
+            toastManager.success('Crawl tất cả configs đã bắt đầu! Posts sẽ được tạo trong các groups đã chọn.');
             loadConfigs();
         } else {
-            showToast('Lỗi khi crawl: ' + result, 'error');
+            toastManager.error('Lỗi khi crawl: ' + result);
         }
     } catch (error) {
         console.error('Error crawling all configs:', error);
-        showToast('Lỗi khi crawl tất cả configs', 'error');
+        toastManager.error('Lỗi khi crawl tất cả configs');
     }
 }
 
-// Show toast using existing toast manager
+// Use global toastManager for notifications
 function showToast(message, type = 'info') {
-    if (typeof showToastMessage === 'function') {
-        showToastMessage(message, type);
+    if (window.toastManager) {
+        window.toastManager.show(message, type);
     } else {
-        // Fallback toast implementation
-        const toast = document.createElement('div');
-        toast.className = `toast align-items-center text-white bg-${type} border-0`;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-        
-        document.body.appendChild(toast);
-        
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-        
-        toast.addEventListener('hidden.bs.toast', () => {
-            toast.remove();
-        });
+        console.warn('ToastManager not available, falling back to console');
+        console.log(`[${type.toUpperCase()}] ${message}`);
     }
 }
 

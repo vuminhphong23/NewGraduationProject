@@ -90,6 +90,70 @@
             background: #021c48;
             color: #fff;
         }
+        
+        /* Search button hover effects */
+        #updateChart:hover, #updateGroupDistributionChart:hover {
+            background: #021c48 !important;
+            color: #fff !important;
+        }
+        
+        /* Custom scrollbar for activity container */
+        .activity-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .activity-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .activity-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .activity-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Firefox scrollbar */
+        .activity-container {
+            scrollbar-width: thin;
+            scrollbar-color: #c1c1c1 #f1f1f1;
+        }
+        
+        /* Equal height cards */
+        .equal-height-row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .equal-height-row .col-lg-6 {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .equal-height-row .card-custom {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .equal-height-row .card-custom .section-title {
+            flex-shrink: 0;
+        }
+        
+        .equal-height-row .card-custom .activity-container,
+        .equal-height-row .card-custom .report-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        
+        .equal-height-row .card-custom .activity-container {
+            padding: 15px;
+            max-height: 560px;
+        }
     </style>
 </head>
 
@@ -101,67 +165,47 @@
         <!-- Main Content -->
         <main class="col-md-10 ms-sm-auto px-md-4 py-4">
             <!-- Header fragment -->
-            <div th:replace="~{fragments/admin/header :: header(pageTitle='Dashboard')}"></div>
+            <div th:replace="~{fragments/admin/header :: header(pageTitle='Tổng quan')}"></div>
             <!-- Stats Row -->
             <div class="row g-4 mb-4">
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-label">Tổng người dùng</div>
-                        <div class="stat-value" style="color: #0F2E6F" th:text="${totalUsers}"></div>
-                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> +5.2% so với tuần trước</div>
+                        <div class="stat-value" style="color: #0F2E6F" th:text="${totalUsers}">-</div>
+                        <div class="stat-change" th:classappend="${userChangePercent >= 0} ? 'positive' : 'negative'">
+                            <i th:classappend="${userChangePercent >= 0} ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i> 
+                            <span th:text="${userChangePercent >= 0 ? '+' + userChangePercent : userChangePercent}">-</span>% so với tuần trước
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-label">Bài viết hoạt động</div>
-                        <div class="stat-value text-warning">1,876</div>
-                        <div class="stat-change negative"><i class="bi bi-arrow-down"></i> -12.3% so với tuần trước</div>
+                        <div class="stat-value text-warning" th:text="${totalPosts}">-</div>
+                        <div class="stat-change" th:classappend="${postChangePercent >= 0} ? 'positive' : 'negative'">
+                            <i th:classappend="${postChangePercent >= 0} ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i> 
+                            <span th:text="${postChangePercent >= 0 ? '+' + postChangePercent : postChangePercent}">-</span>% so với tuần trước
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-label">Tổng nhóm</div>
-                        <div class="stat-value" style="color: #0F2E6F">128</div>
-                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> +3.1% so với tuần trước</div>
+                        <div class="stat-value" style="color: #0F2E6F" th:text="${totalGroups}">-</div>
+                        <div class="stat-change" th:classappend="${groupChangePercent >= 0} ? 'positive' : 'negative'">
+                            <i th:classappend="${groupChangePercent >= 0} ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i> 
+                            <span th:text="${groupChangePercent >= 0 ? '+' + groupChangePercent : groupChangePercent}">-</span>% so với tuần trước
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-label">Báo cáo chờ xử lý</div>
-                        <div class="stat-value text-danger">5</div>
-                        <div class="stat-change negative"><i class="bi bi-arrow-down"></i> -2.5% so với tuần trước</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Crawling Stats Row -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Configs Crawling</div>
-                        <div class="stat-value" style="color: #0F2E6F" id="crawlingConfigs">0</div>
-                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> Đang hoạt động</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Posts đã Crawl</div>
-                        <div class="stat-value text-success" id="crawledPosts">0</div>
-                        <div class="stat-change positive"><i class="bi bi-arrow-up"></i> Tự động</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Configs Lỗi</div>
-                        <div class="stat-value text-warning" id="errorConfigs">0</div>
-                        <div class="stat-change negative"><i class="bi bi-exclamation-triangle"></i> Cần kiểm tra</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Tỷ lệ thành công</div>
-                        <div class="stat-value text-info" id="successRate">0%</div>
-                        <div class="stat-change positive"><i class="bi bi-check-circle"></i> Hiệu quả</div>
+                        <div class="stat-value text-danger" th:text="${pendingReports}">-</div>
+                        <div class="stat-change" th:classappend="${reportChangePercent >= 0} ? 'positive' : 'negative'">
+                            <i th:classappend="${reportChangePercent >= 0} ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i> 
+                            <span th:text="${reportChangePercent >= 0 ? '+' + reportChangePercent : reportChangePercent}">-</span>% so với tuần trước
+                        </div>
                     </div>
                 </div>
             </div>
@@ -170,66 +214,82 @@
                 <div class="col-lg-6">
                     <div class="card-custom mb-4">
                         <div class="section-title d-flex justify-content-between align-items-center">
-                            Hoạt động người dùng
-                            <select class="form-select form-select-sm w-auto">
-                                <option>7 ngày qua</option>
-                                <option>30 ngày qua</option>
-                            </select>
+                            Thống kê bài viết
+                            <div class="date-range-picker">
+                                <input type="date" class="form-control form-control-sm" id="startDate" style="width: 150px;">
+                                <span class="text-muted">đến</span>
+                                <input type="date" class="form-control form-control-sm" id="endDate" style="width: 150px;">
+                                <button class="btn btn-sm" id="updateChart" style="background: #0F2E6F; color: #fff; border: none; border-radius: 8px; padding: 5px 15px; font-weight: 500; font-size: 15px; transition: background 0.2s;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="chart-placeholder">[Biểu đồ cột hoạt động người dùng]</div>
+                        <div class="chart-container" style="position: relative; height: 300px;">
+                            <div id="chartLoading" class="chart-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Đang tải dữ liệu...
+                            </div>
+                            <canvas id="postStatsChart" style="display: none;"></canvas>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="card-custom mb-4">
                         <div class="section-title d-flex justify-content-between align-items-center">
-                            Phân bố bài viết theo khoa
-                            <select class="form-select form-select-sm w-auto">
-                                <option>Tháng này</option>
-                                <option>Tháng trước</option>
-                            </select>
+                            Phân bố bài viết theo groups
+                            <div class="date-range-picker">
+                                <input type="date" class="form-control form-control-sm" id="groupDistributionStartDate" style="width: 150px;">
+                                <span class="text-muted">đến</span>
+                                <input type="date" class="form-control form-control-sm" id="groupDistributionEndDate" style="width: 150px;">
+                                <button class="btn btn-sm" id="updateGroupDistributionChart" style="background: #0F2E6F; color: #fff; border: none; border-radius: 8px; padding: 5px 15px; font-weight: 500; font-size: 15px; transition: background 0.2s;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
                         </div>
-                        <div class="chart-placeholder">[Biểu đồ tròn phân bố bài viết]</div>
+                        <div class="chart-container" style="position: relative; height: 300px;">
+                            <div id="groupChartLoading" class="chart-loading">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Đang tải dữ liệu...
+                            </div>
+                            <canvas id="groupDistributionChart" style="display: none;"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- Activities and Reports -->
-            <div class="row g-4 mb-4">
+            <div class="row g-4 mb-4 equal-height-row">
                 <div class="col-lg-6">
                     <div class="card-custom">
                         <div class="section-title d-flex justify-content-between align-items-center">
+                            <div>
                             Hoạt động gần đây
-                            <a href="#" class="text-decoration-none">Xem tất cả</a>
+                                <small class="text-muted ms-2" id="activityCount">(10 hoạt động)</small>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <select class="form-select form-select-sm" id="activityFilter" style="width: 120px;">
+                                    <option value="all">Tất cả</option>
+                                    <option value="posts">Bài viết</option>
+                                    <option value="groups">Nhóm</option>
+                                    <option value="users">Người dùng</option>
+                                </select>
+                                <a href="#" class="text-decoration-none btn-outline-primary btn-sm ps-2" id="loadMoreActivities" style="display: none;">Xem thêm</a>
+                            </div>
                         </div>
-                        <ul class="activity-list">
-                            <li>
-                                <img src="https://i.pravatar.cc/36?u=1" class="avatar" alt="avatar">
-                                <div>
-                                    <div><b>Nguyễn Văn A</b> đã báo cáo một bài viết trong nhóm Lập trình Java</div>
-                                    <small class="text-muted">15 phút trước</small>
+                        <div id="activitiesLoading" class="text-center py-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
                                 </div>
-                            </li>
-                            <li>
-                                <img src="https://i.pravatar.cc/36?u=2" class="avatar" alt="avatar">
-                                <div>
-                                    <div><b>Trần Thị B</b> đã tạo một nhóm mới Thiết kế đồ họa</div>
-                                    <small class="text-muted">1 giờ trước</small>
+                            <div class="mt-2">Đang tải hoạt động...</div>
                                 </div>
-                            </li>
-                            <li>
-                                <img src="https://i.pravatar.cc/36?u=3" class="avatar" alt="avatar">
-                                <div>
-                                    <div><b>Lê Văn C</b> đã gửi yêu cầu hỗ trợ</div>
-                                    <small class="text-muted">3 giờ trước</small>
+                        <div class="activity-container" id="activityContainer" style="display: none; border-radius: 8px; border: 1px solid #e9ecef;">
+                            <ul class="activity-list" id="activitiesList">
+                                <!-- Activities will be loaded here -->
+                            </ul>
                                 </div>
-                            </li>
-                            <li>
-                                <img src="https://i.pravatar.cc/36?u=4" class="avatar" alt="avatar">
-                                <div>
-                                    <div><b>Phạm Thị D</b> đã đăng một bài viết mới trong nhóm Tiếng Anh giao tiếp</div>
-                                    <small class="text-muted">5 giờ trước</small>
-                                </div>
-                            </li>
-                        </ul>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -239,10 +299,11 @@
                             <a href="#" class="text-decoration-none">Xem tất cả</a>
                         </div>
                         <!-- Bắt đầu danh sách báo cáo -->
+                        <div class="report-list">
                         <div class="report-card position-relative mb-4">
                             <span class="report-badge">Spam / Quảng cáo</span>
                             <div class="d-flex align-items-center mb-2">
-                                <img src="https://i.pravatar.cc/44?u=1" class="avatar-report flex-shrink-0 me-3" alt="avatar">
+                                <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" class="avatar-report flex-shrink-0 me-3" alt="avatar">
                                 <div>
                                     <div class="fw-bold report-name">Nguyễn Văn A</div>
                                     <div class="report-content">Bài viết vi phạm quy định nhóm</div>
@@ -257,7 +318,7 @@
                         <div class="report-card position-relative mb-4">
                             <span class="report-badge">Ngôn từ không phù hợp</span>
                             <div class="d-flex align-items-center mb-2">
-                                <img src="https://i.pravatar.cc/44?u=2" class="avatar-report flex-shrink-0 me-3" alt="avatar">
+                                <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" class="avatar-report flex-shrink-0 me-3" alt="avatar">
                                 <div>
                                     <div class="fw-bold report-name">Trần Thị B</div>
                                     <div class="report-content">Bình luận có nội dung không phù hợp</div>
@@ -272,7 +333,7 @@
                         <div class="report-card position-relative mb-4">
                             <span class="report-badge">Quấy rối</span>
                             <div class="d-flex align-items-center mb-2">
-                                <img src="https://i.pravatar.cc/44?u=3" class="avatar-report flex-shrink-0 me-3" alt="avatar">
+                                <img src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" class="avatar-report flex-shrink-0 me-3" alt="avatar">
                                 <div>
                                     <div class="fw-bold report-name">Lê Văn C</div>
                                     <div class="report-content">Người dùng có hành vi quấy rối</div>
@@ -282,6 +343,7 @@
                             <div class="d-flex justify-content-end gap-2">
                                 <button class="btn btn-skip">Bỏ qua</button>
                                 <button class="btn btn-review">Xem xét</button>
+                            </div>
                             </div>
                         </div>
                         <!-- Kết thúc danh sách báo cáo -->
@@ -335,6 +397,7 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="/js/jwt-utils.js"></script>
 <script src="/js/logout.js"></script>
 <script src="/js/toast-manager.js"></script>
@@ -376,7 +439,462 @@
     // Load stats on page load
     document.addEventListener('DOMContentLoaded', function() {
         loadCrawlingStats();
+        initializePostStatsChart();
+        initializeGroupDistributionChart();
+        initializeRecentActivities();
     });
+
+    // Post Statistics Chart
+    let postStatsChart = null;
+
+    function initializePostStatsChart() {
+        const ctx = document.getElementById('postStatsChart');
+        if (!ctx) return;
+
+        // Set default date range (last 7 days)
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 6);
+        
+        document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+        document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+
+        // Load initial data
+        loadPostStats();
+
+        // Add event listeners
+        const updateBtn = document.getElementById('updateChart');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', loadPostStats);
+        }
+
+        // Auto-update when dates change
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        
+        if (startDateInput) {
+            startDateInput.addEventListener('change', validateAndLoad);
+        }
+        if (endDateInput) {
+            endDateInput.addEventListener('change', validateAndLoad);
+        }
+    }
+
+    function validateAndLoad() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (startDate && endDate) {
+            if (new Date(startDate) <= new Date(endDate)) {
+                loadPostStats();
+            } else {
+                alert('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc!');
+            }
+        }
+    }
+
+    async function loadPostStats() {
+        const loadingDiv = document.getElementById('chartLoading');
+        const canvas = document.getElementById('postStatsChart');
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        if (!startDate || !endDate) {
+            alert('Vui lòng chọn ngày bắt đầu và ngày kết thúc!');
+            return;
+        }
+        
+        // Show loading state
+        if (loadingDiv) loadingDiv.style.display = 'flex';
+        if (canvas) canvas.style.display = 'none';
+        
+        try {
+            const response = await fetch(`/api/statistics/posts?startDate=${startDate}&endDate=${endDate}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                console.error('Error loading post stats:', data.error);
+                alert('Lỗi khi tải dữ liệu: ' + data.error);
+                return;
+            }
+
+            updatePostStatsChart(data);
+        } catch (error) {
+            console.error('Error loading post stats:', error);
+            alert('Lỗi khi tải dữ liệu thống kê!');
+        } finally {
+            // Hide loading state
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (canvas) canvas.style.display = 'block';
+        }
+    }
+
+    function updatePostStatsChart(data) {
+        const ctx = document.getElementById('postStatsChart');
+        if (!ctx) return;
+
+        // Destroy existing chart
+        if (postStatsChart) {
+            postStatsChart.destroy();
+        }
+
+        const labels = Object.keys(data.data);
+        const values = Object.values(data.data);
+
+        // Format date range for display
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(data.endDate);
+        const periodLabel = `Từ ${startDate.toLocaleDateString('vi-VN')} đến ${endDate.toLocaleDateString('vi-VN')}`;
+
+        postStatsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số bài viết theo ngày',
+                    data: values,
+                    backgroundColor: 'rgba(15, 46, 111, 0.8)',
+                    borderColor: 'rgba(15, 46, 111, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(context) {
+                                return `Ngày: ${context[0].label}`;
+                            },
+                            label: function(context) {
+                                return `Số bài viết: ${context.parsed.y}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    }
+
+    // Group Distribution Chart
+    let groupDistributionChart = null;
+
+    function initializeGroupDistributionChart() {
+        const ctx = document.getElementById('groupDistributionChart');
+        if (!ctx) return;
+
+        // Set default date range (last 7 days)
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 6);
+        
+        document.getElementById('groupDistributionStartDate').value = startDate.toISOString().split('T')[0];
+        document.getElementById('groupDistributionEndDate').value = endDate.toISOString().split('T')[0];
+
+        // Load initial data
+        loadGroupDistribution();
+
+        // Add event listeners
+        const updateBtn = document.getElementById('updateGroupDistributionChart');
+        if (updateBtn) {
+            updateBtn.addEventListener('click', loadGroupDistribution);
+        }
+
+        // Auto-update when dates change
+        const startDateInput = document.getElementById('groupDistributionStartDate');
+        const endDateInput = document.getElementById('groupDistributionEndDate');
+        
+        if (startDateInput) {
+            startDateInput.addEventListener('change', validateAndLoadGroup);
+        }
+        if (endDateInput) {
+            endDateInput.addEventListener('change', validateAndLoadGroup);
+        }
+    }
+
+    function validateAndLoadGroup() {
+        const startDate = document.getElementById('groupDistributionStartDate').value;
+        const endDate = document.getElementById('groupDistributionEndDate').value;
+        
+        if (startDate && endDate) {
+            if (new Date(startDate) <= new Date(endDate)) {
+                loadGroupDistribution();
+            } else {
+                alert('Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc!');
+            }
+        }
+    }
+
+    async function loadGroupDistribution() {
+        const loadingDiv = document.getElementById('groupChartLoading');
+        const canvas = document.getElementById('groupDistributionChart');
+        const startDate = document.getElementById('groupDistributionStartDate').value;
+        const endDate = document.getElementById('groupDistributionEndDate').value;
+        
+        if (!startDate || !endDate) {
+            alert('Vui lòng chọn ngày bắt đầu và ngày kết thúc!');
+            return;
+        }
+        
+        // Show loading state
+        if (loadingDiv) loadingDiv.style.display = 'flex';
+        if (canvas) canvas.style.display = 'none';
+        
+        try {
+            const response = await fetch(`/api/statistics/posts/distribution-by-groups?startDate=${startDate}&endDate=${endDate}`);
+            const data = await response.json();
+            
+            if (data.error) {
+                console.error('Error loading group distribution:', data.error);
+                alert('Lỗi khi tải dữ liệu: ' + data.error);
+                return;
+            }
+
+            updateGroupDistributionChart(data);
+        } catch (error) {
+            console.error('Error loading group distribution:', error);
+            alert('Lỗi khi tải dữ liệu phân bố groups!');
+        } finally {
+            // Hide loading state
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (canvas) canvas.style.display = 'block';
+        }
+    }
+
+    function updateGroupDistributionChart(data) {
+        const ctx = document.getElementById('groupDistributionChart');
+        if (!ctx) return;
+
+        // Destroy existing chart
+        if (groupDistributionChart) {
+            groupDistributionChart.destroy();
+        }
+
+        const labels = Object.keys(data.data);
+        const values = Object.values(data.data);
+
+        // Generate colors for each group
+        const colors = generateColors(labels.length);
+
+        groupDistributionChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Số bài viết',
+                    data: values,
+                    backgroundColor: colors.backgrounds,
+                    borderColor: colors.borders,
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return `${context.label}: ${context.parsed} bài viết (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    }
+
+    function generateColors(count) {
+        const baseColors = [
+            'rgba(15, 46, 111, 0.8)',   // Blue
+            'rgba(255, 99, 132, 0.8)',  // Red
+            'rgba(54, 162, 235, 0.8)',  // Light Blue
+            'rgba(255, 205, 86, 0.8)',  // Yellow
+            'rgba(75, 192, 192, 0.8)',  // Teal
+            'rgba(153, 102, 255, 0.8)', // Purple
+            'rgba(255, 159, 64, 0.8)',  // Orange
+            'rgba(199, 199, 199, 0.8)', // Grey
+            'rgba(83, 102, 255, 0.8)',  // Indigo
+            'rgba(255, 99, 255, 0.8)'   // Pink
+        ];
+        
+        const backgrounds = [];
+        const borders = [];
+        
+        for (let i = 0; i < count; i++) {
+            const color = baseColors[i % baseColors.length];
+            backgrounds.push(color);
+            borders.push(color.replace('0.8', '1'));
+        }
+        
+        return { backgrounds, borders };
+    }
+
+    // Recent Activities
+    let currentActivityType = 'all';
+    let currentActivityLimit = 10;
+    
+    function initializeRecentActivities() {
+        // Load initial data
+        loadRecentActivities('all');
+
+        // Add event listener for filter change
+        const activityFilter = document.getElementById('activityFilter');
+        if (activityFilter) {
+            activityFilter.addEventListener('change', function() {
+                currentActivityType = this.value;
+                currentActivityLimit = 10; // Reset limit when changing filter
+                loadRecentActivities(this.value);
+            });
+        }
+        
+        // Add event listener for "Xem thêm" button
+        const loadMoreBtn = document.getElementById('loadMoreActivities');
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                currentActivityLimit += 10; // Increase limit by 10
+                loadRecentActivities(currentActivityType, currentActivityLimit);
+            });
+        }
+    }
+
+    async function loadRecentActivities(activityType, limit = 10) {
+        const loadingDiv = document.getElementById('activitiesLoading');
+        const activityContainer = document.getElementById('activityContainer');
+        const activitiesList = document.getElementById('activitiesList');
+        
+        // Show loading state
+        loadingDiv.style.display = 'block';
+        activityContainer.style.display = 'none';
+        
+        try {
+            const response = await fetch(`/api/statistics/activities/recent?activityType=${activityType}&limit=${limit}`);
+            const activities = await response.json();
+            
+            if (activities.error) {
+                console.error('Error loading recent activities:', activities.error);
+                activitiesList.innerHTML = '<li class="text-center text-muted">Không thể tải hoạt động gần đây</li>';
+            } else {
+                displayActivities(activities);
+            }
+        } catch (error) {
+            console.error('Error loading recent activities:', error);
+            activitiesList.innerHTML = '<li class="text-center text-muted">Lỗi khi tải hoạt động gần đây</li>';
+        } finally {
+            // Hide loading state
+            loadingDiv.style.display = 'none';
+            activityContainer.style.display = 'block';
+        }
+    }
+
+    function displayActivities(activities) {
+        const activitiesList = document.getElementById('activitiesList');
+        const activityCount = document.getElementById('activityCount');
+        const loadMoreBtn = document.getElementById('loadMoreActivities');
+        
+        // Update activity count
+        if (activityCount) {
+            activityCount.textContent = `(${activities.length} hoạt động)`;
+        }
+        
+        // Show/hide "Xem thêm" button
+        if (loadMoreBtn) {
+            if (activities.length >= currentActivityLimit) {
+                loadMoreBtn.style.display = 'inline';
+            } else {
+                loadMoreBtn.style.display = 'none';
+            }
+        }
+        
+        if (activities.length === 0) {
+            activitiesList.innerHTML = '<li class="text-center text-muted">Chưa có hoạt động nào</li>';
+            return;
+        }
+        
+        activitiesList.innerHTML = activities.map(activity => {
+            const timeAgo = getTimeAgo(activity.createdAt);
+            const icon = getActivityIcon(activity.type);
+            
+            return `
+                <li>
+                    <img src="${activity.userAvatar}" class="avatar" alt="avatar" onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                    <div>
+                        <div><b>${activity.userName}</b> ${activity.description}</div>
+                        <small class="text-muted">${timeAgo}</small>
+                    </div>
+                </li>
+            `;
+        }).join('');
+    }
+
+    function getActivityIcon(type) {
+        switch (type) {
+            case 'post': return '📝';
+            case 'group': return '👥';
+            case 'group_join': return '➕';
+            case 'user': return '👤';
+            default: return '📋';
+        }
+    }
+
+    function getTimeAgo(createdAt) {
+        const now = new Date();
+        const activityTime = new Date(createdAt);
+        const diffInMinutes = Math.floor((now - activityTime) / (1000 * 60));
+        
+        if (diffInMinutes < 1) return 'Vừa xong';
+        if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+        
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        if (diffInHours < 24) return `${diffInHours} giờ trước`;
+        
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 7) return `${diffInDays} ngày trước`;
+        
+        const diffInWeeks = Math.floor(diffInDays / 7);
+        return `${diffInWeeks} tuần trước`;
+    }
 
 </script>
 </body>

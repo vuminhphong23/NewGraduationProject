@@ -10,7 +10,8 @@ import java.util.List;
  * Allows switching between different storage implementations (Local, Cloudinary, AWS S3, etc.)
  */
 public interface FileStorageStrategy {
-    
+
+
 
     FileUploadResponse uploadFile(MultipartFile file, Long postId, Long userId) throws Exception;
 

@@ -245,7 +245,7 @@ class ChatFilesManager {
 
         try {
             // Load all files
-            const response = await fetch(`/api/chat/files/room/${this.currentRoomId}`, {
+            const response = await authenticatedFetch(`/api/chat/files/room/${this.currentRoomId}`, {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -417,7 +417,7 @@ class ChatFilesManager {
         }
 
         try {
-            const response = await fetch(`/api/chat/files/${fileId}`, {
+            const response = await authenticatedFetch(`/api/chat/files/${fileId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -564,7 +564,7 @@ class ChatFilesManager {
             formData.append('messageId', messageId);
             formData.append('roomId', this.currentRoomId);
 
-            const response = await fetch('/api/chat/files/upload-multiple', {
+            const response = await authenticatedFetch('/api/chat/files/upload-multiple', {
                 method: 'POST',
                 credentials: 'include',
                 body: formData
@@ -621,7 +621,7 @@ class ChatFilesManager {
             const fileNames = this.selectedFiles.map(f => f.name).join(', ');
             const content = `📎 Đã gửi ${fileCount} file: ${fileNames}`;
 
-            const response = await fetch(`/api/chat/rooms/${this.currentRoomId}/messages`, {
+            const response = await authenticatedFetch(`/api/chat/rooms/${this.currentRoomId}/messages`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

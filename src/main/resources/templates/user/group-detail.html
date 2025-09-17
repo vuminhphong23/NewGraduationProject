@@ -94,9 +94,8 @@
                                  alt="avatar" class="rounded-circle" width="44" height="44"
                                  onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
                             <input type="text" class="form-control rounded-pill bg-white py-2 px-3" 
-                                   th:placeholder="'Chia sẻ điều gì đó với nhóm...'" 
-                                   placeholder="Chia sẻ điều gì đó với nhóm..." 
-                                   data-bs-toggle="modal" data-bs-target="#postModal" 
+                                   th:placeholder="'Bạn muốn chia sẻ điều gì với nhóm?'"
+                                   data-bs-toggle="modal" data-bs-target="#postModal"
                                    readonly style="cursor:pointer;">
                         </div>
                         <hr style="color: #c3d2e0; margin: 1rem">
@@ -392,13 +391,8 @@
                                 </span>
                             </div>
                         </div>
-                        
-                            <div class="info-content">
-                            <div class="mb-4">
-                                <h6 class="text-muted mb-2">Mô tả nhóm</h6>
-                                <p class="mb-0" th:text="${group.description}">Group description here...</p>
-                            </div>
-                            
+                        <div class="info-content">
+
                             <div class="row">
                                 
                                 <div class="col-md-6">
@@ -503,9 +497,9 @@
                                 </div>
                                 <div class="col-md-3">
                                     <select class="form-select" id="memberSortFilter">
-                                        <option value="name">Sắp xếp theo tên</option>
+                                        <option value="name">Tên</option>
                                         <option value="joinedAt">Ngày tham gia</option>
-                                        <option value="activity">Hoạt động gần đây</option>
+                                        <option value="activity">Hoạt động tích cực</option>
                                     </select>
                                 </div>
                                 <div class="col-md-2">
@@ -522,58 +516,95 @@
                                     <i class="bi bi-shield-check me-1"></i>Quản trị
                                 </button>
                                 <button class="btn btn-sm btn-outline-success me-2 quick-filter" data-filter="active">
-                                    <i class="bi bi-activity me-1"></i>Hoạt động
+                                    <i class="bi bi-activity me-1"></i>Hoạt động tích cực
                                 </button>
                                 <button class="btn btn-sm btn-outline-info me-2 quick-filter" data-filter="new">
                                     <i class="bi bi-person-plus me-1"></i>Mới tham gia
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary me-2 quick-filter" data-filter="all">
+                                    <i class="bi bi-people me-1"></i>Tất cả
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Members List -->
                         <div class="members-list" id="membersList">
-                            <div th:each="member : ${recentMembers}" class="member-item" 
-                                 th:attr="data-name=${member.firstName + ' ' + member.lastName},
-                                          data-username=${member.username},
-                                          data-role=${member.role},
-                                          data-join-date=${member.joinedAt}">
-                                <div class="member-avatar-container">
-                                    <img th:src="${member.avatar}" alt="Member Avatar" class="member-avatar">
-                                    <div class="online-indicator offline"></div>
+                            <!-- Members will be loaded dynamically via JavaScript -->
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
                                 </div>
-                                    <div class="member-info">
-                                        <div class="member-name" th:text="${member.firstName + ' ' + member.lastName}">Member Name</div>
-                                        <div class="member-username" th:text="'@' + ${member.username}">@username</div>
-                                    <div class="member-join-date text-muted small">
-                                        Tham gia: <span th:text="${member.joinedAt}">15/01/2024</span>
-                                    </div>
-                                </div>
-                                <div class="member-actions">
-                                    <div class="member-role">
-                                        <span class="badge" th:classappend="${member.role == 'ADMIN'} ? 'bg-primary' : 'bg-secondary'"
-                                              th:text="${member.role == 'ADMIN'} ? 'Quản trị' : 'Thành viên'">Thành viên</span>
-                                    </div>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-sm btn-outline-primary" title="Xem hồ sơ" 
-                                                th:data-username="${member.username}"
-                                                onclick="viewUserProfile(this.dataset.username)">
-                                            <i class="bi bi-person"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-success" title="Nhắn tin" 
-                                                th:data-user-id="${member.id}"
-                                                onclick="startChatWithUser(this.dataset.userId)">
-                                            <i class="bi bi-chat"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                <p class="mt-2 text-muted">Đang tải danh sách thành viên...</p>
                             </div>
                         </div>
                         
-                        <!-- Load More Button -->
-                        <div class="text-center mt-4">
-                            <button class="btn btn-outline-primary" id="loadMoreMembers">
-                                <i class="bi bi-arrow-down-circle me-1"></i>Xem thêm thành viên
-                            </button>
+                        <style>
+                            .member-card-clickable {
+                                border: 1px solid #e9ecef;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            }
+                            
+                            .member-card-clickable:hover {
+                                border-color: #007bff;
+                                transform: translateY(-2px);
+                                box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+                            }
+                            
+                            .member-card-clickable .card-body {
+                                padding: 1rem;
+                            }
+                            
+                            .member-info {
+                                font-size: 0.7rem;
+                                line-height: 1.2;
+                            }
+                            
+                            .member-info i {
+                                width: 12px;
+                                text-align: center;
+                            }
+                            
+                            /* Current user styling */
+                            .member-card-clickable.current-user {
+                                border: 2px solid #ffc107 !important;
+                                box-shadow: 0 2px 8px rgba(255,193,7,0.3);
+                            }
+                            
+                            .member-card-clickable.current-user:hover {
+                                border-color: #ffc107 !important;
+                                box-shadow: 0 4px 12px rgba(255,193,7,0.4);
+                            }
+                            
+                            .current-user-indicator {
+                                position: absolute;
+                                top: 0.25rem;
+                                right: 0.25rem;
+                                z-index: 10;
+                            }
+                            
+                            @media (max-width: 768px) {
+                                .member-card-clickable .card-body {
+                                    padding: 0.75rem;
+                                }
+                                
+                                .member-card-clickable h6 {
+                                    font-size: 0.8rem !important;
+                                }
+                                
+                                .member-card-clickable p {
+                                    font-size: 0.7rem !important;
+                                }
+                            }
+                        </style>
+                        
+                        <!-- Pagination Controls -->
+                        <div class="pagination-controls mt-4" id="paginationControls" style="display: none;">
+                            <nav aria-label="Members pagination">
+                                <ul class="pagination justify-content-center" id="paginationList">
+                                    <!-- Pagination buttons will be generated by JavaScript -->
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -772,12 +803,13 @@
                         <p th:text="${group.description}">Nhóm dành cho sinh viên ngành Kinh tế học tham gia học phần Kinh tế lượng nâng cao. Đây là nơi trao đổi tài liệu, thảo luận bài tập và chia sẻ kiến thức liên quan đến môn học.</p>
                     </div>
 
-                    <!-- Recently Active Members -->
+                    <!-- Most Active Members -->
                     <div class="sidebar-card mb-4">
-                        <h5>Thành viên hoạt động gần đây</h5>
+                        <h5>Thành viên hoạt động tích cực</h5>
                         <div class="recent-members">
-                            <div th:each="member : ${recentMembers}" class="recent-member">
+                            <div th:each="member : ${activeMembers}" class="recent-member" th:title="${#strings.concat(member.fullName, ' - ', member.postCount, ' bài đăng')}">
                                 <img th:src="${member.avatar}" alt="Member Avatar" class="recent-member-avatar">
+                                <div class="member-post-count" th:if="${member.postCount > 0}" th:text="${member.postCount}">0</div>
                             </div>
                         </div>
                         <a href="#" class="text-decoration-none" onclick="switchToTab('members')">Xem tất cả thành viên</a>
@@ -786,7 +818,7 @@
                     <!-- Pinned Documents -->
                     <div class="sidebar-card mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5>Tài liệu được ghim</h5>
+                            <h5>Tài liệu được tải nhiều nhất</h5>
                             <a href="#" class="text-decoration-none" onclick="switchToTab('documents')">Xem tất cả</a>
                         </div>
                         <div class="pinned-documents">

@@ -11,7 +11,7 @@
                 <ul class="nav flex-column mb-2 ps-3">
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/admin}"
-                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin') and #httpServletRequest.getRequestURI().length() == 6 ? 'active' : ''}"><i class="bi bi-house-door"></i> Dashboard</a>
+                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin') and #httpServletRequest.getRequestURI().length() == 6 ? 'active' : ''}"><i class="bi bi-house-door"></i> Tổng quan</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/admin/users}"
@@ -26,14 +26,14 @@
                            th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/groups') ? 'active' : ''}"><i class="bi bi-briefcase"></i> Quản lý nhóm</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/crawling}"
+                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/crawling') ? 'active' : ''}"><i class="bi bi-body-text"></i> Quản lý cấu hình Crawling</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-flag"></i> Báo cáo</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-question-circle"></i> Yêu cầu hỗ trợ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/crawling}"
-                           th:classappend="${#httpServletRequest != null and #httpServletRequest.getRequestURI().startsWith('/admin/crawling') ? 'active' : ''}"><i class="bi bi-spider"></i> Quản lý Web Crawling</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-gear"></i> Cài đặt</a>

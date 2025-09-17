@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import GraduationProject.forumikaa.entity.GroupMember;
+import java.util.Map;
+import java.util.HashMap;
+import GraduationProject.forumikaa.dto.GroupMemberDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -90,20 +95,22 @@ public class GroupController {
         // Get member count (now stored in entity)
         Long memberCount = group.getMemberCount() != null ? group.getMemberCount() : groupService.getMemberCount(groupId);
         
-        // Get group members for display
-        List<UserDisplayDto> recentMembers = groupService.getGroupMembers(groupId).stream()
-                .limit(6)
+        // Get most active members for display
+        List<GroupMember> mostActiveMembers = groupService.getMostActiveMembers(groupId, 10);
+        List<UserDisplayDto> activeMembers = mostActiveMembers.stream()
                 .map(member -> {
                     UserDisplayDto dto = new UserDisplayDto();
                     dto.setId(member.getUser().getId());
                     dto.setUsername(member.getUser().getUsername());
                     dto.setFirstName(member.getUser().getFirstName());
                     dto.setLastName(member.getUser().getLastName());
+                    dto.setFullName(member.getUser().getFirstName() + " " + member.getUser().getLastName());
                     dto.setAvatar(member.getUser().getUserProfile() != null ? 
                             member.getUser().getUserProfile().getAvatar() : 
                             "https://i.pravatar.cc/40?u=" + member.getUser().getId());
                     dto.setRole(member.getRole().toString());
                     dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10));
+                    dto.setPostCount(groupService.getPostCountByUserInGroup(groupId, member.getUser().getId()));
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -141,7 +148,7 @@ public class GroupController {
         model.addAttribute("memberCount", memberCount);
         model.addAttribute("postCount", postCount);
         model.addAttribute("documentCount", documentCount);
-        model.addAttribute("recentMembers", recentMembers);
+        model.addAttribute("activeMembers", activeMembers);
         model.addAttribute("posts", posts);
         model.addAttribute("groupDocuments", groupDocuments);
         model.addAttribute("pinnedDocuments", pinnedDocuments);
@@ -199,6 +206,97 @@ public class GroupController {
             return "success";
         } catch (Exception e) {
             return "error";
+        }
+    }
+    
+    @GetMapping("/{groupId}/members")
+    @ResponseBody
+    public ResponseEntity<?> getGroupMembersWithFilters(
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(defaultValue = "") String role,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            // Create pageable with sorting
+            Pageable pageable = PageRequest.of(page, size);
+            if (sortBy != null && !sortBy.isEmpty()) {
+                switch (sortBy) {
+                    case "name":
+                        pageable = PageRequest.of(page, size, 
+                            org.springframework.data.domain.Sort.by("user.firstName").ascending()
+                            .and(org.springframework.data.domain.Sort.by("user.lastName").ascending()));
+                        break;
+                    case "username":
+                        pageable = PageRequest.of(page, size, 
+                            org.springframework.data.domain.Sort.by("user.username").ascending());
+                        break;
+                    case "joinedAt":
+                        pageable = PageRequest.of(page, size, 
+                            org.springframework.data.domain.Sort.by("joinedAt").descending());
+                        break;
+                    case "role":
+                        pageable = PageRequest.of(page, size, 
+                            org.springframework.data.domain.Sort.by("role").ascending());
+                        break;
+                    default:
+                        pageable = PageRequest.of(page, size, 
+                            org.springframework.data.domain.Sort.by("joinedAt").descending());
+                }
+            }
+            
+            // Use proper pagination query
+            Page<GroupMember> membersPage = groupService.getGroupMembersWithFilters(groupId, search, role, sortBy, pageable);
+            
+            List<Map<String, Object>> memberData = membersPage.getContent().stream()
+                .map(member -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("id", member.getId());
+                    data.put("userId", member.getUser().getId());
+                    data.put("username", member.getUser().getUsername());
+                    data.put("firstName", member.getUser().getFirstName());
+                    data.put("lastName", member.getUser().getLastName());
+                    data.put("fullName", member.getUser().getFirstName() + " " + member.getUser().getLastName());
+                    
+                    // Get avatar - need to load userProfile separately
+                    String avatar = "https://i.pravatar.cc/40?u=" + member.getUser().getId();
+                    try {
+                        if (member.getUser().getUserProfile() != null && 
+                            member.getUser().getUserProfile().getAvatar() != null &&
+                            !member.getUser().getUserProfile().getAvatar().trim().isEmpty()) {
+                            avatar = member.getUser().getUserProfile().getAvatar();
+                        }
+                    } catch (Exception e) {
+                        // Lazy loading issue - use default avatar
+                    }
+                    data.put("avatar", avatar);
+                    
+                    data.put("role", member.getRole().name());
+                    data.put("joinedAt", member.getJoinedAt());
+                    
+                    // Add post count for activity sorting and display
+                    Long postCount = groupService.getPostCountByUserInGroup(groupId, member.getUser().getId());
+                    data.put("postCount", postCount);
+                    
+                    return data;
+                })
+                .collect(Collectors.toList());
+            
+            // Create paginated response
+            Map<String, Object> paginatedData = new HashMap<>();
+            paginatedData.put("content", memberData);
+            paginatedData.put("totalElements", membersPage.getTotalElements());
+            paginatedData.put("totalPages", membersPage.getTotalPages());
+            paginatedData.put("currentPage", membersPage.getNumber());
+            paginatedData.put("size", membersPage.getSize());
+            paginatedData.put("first", membersPage.isFirst());
+            paginatedData.put("last", membersPage.isLast());
+            paginatedData.put("currentUserId", securityUtil.getCurrentUserId());
+            
+            return ResponseEntity.ok(paginatedData);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Lỗi khi lấy danh sách thành viên: " + e.getMessage()));
         }
     }
     

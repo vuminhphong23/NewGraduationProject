@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface FriendshipService {
-    Friendship sendFriendRequest(Long requesterId, Long targetUserId);
-    Friendship acceptFriendRequest(Long currentUserId, Long requesterId);
+    void sendFriendRequest(Long requesterId, Long targetUserId);
+    void acceptFriendRequest(Long currentUserId, Long requesterId);
     void declineFriendRequest(Long currentUserId, Long requesterId);
     void cancelFriendRequest(Long currentUserId, Long targetUserId);
     void unfriend(Long currentUserId, Long friendUserId);

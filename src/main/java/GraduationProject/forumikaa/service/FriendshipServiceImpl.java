@@ -25,7 +25,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     @Autowired private NotificationService notificationService;
 
     @Override
-    public Friendship sendFriendRequest(Long requesterId, Long targetUserId) {
+    public void sendFriendRequest(Long requesterId, Long targetUserId) {
         if (requesterId.equals(targetUserId)) {
             throw new IllegalArgumentException("Không thể kết bạn với chính mình");
         }
@@ -46,28 +46,25 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendship.setUser(requester);
         friendship.setFriend(target);
         friendship.setStatus(FriendshipStatus.PENDING);
-        Friendship saved = friendshipDao.save(friendship);
+        friendshipDao.save(friendship);
 
         // Tạo thông báo cho người nhận
         notificationService.createFriendshipRequestNotification(target.getId(), requester.getId());
 
-        return saved;
     }
 
     @Override
-    public Friendship acceptFriendRequest(Long currentUserId, Long requesterId) {
+    public void acceptFriendRequest(Long currentUserId, Long requesterId) {
         Friendship friendship = friendshipDao.findByUserIdAndFriendId(requesterId, currentUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Yêu cầu kết bạn không tồn tại"));
         if (friendship.getStatus() != FriendshipStatus.PENDING) {
             throw new IllegalStateException("Không thể chấp nhận với trạng thái: " + friendship.getStatus());
         }
         friendship.setStatus(FriendshipStatus.ACCEPTED);
-        Friendship saved = friendshipDao.save(friendship);
+        friendshipDao.save(friendship);
 
         // Tạo thông báo cho người gửi yêu cầu
         notificationService.createFriendshipAcceptedNotification(friendship.getUser().getId(), currentUserId);
-
-        return saved;
     }
 
     @Override

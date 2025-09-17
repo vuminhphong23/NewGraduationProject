@@ -2,6 +2,7 @@ package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.entity.User;
+import GraduationProject.forumikaa.util.SendEmailUtil;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,11 +25,11 @@ public class PasswordResetService {
         this.userDao = userDao;
     }
 
-    private EmailService emailService;
+    private SendEmailUtil sendEmailUtil;
 
     @Autowired
-    public void setEmailService(EmailService emailService) {
-        this.emailService = emailService;
+    public void setEmailService(SendEmailUtil sendEmailUtil) {
+        this.sendEmailUtil = sendEmailUtil;
     }
 
     private PasswordEncoder passwordEncoder;
@@ -59,7 +60,7 @@ public class PasswordResetService {
 
     private boolean sendOtpEmail(String email, String otp) {
         try {
-            emailService.sendOtpEmail(email, otp);
+            sendEmailUtil.sendOtpEmail(email, otp);
             return true;
         } catch (MessagingException e) {
             otpStorage.remove(email); // Xóa OTP nếu gửi email thất bại

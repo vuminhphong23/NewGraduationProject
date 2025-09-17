@@ -243,16 +243,16 @@
             });
             
             if (response && response.ok) {
-                showToast('Đã gửi yêu cầu kết bạn!', 'success');
+                toastManager.success('Đã gửi yêu cầu kết bạn!');
                 // Reload trạng thái
                 loadFriendshipStatus();
             } else {
                 const error = await response.json();
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
+                toastManager.error(error.message || 'Có lỗi xảy ra');
             }
         } catch (error) {
             console.error('Error sending friend request:', error);
-            showToast('Có lỗi xảy ra khi gửi yêu cầu kết bạn', 'error');
+            toastManager.error('Có lỗi xảy ra khi gửi yêu cầu kết bạn');
         }
     }
     
@@ -263,15 +263,15 @@
             });
             
             if (response && response.ok) {
-                showToast('Đã chấp nhận yêu cầu kết bạn!', 'success');
+                toastManager.success('Đã chấp nhận yêu cầu kết bạn!');
                 loadFriendshipStatus();
             } else {
                 const error = await response.json();
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
+                toastManager.error(error.message || 'Có lỗi xảy ra');
             }
         } catch (error) {
             console.error('Error accepting friend request:', error);
-            showToast('Có lỗi xảy ra khi chấp nhận yêu cầu kết bạn', 'error');
+            toastManager.error('Có lỗi xảy ra khi chấp nhận yêu cầu kết bạn');
         }
     }
     
@@ -282,15 +282,15 @@
             });
             
             if (response && response.ok) {
-                showToast('Đã từ chối yêu cầu kết bạn', 'info');
+                toastManager.info('Đã từ chối yêu cầu kết bạn');
                 loadFriendshipStatus();
             } else {
                 const error = await response.json();
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
+                toastManager.error(error.message || 'Có lỗi xảy ra');
             }
         } catch (error) {
             console.error('Error declining friend request:', error);
-            showToast('Có lỗi xảy ra khi từ chối yêu cầu kết bạn', 'error');
+            toastManager.error('Có lỗi xảy ra khi từ chối yêu cầu kết bạn');
         }
     }
     
@@ -301,15 +301,15 @@
             });
             
             if (response && response.ok) {
-                showToast('Đã hủy yêu cầu kết bạn', 'info');
+                toastManager.info('Đã hủy yêu cầu kết bạn');
                 loadFriendshipStatus();
             } else {
                 const error = await response.json();
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
+                toastManager.error(error.message || 'Có lỗi xảy ra');
             }
         } catch (error) {
             console.error('Error canceling friend request:', error);
-            showToast('Có lỗi xảy ra khi hủy yêu cầu kết bạn', 'error');
+            toastManager.error('Có lỗi xảy ra khi hủy yêu cầu kết bạn');
         }
     }
     
@@ -324,15 +324,15 @@
             });
             
             if (response && response.ok) {
-                showToast('Đã hủy kết bạn', 'info');
+                toastManager.info('Đã hủy kết bạn');
                 loadFriendshipStatus();
             } else {
                 const error = await response.json();
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
+                toastManager.error(error.message || 'Có lỗi xảy ra');
             }
         } catch (error) {
             console.error('Error unfriending:', error);
-            showToast('Có lỗi xảy ra khi hủy kết bạn', 'error');
+            toastManager.error('Có lỗi xảy ra khi hủy kết bạn');
         }
     }
     
