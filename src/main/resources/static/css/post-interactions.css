@@ -143,13 +143,14 @@
 #shareModal .modal-content {
     border-radius: 12px;
     border: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 30px rgba(20, 40, 80, 0.15);
+    border: 1px solid #e0e6ed;
 }
 
 #shareModal .modal-header {
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid #e0e6ed;
     padding: 20px 24px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #142850 0%, #27496d 100%);
     color: white;
     border-radius: 12px 12px 0 0;
 }
@@ -163,7 +164,7 @@
 }
 
 #shareModal .modal-footer {
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid #e0e6ed;
     padding: 16px 24px 20px;
 }
 
@@ -175,14 +176,14 @@
 }
 
 #shareMessage:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border-color: #ff6b00;
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 0, 0.25);
 }
 
 /* Post Preview Styles */
 .post-preview .card {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+    background: #f6f7fb;
+    border: 1px solid #e0e6ed;
     border-radius: 8px;
 }
 
@@ -202,10 +203,10 @@
 
 /* Privacy Options Styles */
 .privacy-options {
-    background: #f8f9fa;
+    background: #f6f7fb;
     border-radius: 8px;
     padding: 16px;
-    border: 1px solid #e9ecef;
+    border: 1px solid #e0e6ed;
 }
 
 .privacy-options .form-check {
@@ -220,17 +221,28 @@
     margin-top: 0.25rem;
 }
 
+.privacy-options .form-check-input:checked {
+    background-color: #142850;
+    border-color: #142850;
+}
+
+.privacy-options .form-check-input:focus {
+    border-color: #142850;
+}
+
 .privacy-options .form-check-label {
     display: flex;
     align-items: center;
     font-weight: 500;
-    color: #495057;
+    color: #142850;
     cursor: pointer;
 }
 
 .privacy-options .form-check-label i {
     width: 16px;
     text-align: center;
+    color: gray;
+    margin-right: 8px;
 }
 
 /* Share Methods Styles */
@@ -243,28 +255,28 @@
 
 .share-methods .btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 107, 0, 0.25);
 }
 
 .share-methods .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
     border: none;
 }
 
 .share-methods .btn-outline-primary {
-    border: 2px solid #667eea;
-    color: #667eea;
+    border: 2px solid #ff6b00;
+    color: #ff6b00;
 }
 
 .share-methods .btn-outline-primary:hover {
-    background: #667eea;
-    border-color: #667eea;
+    background: #ff6b00;
+    border-color: #ff6b00;
     color: white;
 }
 
 /* Form Label Styles */
 #shareModal .form-label.fw-bold {
-    color: #495057;
+    color: #142850;
     margin-bottom: 8px;
 }
 

@@ -56,6 +56,16 @@ public class LikeServiceImpl implements LikeService {
     public boolean isLikedByUser(Long userId, Long likeableId, LikeableType likeableType) {
         return likeDao.existsByUserIdAndLikeableIdAndLikeableType(userId, likeableId, likeableType);
     }
+
+    @Override
+    public Long getUserLikeCount(Long userId, LikeableType likeableType) {
+        return likeDao.countByUserIdAndLikeableType(userId, likeableType);
+    }
+
+    @Override
+    public Long getUserLikeCountInDateRange(Long userId, LikeableType likeableType, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+        return likeDao.countByUserIdAndLikeableTypeAndDateRange(userId, likeableType, startDate, endDate);
+    }
     
 
 }

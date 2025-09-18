@@ -46,7 +46,6 @@ class PostInteractions {
                 this.showToast(error.message || 'Không thể thích bài viết', 'error');
             }
         } catch (error) {
-            console.error('Like error:', error);
             this.showToast('Không thể kết nối đến máy chủ', 'error');
         } finally {
             button.dataset.loading = 'false';
@@ -57,14 +56,27 @@ class PostInteractions {
         const icon = button.querySelector('i');
         const likeText = button.querySelector('.like-text');
 
-        icon.classList.toggle('fa-solid', isLiked);
-        icon.classList.toggle('fa-regular', !isLiked);
-        icon.classList.toggle('text-primary', isLiked);
-        likeText.textContent = isLiked ? 'Đã thích' : 'Thích';
+        if (icon) {
+            // Remove all classes first
+            icon.classList.remove('fa-solid', 'fa-regular', 'text-primary');
+            
+            // Add appropriate classes
+            if (isLiked) {
+                icon.classList.add('fa-solid', 'text-primary');
+            } else {
+                icon.classList.add('fa-regular');
+            }
+        }
+
+        if (likeText) {
+            likeText.textContent = isLiked ? 'Đã thích' : 'Thích';
+        }
 
         const card = button.closest('.card');
         const likeCountEl = card.querySelector('.like-count');
-        if (likeCountEl) likeCountEl.textContent = `${likeCount} lượt thích`;
+        if (likeCountEl) {
+            likeCountEl.textContent = `${likeCount} lượt thích`;
+        }
 
         button.setAttribute('data-liked', isLiked);
     }
@@ -72,6 +84,7 @@ class PostInteractions {
     async loadInitialLikeStatus() {
         // Load like status for all posts
         const likeButtons = document.querySelectorAll('.like-btn');
+        
         for (const button of likeButtons) {
             const postId = button.getAttribute('data-post-id');
             if (postId) {
@@ -90,7 +103,7 @@ class PostInteractions {
                 this.updateLikeUI(button, result.isLiked, result.likeCount);
             }
         } catch (error) {
-            console.error('Load like status error:', error);
+            // Silent fail for like status loading
         }
     }
     
@@ -464,11 +477,11 @@ class PostInteractions {
                 <div class="modal fade" id="shareModal" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
-                            <div class="modal-header">
+                            <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title">
                                     <i class="fa fa-share-alt me-2"></i>Chia sẻ bài viết
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <!-- Post Preview -->
@@ -480,12 +493,38 @@ class PostInteractions {
                                                      alt="avatar" class="rounded-circle me-2" width="32" height="32">
                                                 <div>
                                                     <strong>${postData.userName}</strong>
+                                                    ${postData.groupName ? `<span class="badge bg-primary ms-2"><i class="fa fa-users me-1"></i>${postData.groupName}</span>` : ''}
                                                     <small class="text-muted d-block">${this.formatTime(postData.createdAt)}</small>
                                                 </div>
+                                           
+                                                ${postData.topicNames && postData.topicNames.length > 0 ? `<span style="color: #1da1f2" class="ms-auto fw-bold">#${postData.topicNames.map(topic => topic.toLowerCase().replace(/\s+/g, '_')).join(' #')}</span>` : ''}
                                             </div>
                                             <div class="post-content">
                                                 <h6 class="mb-2">${postData.title || ''}</h6>
                                                 <p class="mb-2 text-muted small">${postData.content ? postData.content.substring(0, 150) + (postData.content.length > 150 ? '...' : '') : ''}</p>
+                                                
+                                                <!-- File attachments preview -->
+                                                ${postData.documents && postData.documents.length > 0 ? `
+                                                    <div class="mt-2">
+                                                        <small class="text-muted">
+                                                            <i class="fa fa-paperclip me-1"></i>
+                                                            ${postData.documents.length} tệp đính kèm
+                                                        </small>
+                                                    </div>
+                                                ` : ''}
+                                                
+                                                <!-- Post stats -->
+                                                <div class="d-flex justify-content-around mt-3 border-top pt-2">
+                                                    <small class="text-muted me-3">
+                                                        <i class="fa fa-heart me-1"></i>${postData.likeCount || 0} lượt thích
+                                                    </small>
+                                                    <small class="text-muted me-3">
+                                                        <i class="fa fa-comment me-1"></i>${postData.commentCount || 0} bình luận
+                                                    </small>
+                                                    <small class="text-muted">
+                                                        <i class="fa fa-share me-1"></i>${postData.shareCount || 0} lượt chia sẻ
+                                                    </small>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -505,7 +544,7 @@ class PostInteractions {
                                             <div class="form-check">
                                                 <input class="form-check-input" type="radio" name="sharePrivacy" id="sharePublic" value="PUBLIC" checked>
                                                 <label class="form-check-label" for="sharePublic">
-                                                    <i class="fa fa-globe me-2"></i>Công khai
+                                                    <i class="fa fa-globe-asia me-2"></i>Công khai
                                                 </label>
                                             </div>
                                             <div class="form-check">
@@ -531,7 +570,7 @@ class PostInteractions {
                                                 </button>
                                             </div>
                                             <div class="col-6">
-                                                <button type="button" class="btn btn-outline-primary w-100" onclick="copyPostLink(${postId})">
+                                                <button type="button" class="btn btn-outline-primary w-100" data-post-id="${postId}" id="copyLinkBtn">
                                                     <i class="fa fa-link me-2"></i>Copy link
                                                 </button>
                                             </div>
@@ -555,6 +594,23 @@ class PostInteractions {
             
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+            
+            // Focus on the share button when modal opens
+            modal._element.addEventListener('shown.bs.modal', () => {
+                const shareButton = modal._element.querySelector('button[onclick*="confirmShare"]');
+                if (shareButton) {
+                    shareButton.focus();
+                }
+                
+                // Add click event for copy link button
+                const copyLinkBtn = modal._element.querySelector('#copyLinkBtn');
+                if (copyLinkBtn) {
+                    copyLinkBtn.addEventListener('click', () => {
+                        this.copyPostLink(postId);
+                    });
+                }
+            });
+            
             modal.show();
             
         } catch (error) {
@@ -628,14 +684,10 @@ class PostInteractions {
         const url = `${window.location.origin}/posts/${postId}`;
         
         try {
-            // Chỉ sử dụng clipboard, không dùng Web Share API
             await navigator.clipboard.writeText(url);
             this.showToast('Đã copy link bài viết!', 'success');
-            
-            // Close modal
             bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
         } catch (error) {
-            console.error('Copy link error:', error);
             // Fallback
             const textArea = document.createElement('textarea');
             textArea.value = url;
@@ -644,8 +696,6 @@ class PostInteractions {
             document.execCommand('copy');
             document.body.removeChild(textArea);
             this.showToast('Đã copy link bài viết!', 'success');
-            
-            // Close modal
             bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
         }
     }
@@ -655,7 +705,9 @@ class PostInteractions {
     // ===========================
     
     showToast(message, type = 'info') {
-        window.toastManager?.show(message, type);
+        if (window.toastManager) {
+            window.toastManager.show(message, type);
+        }
     }
 
     async toggleCommentLike(commentId) {
@@ -942,5 +994,7 @@ window.handleCommentKeyPress = (event) => window.postInteractions?.handleComment
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    window.postInteractions = new PostInteractions();
+    if (!window.postInteractions) {
+        window.postInteractions = new PostInteractions();
+    }
 });

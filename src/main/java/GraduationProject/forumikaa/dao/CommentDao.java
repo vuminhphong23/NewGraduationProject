@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Repository
 public interface CommentDao extends JpaRepository<Comment, Long> {
@@ -36,5 +37,12 @@ public interface CommentDao extends JpaRepository<Comment, Long> {
     // Method to find posts commented by user
     @Query("SELECT DISTINCT c.post FROM Comment c WHERE c.user.id = :userId")
     List<GraduationProject.forumikaa.entity.Post> findPostsCommentedByUser(@Param("userId") Long userId);
+    
+    // Count methods for analytics
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId")
+    Long countByUserId(@Param("userId") Long userId);
+    
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user.id = :userId AND c.createdAt >= :startDate AND c.createdAt <= :endDate")
+    Long countByUserIdAndCreatedAtBetween(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
 

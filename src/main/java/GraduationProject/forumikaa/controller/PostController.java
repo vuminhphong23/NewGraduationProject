@@ -77,8 +77,19 @@ public class PostController {
     // 5. Lấy post theo ID (có kiểm tra quyền)
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {
-        Long userId = getCurrentUserId();
-        return ResponseEntity.ok(postService.getPostById(postId, userId));
+        try {
+            Long userId = getCurrentUserId();
+            System.out.println("📄 Getting post " + postId + " for user " + userId);
+            
+            PostResponse post = postService.getPostById(postId, userId);
+            System.out.println("✅ Post retrieved successfully: " + post.getTitle());
+            
+            return ResponseEntity.ok(post);
+        } catch (Exception e) {
+            System.err.println("❌ Error getting post: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // 6. Cập nhật bài viết
@@ -263,8 +274,12 @@ public class PostController {
             String message = request != null ? request.get("message") : null;
             String privacy = request != null ? request.get("privacy") : "PUBLIC";
             
+            System.out.println("🔗 Sharing post " + postId + " by user " + userId + " with message: " + message + ", privacy: " + privacy);
+            
             Map<String, Object> sharedPost = postService.sharePost(postId, userId, message, privacy);
             Long shareCount = postService.getPostShareCount(postId);
+            
+            System.out.println("✅ Post shared successfully, share count: " + shareCount);
             
             return ResponseEntity.ok(Map.of(
                 "sharedPost", sharedPost,
@@ -272,6 +287,8 @@ public class PostController {
                 "message", "Đã chia sẻ bài viết thành công"
             ));
         } catch (Exception e) {
+            System.err.println("❌ Error sharing post: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Không thể chia sẻ bài viết", "message", e.getMessage()));
         }

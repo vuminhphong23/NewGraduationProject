@@ -11,6 +11,10 @@ public interface LikeService {
 
     boolean isLikedByUser(Long userId, Long likeableId, LikeableType likeableType);
 
+    Long getUserLikeCount(Long userId, LikeableType likeableType);
+
+    Long getUserLikeCountInDateRange(Long userId, LikeableType likeableType, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+
     default Long getPostLikeCount(Long postId) {
         return getLikeCount(postId, LikeableType.POST);
     }

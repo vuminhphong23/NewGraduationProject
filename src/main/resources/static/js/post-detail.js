@@ -12,11 +12,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // Đảm bảo PostInteractions được khởi tạo và load like status
+    const initializePostInteractions = () => {
+        if (window.postInteractions) {
+            // Load like status cho post này
+            const likeButton = document.querySelector('.like-btn');
+            if (likeButton) {
+                window.postInteractions.loadLikeStatus(likeButton);
+            }
+        } else {
+            setTimeout(initializePostInteractions, 50);
+        }
+    };
+
     // Load comments nếu chưa có
     setTimeout(() => {
         if (window.postInteractions && commentsList && !commentsList.children.length) {
             window.postInteractions.loadComments(postId, 0);
         }
+    }, 100);
+
+    // Initialize post interactions với delay để đảm bảo PostInteractions đã được khởi tạo
+    setTimeout(() => {
+        initializePostInteractions();
     }, 100);
 
     // Scroll tới comment theo hash

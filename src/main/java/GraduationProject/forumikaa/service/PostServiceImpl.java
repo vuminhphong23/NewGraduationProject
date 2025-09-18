@@ -617,6 +617,16 @@ public class PostServiceImpl implements PostService {
         return post.getShareCount() != null ? post.getShareCount() : 0L;
     }
 
+    @Override
+    public Long getUserShareCount(Long userId) {
+        return postDao.countSharesByUserId(userId);
+    }
+
+    @Override
+    public Long getUserShareCountInDateRange(Long userId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
+        return postDao.countSharesByUserIdAndDateRange(userId, startDate, endDate);
+    }
+
 
 
 

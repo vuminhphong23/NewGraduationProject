@@ -44,6 +44,8 @@ public interface PostService {
     // Share functionality
     Map<String, Object> sharePost(Long postId, Long userId, String message, String privacy);
     Long getPostShareCount(Long postId);
+    Long getUserShareCount(Long userId);
+    Long getUserShareCountInDateRange(Long userId, java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
 
     // Admin management methods
     Page<Post> findPaginated(String keyword, String status, String privacy, Pageable pageable);

@@ -4,6 +4,7 @@ import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.entity.Comment;
 import GraduationProject.forumikaa.entity.LikeableType;
 import GraduationProject.forumikaa.entity.User;
+import java.time.LocalDateTime;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
 import GraduationProject.forumikaa.exception.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,15 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private NotificationService notificationService;
 
+    @Override
+    public Long getUserCommentCount(Long userId) {
+        return commentDao.countByUserId(userId);
+    }
+
+    @Override
+    public Long getUserCommentCountInDateRange(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+        return commentDao.countByUserIdAndCreatedAtBetween(userId, startDate, endDate);
+    }
 
     @Override
     @Transactional

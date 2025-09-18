@@ -21,6 +21,12 @@ public interface LikeDao extends JpaRepository<Like, Long> {
     @Query("SELECT COUNT(l) FROM Like l WHERE l.likeableId = :likeableId AND l.likeableType = :likeableType")
     Long countByLikeableIdAndLikeableType(@Param("likeableId") Long likeableId, @Param("likeableType") LikeableType likeableType);
     
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.user.id = :userId AND l.likeableType = :likeableType")
+    Long countByUserIdAndLikeableType(@Param("userId") Long userId, @Param("likeableType") LikeableType likeableType);
+    
+    @Query("SELECT COUNT(l) FROM Like l WHERE l.user.id = :userId AND l.likeableType = :likeableType AND l.createdAt >= :startDate AND l.createdAt <= :endDate")
+    Long countByUserIdAndLikeableTypeAndDateRange(@Param("userId") Long userId, @Param("likeableType") LikeableType likeableType, @Param("startDate") java.time.LocalDateTime startDate, @Param("endDate") java.time.LocalDateTime endDate);
+    
     // Legacy methods for backward compatibility (posts)
     @Deprecated
     default Optional<Like> findByUserIdAndPostId(Long userId, Long postId) {

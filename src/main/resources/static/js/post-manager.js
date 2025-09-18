@@ -73,7 +73,8 @@ class PostManager {
             } else if (target.classList.contains('like-btn')) {
                 this.toggleLike(postId);
             } else if (target.classList.contains('share-btn')) {
-                this.sharePost(postId);
+                // Let post-interactions.js handle share functionality
+                return;
             }
         });
     }
@@ -309,23 +310,6 @@ class PostManager {
         }
     }
     
-    sharePost(postId) {
-        const url = `${window.location.origin}/posts/${postId}`;
-        
-        // Chỉ sử dụng clipboard, không dùng Web Share API
-        navigator.clipboard.writeText(url).then(() => {
-            this.showToast('Đã copy link bài viết!', 'success');
-        }).catch(() => {
-            // Fallback
-            const textArea = document.createElement('textarea');
-            textArea.value = url;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            this.showToast('Đã copy link bài viết!', 'success');
-        });
-    }
     
     resetForm() {
         this.form?.reset();
@@ -438,12 +422,13 @@ window.toggleLike = (element) => {
     }
 };
 
-window.sharePost = (element) => {
-    const postId = window.postManager?.getPostId(element);
-    if (postId && window.postManager) {
-        window.postManager.sharePost(postId);
-    }
-};
+// Don't override global sharePost - let post-interactions.js handle it
+// window.sharePost = (element) => {
+//     const postId = window.postManager?.getPostId(element);
+//     if (postId && window.postManager) {
+//         window.postManager.sharePost(postId);
+//     }
+// };
 
 window.refreshPosts = () => window.location.reload();
 

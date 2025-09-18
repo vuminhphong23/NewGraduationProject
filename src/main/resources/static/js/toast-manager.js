@@ -31,6 +31,21 @@ class ToastManager {
             max-width: 350px;
             pointer-events: none;
         `;
+        
+        // Thêm CSS animation cho pulse effect
+        if (!document.getElementById('toast-animations')) {
+            const style = document.createElement('style');
+            style.id = 'toast-animations';
+            style.textContent = `
+                @keyframes pulse {
+                    0% { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+                    50% { box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4); }
+                    100% { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         document.body.appendChild(this.toastContainer);
     }
 
@@ -106,6 +121,7 @@ class ToastManager {
             gap: 12px;
             max-width: 100%;
             word-wrap: break-word;
+            ${type === 'error' ? 'animation: pulse 2s infinite;' : ''}
         `;
 
         // Icon cho từng loại toast
@@ -148,7 +164,7 @@ class ToastManager {
     getToastColor(type) {
         const colors = {
             success: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            error: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            error: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
             warning: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
             info: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
         };
