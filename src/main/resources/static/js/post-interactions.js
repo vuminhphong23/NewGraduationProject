@@ -492,12 +492,11 @@ class PostInteractions {
                                                 <img src="${postData.userAvatar || 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}" 
                                                      alt="avatar" class="rounded-circle me-2" width="32" height="32">
                                                 <div>
-                                                    <strong>${postData.userName}</strong>
+                                                    <strong>${postData.userName || 'Người dùng'}</strong>
                                                     ${postData.groupName ? `<span class="badge bg-primary ms-2"><i class="fa fa-users me-1"></i>${postData.groupName}</span>` : ''}
                                                     <small class="text-muted d-block">${this.formatTime(postData.createdAt)}</small>
                                                 </div>
-                                           
-                                                ${postData.topicNames && postData.topicNames.length > 0 ? `<span style="color: #1da1f2" class="ms-auto fw-bold">#${postData.topicNames.map(topic => topic.toLowerCase().replace(/\s+/g, '_')).join(' #')}</span>` : ''}
+                                                ${postData.topicNames && postData.topicNames.length > 0 ? `<span style="color: #1da1f2" class="ms-auto fw-bold">#${postData.topicNames.map(topic => topic.toLowerCase().replace(/\\s+/g, '_')).join(' #')}</span>` : ''}
                                             </div>
                                             <div class="post-content">
                                                 <h6 class="mb-2">${postData.title || ''}</h6>

@@ -1337,8 +1337,8 @@ async function loadTopicsData() {
             updateTopicsChart(data.topicsData || []);
         } else {
             // Fallback to server-side data
-            const analyticsData = /*[[${analyticsData}]]*/ {};
-            const topicsData = analyticsData.topicsData || [];
+            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
+            const topicsData = serverAnalyticsData.topicsData || [];
             
             // Fallback data
             if (topicsData.length === 0) {
@@ -1454,8 +1454,8 @@ async function loadGroupsData() {
             updateGroupsChart(data.groupsData || []);
         } else {
             // Fallback to server-side data
-            const analyticsData = /*[[${analyticsData}]]*/ {};
-            const groupsData = analyticsData.groupsData || [];
+            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
+            const groupsData = serverAnalyticsData.groupsData || [];
             
             // Fallback data
             if (groupsData.length === 0) {
@@ -1588,8 +1588,8 @@ async function loadActivityData() {
             updateActivityChart(data.timelineData || []);
         } else {
             // Fallback to server-side data
-            const analyticsData = /*[[${analyticsData}]]*/ {};
-            const timelineData = analyticsData.timelineData || [];
+            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
+            const timelineData = serverAnalyticsData.timelineData || [];
             
             // Fallback data with realistic activity (daily)
             if (timelineData.length === 0) {
