@@ -1,8 +1,5 @@
 package GraduationProject.forumikaa.controller;
-import GraduationProject.forumikaa.dto.PostResponse;
-import GraduationProject.forumikaa.dto.UserDisplayDto;
-import GraduationProject.forumikaa.dto.FileUploadResponse;
-import GraduationProject.forumikaa.dto.ProfileUpdateRequest;
+import GraduationProject.forumikaa.dto.*;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.UserProfile;
 import GraduationProject.forumikaa.entity.GroupMember;
@@ -64,39 +61,41 @@ public class ProfileController {
         
         // Lấy danh sách bạn bè thật từ database
         List<User> friendsList = friendshipService.listFriends(user.getId());
-        List<UserDisplayDto> friends = friendsList.stream()
-                .map(friend -> {
-                    UserDisplayDto dto = new UserDisplayDto();
-                    dto.setId(friend.getId());
-                    dto.setUsername(friend.getUsername());
-                    dto.setFirstName(friend.getUsername()); // UserProfile không có firstName, dùng username
-                    dto.setLastName(""); // UserProfile không có lastName
-                    dto.setAvatar(friend.getUserProfile() != null && friend.getUserProfile().getAvatar() != null ? 
-                            friend.getUserProfile().getAvatar() : 
-                            "https://ui-avatars.com/api/?name=" + friend.getUsername() + "&background=007bff&color=ffffff&size=60");
-                    dto.setRole("FRIEND");
-                    dto.setJoinedAt("2024-01-01"); // Có thể lấy từ friendship table nếu cần
-                    return dto;
-                })
+        List<FriendDto> friends = friendsList.stream()
+                .map(friend -> FriendDto.builder()
+                        .id(friend.getId())
+                        .username(friend.getUsername())
+                        .firstName(friend.getUsername())
+                        .lastName(friend.getLastName())
+                        .email(friend.getEmail())
+                        .avatar(friend.getUserProfile() != null && friend.getUserProfile().getAvatar() != null ?
+                                friend.getUserProfile().getAvatar() :
+                                "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png")
+                        .profileLink(friend.getUserProfile() != null ? friend.getUserProfile().getSocialLinks() : null)
+                        .isOnline(true) // Có thể thêm logic kiểm tra online status
+                        .friendDate("01/01/2025") // Sử dụng createdAt thay vì hardcode
+                        .build())
                 .collect(Collectors.toList());
         
         // Lấy danh sách nhóm của user thật từ database
         List<GroupMember> groupMembers = groupMemberDao.findByUserId(user.getId());
-        List<UserDisplayDto> userGroups = groupMembers.stream()
-                .map(member -> {
-                    UserDisplayDto dto = new UserDisplayDto();
-                    dto.setId(member.getGroup().getId());
-                    dto.setUsername(member.getGroup().getName());
-                    dto.setFirstName(member.getGroup().getName());
-                    dto.setLastName("");
-                    dto.setAvatar(member.getGroup().getAvatar() != null ? 
-                            member.getGroup().getAvatar() : 
-                            "https://ui-avatars.com/api/?name=" + member.getGroup().getName() + "&background=007bff&color=ffffff&size=60");
-                    dto.setRole(member.getRole().name()); // Convert enum to string
-                    dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10)); // Format date
-                    dto.setMemberCount(postService.getNewPostCountByGroupToday(member.getGroup().getId()));
-                    return dto;
-                })
+        List<GroupMemberDto> userGroups = groupMembers.stream()
+                .map(member -> GroupMemberDto.builder()
+                        .id(member.getGroup().getId())
+                        .userId(member.getUser().getId())
+                        .username(member.getGroup().getName())
+                        .firstName(member.getGroup().getName())
+                        .lastName("")
+                        .fullName(member.getGroup().getName())
+                        .avatar(member.getGroup().getAvatar() != null ? 
+                                member.getGroup().getAvatar() : 
+                                "https://ui-avatars.com/api/?name=" + member.getGroup().getName() + "&background=007bff&color=ffffff&size=60")
+                        .role(member.getRole().name()) // Convert enum to string
+                        .isOnline(false) // Groups không có online status
+                        .joinedAt(member.getJoinedAt())
+                        .memberCount(postService.getNewPostCountByGroupToday(member.getGroup().getId()))
+                        .postCount(0L)
+                        .build())
                 .collect(Collectors.toList());
         
         // Lấy tất cả tài liệu của user từ posts
@@ -190,7 +189,7 @@ public class ProfileController {
             java.time.LocalDateTime startDateTime = thirtyDaysAgo.atStartOfDay();
             java.time.LocalDateTime endDateTime = java.time.LocalDate.now().atTime(23, 59, 59);
             
-            for (UserDisplayDto group : userGroups) {
+            for (GroupMemberDto group : userGroups) {
                 // Count posts that user created in this group within last 30 days
                 Long groupActivity = 0L;
                 try {
@@ -360,27 +359,28 @@ public class ProfileController {
             
             // Get user groups from database
             List<GroupMember> groupMembers = groupMemberDao.findByUserId(user.getId());
-            List<UserDisplayDto> userGroups = groupMembers.stream()
-                    .map(member -> {
-                        UserDisplayDto dto = new UserDisplayDto();
-                        dto.setId(member.getGroup().getId());
-                        dto.setUsername(member.getGroup().getName());
-                        dto.setFirstName(member.getGroup().getName());
-                        dto.setLastName("");
-                        dto.setAvatar(member.getGroup().getAvatar() != null ? 
-                                member.getGroup().getAvatar() : 
-                                "https://ui-avatars.com/api/?name=" + member.getGroup().getName() + "&background=007bff&color=ffffff&size=60");
-                        dto.setRole(member.getRole().name());
-                        dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10));
-                        // Use member count as activity metric
-                        dto.setMemberCount(member.getGroup().getMemberCount() != null ? member.getGroup().getMemberCount() : 0);
-                        return dto;
-                    })
+            List<GroupMemberDto> userGroups = groupMembers.stream()
+                    .map(member -> GroupMemberDto.builder()
+                            .id(member.getGroup().getId())
+                            .userId(member.getUser().getId())
+                            .username(member.getGroup().getName())
+                            .firstName(member.getGroup().getName())
+                            .lastName("")
+                            .fullName(member.getGroup().getName())
+                            .avatar(member.getGroup().getAvatar() != null ? 
+                                    member.getGroup().getAvatar() : 
+                                    "https://ui-avatars.com/api/?name=" + member.getGroup().getName() + "&background=007bff&color=ffffff&size=60")
+                            .role(member.getRole().name())
+                            .isOnline(false) // Groups không có online status
+                            .joinedAt(member.getJoinedAt())
+                            .memberCount(member.getGroup().getMemberCount() != null ? member.getGroup().getMemberCount() : 0)
+                            .postCount(0L)
+                            .build())
                     .collect(Collectors.toList());
             
             // Calculate groups activity data based on user's posts in each group
             List<Map<String, Object>> groupsData = new ArrayList<>();
-            for (UserDisplayDto group : userGroups) {
+            for (GroupMemberDto group : userGroups) {
                 // Count posts that user created in this group within date range
                 Long groupActivity = 0L;
                 try {

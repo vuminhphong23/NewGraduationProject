@@ -5,9 +5,8 @@ import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dao.CommentDao;
 import GraduationProject.forumikaa.dao.GroupDao;
-import GraduationProject.forumikaa.dto.CreatePostRequest;
+import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
-import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.entity.PostPrivacy;
@@ -65,7 +64,7 @@ public class PostServiceImpl implements PostService {
     @Autowired private GroupDao groupDao;
 
     @Override
-    public PostResponse createPost(CreatePostRequest request, Long userId) {
+    public PostResponse createPost(PostRequest request, Long userId) {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -117,7 +116,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId) {
+    public PostResponse updatePost(Long postId, PostRequest request, Long userId) {
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 

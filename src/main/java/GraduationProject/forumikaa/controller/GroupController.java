@@ -3,7 +3,7 @@ package GraduationProject.forumikaa.controller;
 import GraduationProject.forumikaa.entity.UserGroup;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Topic;
-import GraduationProject.forumikaa.dto.UserDisplayDto;
+import GraduationProject.forumikaa.dto.GroupMemberDto;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.service.GroupService;
@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import GraduationProject.forumikaa.entity.GroupMember;
 import java.util.Map;
 import java.util.HashMap;
-import GraduationProject.forumikaa.dto.GroupMemberDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -97,22 +96,23 @@ public class GroupController {
         
         // Get most active members for display
         List<GroupMember> mostActiveMembers = groupService.getMostActiveMembers(groupId, 10);
-        List<UserDisplayDto> activeMembers = mostActiveMembers.stream()
-                .map(member -> {
-                    UserDisplayDto dto = new UserDisplayDto();
-                    dto.setId(member.getUser().getId());
-                    dto.setUsername(member.getUser().getUsername());
-                    dto.setFirstName(member.getUser().getFirstName());
-                    dto.setLastName(member.getUser().getLastName());
-                    dto.setFullName(member.getUser().getFirstName() + " " + member.getUser().getLastName());
-                    dto.setAvatar(member.getUser().getUserProfile() != null ? 
-                            member.getUser().getUserProfile().getAvatar() : 
-                            "https://i.pravatar.cc/40?u=" + member.getUser().getId());
-                    dto.setRole(member.getRole().toString());
-                    dto.setJoinedAt(member.getJoinedAt().toString().substring(0, 10));
-                    dto.setPostCount(groupService.getPostCountByUserInGroup(groupId, member.getUser().getId()));
-                    return dto;
-                })
+        List<GroupMemberDto> activeMembers = mostActiveMembers.stream()
+                .map(member -> GroupMemberDto.builder()
+                        .id(member.getUser().getId())
+                        .userId(member.getUser().getId())
+                        .username(member.getUser().getUsername())
+                        .firstName(member.getUser().getFirstName())
+                        .lastName(member.getUser().getLastName())
+                        .fullName(member.getUser().getFirstName() + " " + member.getUser().getLastName())
+                        .avatar(member.getUser().getUserProfile() != null ? 
+                                member.getUser().getUserProfile().getAvatar() : 
+                                "https://i.pravatar.cc/40?u=" + member.getUser().getId())
+                        .role(member.getRole().toString())
+                        .isOnline(false) // Có thể thêm logic kiểm tra online status
+                        .joinedAt(member.getJoinedAt())
+                        .memberCount(0L)
+                        .postCount(groupService.getPostCountByUserInGroup(groupId, member.getUser().getId()))
+                        .build())
                 .collect(Collectors.toList());
         
         // Get current user ID and user info

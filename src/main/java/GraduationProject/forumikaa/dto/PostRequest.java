@@ -7,17 +7,17 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
-public class UpdatePostRequest {
+public class PostRequest {
     @NotBlank(message = "Tiêu đề không được để trống")
     private String title;
     
     @NotBlank(message = "Nội dung không được để trống")
     private String content;
     
-    // Legacy field for backward compatibility
+    // Keep topicId for backward compatibility (optional)
     private Long topicId;
     
-    // New field for hashtag system
+    // Add topicNames for hashtag functionality
     private List<String> topicNames;
     
     private PostPrivacy privacy;

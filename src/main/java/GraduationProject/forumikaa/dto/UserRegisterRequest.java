@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRegistrationDto {
+public class UserRegisterRequest {
     
     private Long id;
     

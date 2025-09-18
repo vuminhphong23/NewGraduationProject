@@ -1,6 +1,6 @@
 package GraduationProject.forumikaa.controller;
 
-import GraduationProject.forumikaa.dto.UserRegistrationDto;
+import GraduationProject.forumikaa.dto.UserRegisterRequest;
 import GraduationProject.forumikaa.entity.Role;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.RoleService;
@@ -14,7 +14,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Set;
@@ -50,7 +49,7 @@ public class BaseController {
 
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        model.addAttribute("userDto", new UserRegistrationDto());
+        model.addAttribute("userDto", new UserRegisterRequest());
         return "user/register";
     }
 
@@ -59,7 +58,7 @@ public class BaseController {
     //addFlashAttribute giữ dữ liệu tạm thời chỉ trong một request tiếp theo sau khi redirect và sẽ tự động bị xóa
     //sau khi request đó kết thúc. Điều này rất hữu ích khi bạn muốn hiển thị một thông báo sau khi chuyển hướng mà không phải giữ dữ liệu lâu dài trong session.
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("userDto") UserRegistrationDto userDto,
+    public String registerUser(@Valid @ModelAttribute("userDto") UserRegisterRequest userDto,
                               BindingResult result,
                               RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {

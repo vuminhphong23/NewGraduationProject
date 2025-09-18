@@ -1,10 +1,10 @@
 <!-- fragments/user/header.html -->
-<div class="row m-0 header" th:fragment="header">
-    <div class="col-2 logo">
+<div class="header" th:fragment="header">
+    <div class="header-logo">
         <i class="fas fa-graduation-cap"></i>
         <span>Forumi<span class="logo-orange">kaa</span></span>
     </div>
-    <div class="col-6 search-bar px-0">
+    <div class="header-search">
         <div class="smart-search-container">
             <div class="search-input-wrapper">
                 <i class="fa fa-search search-icon"></i>
@@ -94,10 +94,10 @@
             </div>
         </div>
     </div>
-    <div class="col-4 header-menu d-flex justify-content-end" data-user-id="${#authentication.principal.id}">
-        <a th:href="@{/}"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>
-        <a th:href="@{/recommendations}"><i class="fa-solid fa-magic"></i><span class="menu-text">Gợi ý thông minh</span></a>
-        <a th:href="@{/chat}"><i class="fa-solid fa-comments"></i><span class="menu-text">Tin nhắn</span></a>
+    <div class="header-menu" data-user-id="${#authentication.principal.id}">
+        <a th:href="@{/}" class="menu-item" data-page="home"><i class="fa-solid fa-newspaper"></i><span class="menu-text">Bảng tin</span></a>
+        <a th:href="@{/recommendations}" class="menu-item" data-page="recommendations"><i class="fa-solid fa-magic"></i><span class="menu-text">Gợi ý thông minh</span></a>
+        <a th:href="@{/chat}" class="menu-item" data-page="chat"><i class="fa-solid fa-comments"></i><span class="menu-text">Tin nhắn</span></a>
         
         <!-- Notification Bell -->
         <div class="notification-dropdown position-relative">
@@ -123,7 +123,7 @@
             </div>
         </div>
         
-        <a th:href="@{/profile/{username}(username =${#authentication.name})}"><i class="fa-solid fa-user"></i><span class="menu-text">Tài khoản</span></a>
+        <a th:href="@{/profile/{username}(username =${#authentication.name})}" class="menu-item" data-page="profile"><i class="fa-solid fa-user"></i><span class="menu-text">Tài khoản</span></a>
         <div class="dropdown">
             <a href="#" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa-solid fa-gear"></i><span class="menu-text">Cài đặt</span></a>
             <ul class="dropdown-menu dropdown-menu-end">
@@ -136,3 +136,36 @@
         </div>
     </div>
 </div>
+
+<script>
+// Simple active menu detection
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const menuItems = document.querySelectorAll('.menu-item');
+    
+    console.log('Current path:', currentPath);
+    console.log('Menu items found:', menuItems.length);
+    
+    menuItems.forEach(item => {
+        const page = item.getAttribute('data-page');
+        const href = item.getAttribute('href');
+        
+        console.log('Checking page:', page, 'href:', href);
+        
+        // Check if current path matches
+        if (page === 'home' && currentPath === '/') {
+            console.log('Adding active to home');
+            item.classList.add('active');
+        } else if (page !== 'home' && currentPath.includes('/' + page)) {
+            console.log('Adding active to:', page);
+            item.classList.add('active');
+        }
+        
+        // Test: Force add active to first menu item for testing
+        if (page === 'home') {
+            console.log('TEST: Adding active to home for testing');
+            item.classList.add('active');
+        }
+    });
+});
+</script>

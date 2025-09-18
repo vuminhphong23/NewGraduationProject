@@ -2,23 +2,18 @@ package GraduationProject.forumikaa.controller;
 
 import GraduationProject.forumikaa.dto.LoginRequest;
 import GraduationProject.forumikaa.dto.LoginResponse;
-import GraduationProject.forumikaa.dto.UserRegistrationDto;
-import GraduationProject.forumikaa.dto.UserProfileDto;
+import GraduationProject.forumikaa.dto.UserBasicDto;
 import GraduationProject.forumikaa.security.jwt.JwtCookieService;
 import GraduationProject.forumikaa.security.jwt.TokenProvider;
-import GraduationProject.forumikaa.service.CustomUserDetailsService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -95,12 +90,14 @@ public class AuthController {
         // Lấy thông tin user từ database
         User user = userService.findById(userId).orElse(null);
 
-        UserProfileDto userInfoResponse = new UserProfileDto(
+        UserBasicDto userInfoResponse = new UserBasicDto(
                 user.getId(),
                 user.getUsername(),
-                user.getEmail(),
                 user.getFirstName(),
-                user.getLastName()
+                user.getLastName(),
+                user.getEmail(),
+                user.getUserProfile().getAvatar(),
+                user.getUserProfile().getSocialLinks()
         );
 
         return ResponseEntity.ok(userInfoResponse);

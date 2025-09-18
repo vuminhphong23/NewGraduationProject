@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trang cá nhân</title>
+    <link rel="icon" type="image/x-icon" href="/forumikaa-icon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/forumikaa-icon.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -20,8 +22,57 @@
     <style>
         .profile-cover { height: 240px; object-fit: cover}
         .profile-avatar { width: 112px; height: 112px; border: 6px solid #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.10); position: absolute; left: 40px; bottom:-56px; background: #fff; }
-        .profile-info { padding-top: 64px; padding-bottom: 0.5rem; }
-        .profile-edit-btn { border-radius: 10px; font-size: 1rem; font-weight: 600; }
+         .profile-info { padding-top: 64px; padding-bottom: 0.5rem; }
+         .profile-edit-btn { border-radius: 10px; font-size: 1rem; font-weight: 600; }
+         
+         /* CSS cho bộ lọc bạn bè */
+         .filter-section {
+             background: #f8f9fa;
+             border-radius: 8px;
+             padding: 1rem;
+             margin-bottom: 1rem;
+         }
+         
+         .btn-check:checked + .btn-outline-primary {
+             background-color: #007bff;
+             border-color: #007bff;
+             color: white;
+         }
+         
+         .friend-item {
+             transition: all 0.3s ease;
+         }
+         
+         .friend-item:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+         }
+         
+         .friend-card {
+             transition: all 0.3s ease;
+             cursor: pointer;
+         }
+         
+         .friend-card:hover {
+             border-color: #007bff !important;
+             box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+         }
+         
+         .input-group-text {
+             background-color: #f8f9fa;
+             border-color: #dee2e6;
+         }
+         
+         .form-control:focus {
+             border-color: #007bff;
+             box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+         }
+         
+         .quick-friend-filter.active {
+             background-color: #007bff;
+             border-color: #007bff;
+             color: white;
+         }
         .sidebar-card { border-radius: 10px; box-shadow: 0 2px 12px rgba(35,50,107,0.08); }
         .stats-card {
             border-radius: 16px;
@@ -141,10 +192,7 @@
     <!-- Card cover + info + tab -->
     <div class="card profile-card bg-white my-4">
         <div class="position-relative" style="height:340px;">
-            <img th:src="${user.userProfile?.cover}" alt="cover" class="profile-cover w-100 h-100">
-            <button class="btn btn-light border position-absolute d-flex align-items-center gap-2 px-3 py-1" style="top:20px; right:32px; border-radius:10px; font-weight:500; font-size:0.98rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <i class="fa-regular fa-pen-to-square"></i> Đổi ảnh bìa
-            </button>
+            <img th:src="${user.userProfile?.cover != null ? user.userProfile.cover : 'https://media.vietnamplus.vn/images/ff19e4aafab8485e8307470102cc768913111b4eeeb06dd8393e71d67982f6bf02764b1fba7ad23425af24c332b1cd09/dai-hoc-phenikaa.jpg'}" alt="cover" class="profile-cover w-100 h-100">
             <img th:src="${user.userProfile?.avatar}" alt="avatar" class="profile-avatar rounded-circle position-absolute" onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
         </div>
         <div class="d-flex align-items-center justify-content-between px-5 profile-info">
@@ -197,38 +245,31 @@
 
             <div class="card bg-white mb-4 py-2">
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Giới thiệu</div>
-                <div class="text-muted small mb-2 px-4" th:text="${user.profileInfo ?: 'Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.'}">Sinh viên ngành Kỹ thuật phần mềm tại Đại học Phenikaa. Đam mê AI và phát triển web. Luôn sẵn sàng học hỏi và hợp tác dự án mới.</div>
+                <div class="text-muted small mb-2 px-4" th:text="${user.profileInfo ?: ''}"></div>
                 <ul class="list-unstyled mb-0 px-4">
-                    <li class="mb-1 " th:if="${user.address}">
+                    <li class="mb-1">
                         <i class="fa-solid fa-location-dot me-2 text-primary"></i>
-                        <span th:text="${user.address}">Hà Nội, Việt Nam</span>
+                        <span th:text="${user.address}"></span>
                     </li>
                     <li class="mb-1">
                         <i class="fa-solid fa-calendar-days me-2 text-primary"></i>
-                        <span th:text="${#temporals.format(user.birthDate, 'dd/MM/yyyy')}">09/2021</span>
+                        <span th:text="${#temporals.format(user.birthDate, 'dd/MM/yyyy')}"></span>
                     </li>
                 </ul>
             </div>
             <div class="card bg-white py-2 mb-4">
                 <div class="card-header border-0 fw-bold fs-5 bg-white">Liên hệ</div>
                 <div class="px-4">
-                    <div class="d-flex align-items-center mb-2" th:if="${user.email}">
+                    <div class="d-flex align-items-center mb-2">
                         <i class="fa-solid fa-envelope me-2 text-primary"></i>
-                        <span class="small" th:text="${user.email}">minh.nguyen@phenikaa-uni.edu.vn</span>
+                        <span class="small" th:text="${user.email}"></span>
                     </div>
-
-                    <div class="d-flex align-items-center mb-2" th:unless="${user.email}">
-                        <i class="fa-solid fa-envelope me-2 text-primary"></i>
-                        <span class="small">minh.nguyen@phenikaa-uni.edu.vn</span>
-                    </div>
-                    <div class="d-flex align-items-center mb-2" th:if="${user.phone}">
+                    
+                    <div class="d-flex align-items-center mb-2">
                         <i class="fa-solid fa-phone me-2 text-primary"></i>
                         <span class="small" th:text="${user.phone}">0123456789</span>
                     </div>
-                    <div class="d-flex align-items-center mb-2" th:unless="${user.phone}">
-                        <i class="fa-solid fa-phone me-2 text-primary"></i>
-                        <span class="small">0123456789</span>
-                    </div>
+
                 </div>
             </div>
 
@@ -568,19 +609,95 @@
                     <div class="card mb-4 border-0">
                         <div class="card-header border-0 fw-bold fs-5 bg-white d-flex justify-content-between align-items-center">
                             <span>Bạn bè</span>
-                            <span class="small text-muted" th:text="${friendsCount}">0</span>
+                            <span class="small text-muted" id="friendsCountDisplay" th:text="${friendsCount}">0</span>
                         </div>
+                        
+                        <!-- Smart Filter Section -->
+                        <div class="filter-section mb-4 px-3 pt-3">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="search-box">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="friendSearch" 
+                                                   placeholder="Tìm kiếm bạn bè...">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="friendSortFilter">
+                                        <option value="name">Sắp xếp theo tên</option>
+                                        <option value="date">Ngày kết bạn</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="friendStatusFilter">
+                                        <option value="all">Tất cả bạn bè</option>
+                                        <option value="online">Đang online</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-outline-secondary w-100" id="clearFriendFilters">
+                                        <i class="bi bi-x-circle me-1"></i>Xóa bộ lọc
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Filter Tags -->
+                            <div class="quick-filters mt-3">
+                                <button class="btn btn-sm btn-outline-primary me-2 quick-friend-filter" data-filter="online">
+                                    <i class="fa fa-circle text-success me-1"></i>Đang online
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning me-2 quick-friend-filter" data-filter="new">
+                                    <i class="fa fa-user-plus me-1"></i>Mới kết bạn
+                                </button>
+                                <button class="btn btn-sm btn-outline-dark me-2 quick-friend-filter" data-filter="all">
+                                    <i class="fa fa-list me-1"></i>Tất cả
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div class="card-body">
-                            <div th:if="${friends != null and !friends.isEmpty()}" class="row g-3">
-                                <div th:each="friend : ${friends}" class="col-md-6 col-lg-4">
-                                    <div class="d-flex align-items-center p-3 border rounded">
-                                        <img th:src="${friend.avatar}"
-                                             th:alt="${friend.username}"
-                                             class="rounded-circle me-3" width="40" height="40"
-                                             onerror="this.src='https://i.pravatar.cc/40?u=' + Math.random()">
-                                        <div>
+                            <div th:if="${friends != null and !friends.isEmpty()}" class="row g-3" id="friendsList">
+                                <div th:each="friend : ${friends}" class="col-md-6 col-lg-4 friend-item" 
+                                     th:attr="data-username=${friend.username},
+                                     data-friend-date=${friend.friendDate},
+                                     data-online-status=${friend.isOnline ? 'online' : 'offline'}">
+                                    <div class="d-flex align-items-center p-3 border rounded friend-card">
+                                        <div class="position-relative">
+                                            <img th:src="${friend.avatar != null ? friend.avatar : 'https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'}"
+                                                 th:alt="${friend.username}"
+                                                 class="rounded-circle me-3" width="40" height="40"
+                                                 onerror="this.src='https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png'">
+                                            <span class="position-absolute top-0 start-0 translate-middle p-1 bg-success border border-light rounded-circle" 
+                                                  style="width: 12px; height: 12px; display: none;" id="onlineIndicator"></span>
+                                        </div>
+                                        <div class="flex-grow-1">
                                             <h6 class="mb-0" th:text="${friend.username}">Tên bạn</h6>
                                             <small class="text-muted" th:text="'@' + ${friend.username}">@username</small>
+                                            <div class="small text-muted mt-1">
+                                                <i class="fa fa-calendar me-1"></i>
+                                                <span th:text="${friend.friendDate}">01/01/2024</span>
+                                            </div>
+                                        </div>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown">
+                                                <i class="fa fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="#" th:href="@{'/profile/' + ${friend.username}}">
+                                                    <i class="fa fa-user me-2"></i>Xem trang cá nhân
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" th:href="@{'/chat?user=' + ${friend.username}}">
+                                                    <i class="fa fa-comment me-2"></i>Nhắn tin
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#" onclick="unfriendUser('${friend.username}')">
+                                                    <i class="fa fa-user-times me-2"></i>Hủy kết bạn
+                                                </a></li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -1036,22 +1153,36 @@
 
                     <!-- Media Options -->
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2" onclick="document.getElementById('fileInput').click()">
                             <i class="fa-regular fa-image text-success"></i>
-                            <span>Ảnh</span>
+                            <span>Ảnh/Video</span>
                         </button>
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-video text-danger"></i>
-                            <span>Video</span>
-                        </button>
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
-                            <i class="fa-solid fa-user-plus text-primary"></i>
-                            <span>Gắn thẻ</span>
-                        </button>
-                        <button type="button" class="btn btn-light d-flex align-items-center gap-2">
-                            <i class="fa-regular fa-file text-warning"></i>
+                        <button type="button" class="btn btn-light d-flex align-items-center gap-2" onclick="document.getElementById('documentInput').click()">
+                            <i class="fa-solid fa-file text-primary"></i>
                             <span>Tài liệu</span>
                         </button>
+                    </div>
+
+                    <!-- Hidden file inputs -->
+                    <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display: none;" onchange="handleFileSelect(this, 'media')">
+                    <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx" multiple style="display: none;" onchange="handleFileSelect(this, 'document')">
+
+                    <!-- File Upload Area -->
+                    <div id="fileUploadArea" class="mb-3 d-none">
+                        <div class="file-upload-area card border-2 border-dashed border-primary bg-light">
+                            <div class="card-body text-center p-4">
+                                <i class="fa fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <h6 class="text-primary">Kéo thả file vào đây hoặc click để chọn</h6>
+                                <p class="text-muted mb-0">Hỗ trợ: Ảnh, Video, PDF, Word, Excel, PowerPoint</p>
+                                <p class="text-muted small">Kích thước tối đa: 10MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Preview Area -->
+                    <div id="filePreviewArea" class="mb-3 d-none">
+                        <h6 class="fw-semibold mb-2">File đính kèm:</h6>
+                        <div id="filePreviewList" class="row g-2"></div>
                     </div>
 
                     <!-- Preview Area -->
@@ -1119,6 +1250,7 @@
 <script src="/js/logout.js"></script>
 <script src="/js/topics.js"></script>
 <script src="/js/post-manager.js"></script>
+<script src="/js/file-upload.js"></script>
 <script src="/js/post-interactions.js"></script>
 <script src="/js/toast-manager.js"></script>
 <script src="/js/websocket-manager.js"></script>
@@ -1136,8 +1268,15 @@
     // Initialize global data storage for post files
     window.postFilesData = window.postFilesData || {};
     
+    // Initialize FileUploadManager
+    let fileUploadManager;
+    
     // Store post files data from server
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize file upload manager
+        fileUploadManager = new FileUploadManager();
+        console.log('File upload manager initialized');
+        
         // This will be populated when files are loaded from server
         console.log('Gallery manager initialized');
     });
@@ -1786,6 +1925,168 @@ function updateActivityChart(timelineData) {
     });
     console.log('Activity chart created');
 }
+
+// Bộ lọc bạn bè
+function filterFriends() {
+    const searchInput = document.getElementById('friendSearch');
+    const sortFilter = document.getElementById('friendSortFilter');
+    const statusFilter = document.getElementById('friendStatusFilter');
+    const friendItems = document.querySelectorAll('.friend-item');
+    
+    if (!searchInput || !friendItems.length) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const sortType = sortFilter ? sortFilter.value : 'name';
+    const statusType = statusFilter ? statusFilter.value : 'all';
+    
+    let visibleItems = Array.from(friendItems);
+    
+    // Lọc theo từ khóa tìm kiếm
+    if (searchTerm) {
+        visibleItems = visibleItems.filter(item => {
+            const username = item.getAttribute('data-username').toLowerCase();
+            return username.includes(searchTerm);
+        });
+    }
+    
+    // Lọc theo trạng thái
+    if (statusType !== 'all') {
+        visibleItems = visibleItems.filter(item => {
+            const activity = item.getAttribute('data-activity');
+            const friendDate = item.getAttribute('data-friend-date');
+            
+            switch(statusType) {
+                case 'online':
+                    // Giả lập online status (có thể thay bằng API thực)
+                    return Math.random() > 0.7; // 30% chance online
+                case 'recent':
+                    return activity !== 'unknown';
+                case 'mutual':
+                    // Giả lập mutual friends (có thể thay bằng API thực)
+                    return Math.random() > 0.5; // 50% chance có bạn chung
+                default:
+                    return true;
+            }
+        });
+    }
+    
+    // Sắp xếp
+    visibleItems.sort((a, b) => {
+        const usernameA = a.getAttribute('data-username').toLowerCase();
+        const usernameB = b.getAttribute('data-username').toLowerCase();
+        const dateA = new Date(a.getAttribute('data-friend-date'));
+        const dateB = new Date(b.getAttribute('data-friend-date'));
+        
+        switch(sortType) {
+            case 'name':
+                return usernameA.localeCompare(usernameB);
+            case 'date':
+                return dateB - dateA; // Mới nhất trước
+            case 'activity':
+                return Math.random() - 0.5; // Random cho demo
+            case 'mutual':
+                return Math.random() - 0.5; // Random cho demo
+            default:
+                return 0;
+        }
+    });
+    
+    // Ẩn/hiện items
+    friendItems.forEach(item => {
+        if (visibleItems.includes(item)) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // Cập nhật số lượng hiển thị
+    updateFriendsCount(visibleItems.length);
+}
+
+function updateFriendsCount(visibleCount) {
+    const countElement = document.getElementById('friendsCountDisplay');
+    if (countElement) {
+        countElement.textContent = visibleCount;
+    }
+}
+
+function clearFriendFilters() {
+    const searchInput = document.getElementById('friendSearch');
+    const sortFilter = document.getElementById('friendSortFilter');
+    const statusFilter = document.getElementById('friendStatusFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (sortFilter) sortFilter.value = 'name';
+    if (statusFilter) statusFilter.value = 'all';
+    
+    // Xóa active class từ quick filters
+    document.querySelectorAll('.quick-friend-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Hiển thị tất cả bạn bè
+    document.querySelectorAll('.friend-item').forEach(item => {
+        item.style.display = 'block';
+    });
+    
+    // Cập nhật số lượng
+    const totalFriends = document.querySelectorAll('.friend-item').length;
+    updateFriendsCount(totalFriends);
+}
+
+function unfriendUser(username) {
+    if (confirm(`Bạn có chắc chắn muốn hủy kết bạn với ${username}?`)) {
+        // TODO: Implement unfriend API call
+        console.log('Unfriending user:', username);
+        // Có thể thêm API call ở đây
+    }
+}
+
+// Khởi tạo bộ lọc khi trang load
+document.addEventListener('DOMContentLoaded', function() {
+    // Thêm event listeners
+    const searchInput = document.getElementById('friendSearch');
+    const sortFilter = document.getElementById('friendSortFilter');
+    const statusFilter = document.getElementById('friendStatusFilter');
+    const clearBtn = document.getElementById('clearFriendFilters');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', filterFriends);
+    }
+    
+    if (sortFilter) {
+        sortFilter.addEventListener('change', filterFriends);
+    }
+    
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterFriends);
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearFriendFilters);
+    }
+    
+    // Quick filter buttons
+    document.querySelectorAll('.quick-friend-filter').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Xóa active class từ tất cả buttons
+            document.querySelectorAll('.quick-friend-filter').forEach(b => b.classList.remove('active'));
+            
+            // Thêm active class cho button được click
+            this.classList.add('active');
+            
+            // Áp dụng filter
+            const filter = this.getAttribute('data-filter');
+            if (filter === 'all') {
+                clearFriendFilters();
+            } else {
+                // Có thể thêm logic filter cụ thể cho từng loại
+                filterFriends();
+            }
+        });
+    });
+});
 </script>
 
 </body>

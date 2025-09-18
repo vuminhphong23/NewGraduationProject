@@ -1,7 +1,6 @@
 package GraduationProject.forumikaa.service;
-import GraduationProject.forumikaa.dto.CreatePostRequest;
+import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
-import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.entity.Post;
 
 import org.springframework.data.domain.Page;
@@ -12,8 +11,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface PostService {
-    PostResponse createPost(CreatePostRequest request, Long userId);
-    PostResponse updatePost(Long postId, UpdatePostRequest request, Long userId);
+    PostResponse createPost(PostRequest request, Long userId);
+    PostResponse updatePost(Long postId, PostRequest request, Long userId);
 
     void deletePost(Long postId, Long userId);
     PostResponse getPostById(Long postId, Long userId);

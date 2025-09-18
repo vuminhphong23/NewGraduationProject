@@ -25,4 +25,6 @@ public class GroupMemberDto {
     
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime joinedAt;
+    private Long memberCount;
+    private Long postCount;
 }

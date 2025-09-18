@@ -1,8 +1,7 @@
 package GraduationProject.forumikaa.controller;
 
-import GraduationProject.forumikaa.dto.CreatePostRequest;
+import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
-import GraduationProject.forumikaa.dto.UpdatePostRequest;
 import GraduationProject.forumikaa.service.PostService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
@@ -27,7 +26,7 @@ public class PostController {
 
     // 1. Tạo post mới
     @PostMapping
-    public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostRequest request) {
+    public ResponseEntity<?> createPost(@Valid @RequestBody PostRequest request) {
         try {
             Long userId = getCurrentUserId();
             PostResponse createdPost = postService.createPost(request, userId);
@@ -95,7 +94,7 @@ public class PostController {
     // 6. Cập nhật bài viết
     @PutMapping("/{postId}")
     public ResponseEntity<PostResponse> updatePost(@PathVariable Long postId,
-                                                   @Valid @RequestBody UpdatePostRequest request) {
+                                                   @Valid @RequestBody PostRequest request) {
         Long userId = getCurrentUserId();
         return ResponseEntity.ok(postService.updatePost(postId, request, userId));
     }

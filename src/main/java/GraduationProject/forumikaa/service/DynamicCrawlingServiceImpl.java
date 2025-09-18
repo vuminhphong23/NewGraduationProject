@@ -1,7 +1,6 @@
 package GraduationProject.forumikaa.service;
 
-import GraduationProject.forumikaa.dao.CrawlingConfigDao;
-import GraduationProject.forumikaa.dto.CreatePostRequest;
+import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.entity.CrawlingConfig;
 import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.User;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
@@ -179,7 +177,7 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
                 }
             } else {
                 // Tạo post thông thường nếu không có group nào được chọn
-                CreatePostRequest request = new CreatePostRequest();
+                PostRequest request = new PostRequest();
                 request.setTitle(title);
                 request.setContent(postContent.toString());
                 request.setPrivacy(PostPrivacy.PUBLIC);
@@ -213,7 +211,7 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
      */
     @Override
     public void createPostForGroup(User adminUser, UserGroup group, String title, String content, String topicName) {
-        CreatePostRequest request = new CreatePostRequest();
+        PostRequest request = new PostRequest();
         request.setTitle(title);
         request.setContent(content);
         request.setPrivacy(PostPrivacy.PUBLIC);
