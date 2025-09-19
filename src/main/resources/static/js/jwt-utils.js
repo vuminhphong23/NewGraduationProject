@@ -32,10 +32,12 @@ class JwtUtils {
         try {
             // Ưu tiên localStorage trước
             let token = localStorage.getItem(this.TOKEN_KEY);
+            // console.log('JWT Debug - Token from localStorage:', !!token);
             
             if (!token) {
                 // Nếu không có trong localStorage, lấy từ cookie
                 token = this.getCookie(this.COOKIE_NAME);
+                // console.log('JWT Debug - Token from cookie:', !!token);
             }
             
             return token;
@@ -78,7 +80,12 @@ class JwtUtils {
     async authenticatedFetch(url, options = {}) {
         const token = this.getToken();
         
+        // console.log('JWT Debug - URL:', url);
+        // console.log('JWT Debug - Token exists:', !!token);
+        // console.log('JWT Debug - Token preview:', token ? token.substring(0, 20) + '...' : 'null');
+        
         if (!token) {
+            console.error('JWT Debug - No token found');
             throw new Error('Không có JWT token');
         }
 
@@ -92,6 +99,8 @@ class JwtUtils {
         if (!(options.body instanceof FormData)) {
             headers['Content-Type'] = 'application/json';
         }
+        
+        // console.log('JWT Debug - Headers:', headers);
 
         try {
             const response = await fetch(url, {

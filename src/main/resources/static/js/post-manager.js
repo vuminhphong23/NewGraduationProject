@@ -415,12 +415,7 @@ window.editPost = (element) => {
     }
 };
 
-window.toggleLike = (element) => {
-    const postId = window.postManager?.getPostId(element);
-    if (postId && window.postManager) {
-        window.postManager.toggleLike(postId);
-    }
-};
+// Removed duplicate window.toggleLike - handled by post-interactions.js
 
 // Don't override global sharePost - let post-interactions.js handle it
 // window.sharePost = (element) => {

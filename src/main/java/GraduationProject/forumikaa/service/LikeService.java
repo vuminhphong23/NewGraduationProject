@@ -24,10 +24,18 @@ public interface LikeService {
     }
     
     default boolean likePost(Long postId, Long userId) {
-        return toggleLike(userId, postId, LikeableType.POST);
+        // Chỉ like nếu chưa like
+        if (!isPostLikedByUser(postId, userId)) {
+            return toggleLike(userId, postId, LikeableType.POST);
+        }
+        return true; // Đã like rồi
     }
     
     default boolean unlikePost(Long postId, Long userId) {
-        return toggleLike(userId, postId, LikeableType.POST);
+        // Chỉ unlike nếu đã like
+        if (isPostLikedByUser(postId, userId)) {
+            return toggleLike(userId, postId, LikeableType.POST);
+        }
+        return false; // Chưa like
     }
 }

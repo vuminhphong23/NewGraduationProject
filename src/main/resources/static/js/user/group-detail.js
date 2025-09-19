@@ -41,7 +41,10 @@ function initializeGroupDetail() {
     
     // Đảm bảo PostInteractions được khởi tạo
     if (!window.postInteractions) {
+        console.log('Initializing PostInteractions from group-detail.js...');
         window.postInteractions = new PostInteractions();
+    } else {
+        console.log('PostInteractions already exists in group-detail.js');
     }
 }
 

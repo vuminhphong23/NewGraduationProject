@@ -168,9 +168,17 @@ public class PostController {
     @PostMapping("/{postId}/like")
     public ResponseEntity<Map<String, Object>> toggleLike(@PathVariable Long postId) {
         try {
+            System.out.println("=== LIKE DEBUG ===");
+            System.out.println("PostId: " + postId);
+            
             Long userId = getCurrentUserId();
+            System.out.println("UserId: " + userId);
+            
             boolean isLiked = postService.toggleLike(postId, userId);
             Long likeCount = postService.getPostLikeCount(postId);
+
+            System.out.println("IsLiked: " + isLiked + ", LikeCount: " + likeCount);
+            System.out.println("=== END LIKE DEBUG ===");
 
             return ResponseEntity.ok(Map.of(
                 "isLiked", isLiked,
@@ -178,6 +186,7 @@ public class PostController {
                 "message", isLiked ? "Đã thích bài viết" : "Đã bỏ thích bài viết"
             ));
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            System.out.println("DataIntegrityViolationException: " + e.getMessage());
             Long likeCount = postService.getPostLikeCount(postId);
             return ResponseEntity.ok(Map.of(
                 "isLiked", true,
@@ -185,6 +194,8 @@ public class PostController {
                 "message", "Đã thích bài viết"
             ));
         } catch (Exception e) {
+            System.out.println("Exception in toggleLike: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Không thể thích bài viết", "message", e.getMessage()));
         }

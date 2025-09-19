@@ -217,24 +217,23 @@
     <div class="profile-nav mt-3">
         <nav class="nav nav-pills nav-fill">
             <a class="nav-link" th:classappend="${activeTab == 'posts'} ? 'active' : ''"
-               th:href="@{'/profile/' + ${user.username} + '?tab=posts'}">
+               th:href="@{/profile/{username}(username=${user.username}, tab='posts')}">
                 <i class="bi bi-chat-dots"></i> Bài viết
             </a>
             <a class="nav-link" th:classappend="${activeTab == 'friends'} ? 'active' : ''"
-               th:href="@{'/profile/' + ${user.username} + '?tab=friends'}">
+               th:href="@{/profile/{username}(username=${user.username}, tab='friends')}">
                 <i class="bi bi-people"></i> Bạn bè
             </a>
             <a class="nav-link" th:classappend="${activeTab == 'groups'} ? 'active' : ''"
-               th:href="@{'/profile/' + ${user.username} + '?tab=groups'}">
+               th:href="@{/profile/{username}(username=${user.username}, tab='groups')}">
                 <i class="bi bi-collection"></i> Nhóm
             </a>
             <a class="nav-link" th:classappend="${activeTab == 'documents'} ? 'active' : ''"
-               th:href="@{'/profile/' + ${user.username} + '?tab=documents'}">
+               th:href="@{/profile/{username}(username=${user.username}, tab='documents')}">
                 <i class="fa fa-file"></i> Tài liệu
             </a>
             <a class="nav-link" th:classappend="${activeTab == 'analytics'} ? 'active' : ''"
-               th:href="@{'/profile/' + ${user.username} + '?tab=analytics'}"
-               onclick="if(this.classList.contains('active')) { setTimeout(initializeAnalyticsCharts, 100); }">
+               th:href="@{/profile/{username}(username=${user.username}, tab='analytics')}">
                 <i class="fa fa-chart-line"></i> Phân tích thông minh
             </a>
         </nav>
@@ -705,10 +704,7 @@
                             <div th:if="${friends == null or friends.isEmpty()}" class="text-center text-muted py-5">
                                 <i class="fa fa-users fa-3x mb-3 text-muted"></i>
                                 <h5 class="text-muted">Chưa có bạn bè</h5>
-                                <p class="text-muted">Kết bạn để xem danh sách bạn bè ở đây</p>
-                                <a href="/users" class="btn btn-primary mt-3">
-                                    <i class="fa fa-user-plus me-2"></i>Tìm bạn bè
-                                </a>
+                                <p class="text-muted">Hãy kết bạn để cùng nhau học tập nhé !</p>
                             </div>
                         </div>
                     </div>
@@ -901,17 +897,7 @@
 
                 <!-- Tab Analytics -->
                 <div id="analytics" th:class="${activeTab == 'analytics'} ? 'tab-content active' : 'tab-content'">
-                    <div class="analytics-container">
-                        <!-- Header -->
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h4 class="mb-0">Phân tích thông minh</h4>
-                            <div class="analytics-period">
-                                <span class="badge bg-info">
-                                    <i class="fa fa-chart-line me-1"></i>30 ngày gần đây
-                                </span>
-                            </div>
-                        </div>
-
+                    <div class="analytics-container mb-4">
                         <!-- Analytics Cards -->
                         <div class="row g-4 mb-4">
                             <!-- Topics Interest -->
@@ -1016,57 +1002,6 @@
                             </div>
                         </div>
 
-                        <!-- Summary Stats -->
-                        <div class="row g-3 mt-4">
-                            <div class="col-md-3">
-                                <div class="card border-0 bg-gradient-primary text-white">
-                                    <div class="card-body text-center">
-                                        <i class="fa fa-fire fa-2x mb-2"></i>
-                                        <h5 class="mb-1" th:text="${analyticsData?.totalPosts ?: 0}">0</h5>
-                                        <small>Bài viết trong 30 ngày</small>
-                                        <div class="mt-1">
-                                            <small class="opacity-75">Tổng: <span th:text="${postCount ?: 0}">0</span> bài</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card border-0 bg-gradient-warning text-white">
-                                    <div class="card-body text-center">
-                                        <i class="fa fa-heart fa-2x mb-2"></i>
-                                        <h5 class="mb-1" th:text="${analyticsData?.totalLikes ?: 0}">0</h5>
-                                        <small>Lượt thích đã cho</small>
-                                        <div class="mt-1">
-                                            <small class="opacity-75">TB: <span th:text="${analyticsData?.totalPosts > 0 ? (#numbers.formatDecimal(analyticsData.totalLikes / analyticsData.totalPosts, 1, 1)) : 0}">0</span> like/bài</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card border-0 bg-gradient-success text-white">
-                                    <div class="card-body text-center">
-                                        <i class="fa fa-comments fa-2x mb-2"></i>
-                                        <h5 class="mb-1" th:text="${analyticsData?.totalComments ?: 0}">0</h5>
-                                        <small>Bình luận đã viết</small>
-                                        <div class="mt-1">
-                                            <small class="opacity-75">TB: <span th:text="${analyticsData?.totalPosts > 0 ? (#numbers.formatDecimal(analyticsData.totalComments / analyticsData.totalPosts, 1, 1)) : 0}">0</span> cmt/bài</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card border-0 bg-gradient-info text-white">
-                                    <div class="card-body text-center">
-                                        <i class="fa fa-share fa-2x mb-2"></i>
-                                        <h5 class="mb-1" th:text="${analyticsData?.totalShares ?: 0}">0</h5>
-                                        <small>Lượt chia sẻ đã thực hiện</small>
-                                        <div class="mt-1">
-                                            <small class="opacity-75">TB: <span th:text="${analyticsData?.totalPosts > 0 ? (#numbers.formatDecimal(analyticsData.totalShares / analyticsData.totalPosts, 1, 1)) : 0}">0</span> share/bài</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1268,13 +1203,12 @@
     // Initialize global data storage for post files
     window.postFilesData = window.postFilesData || {};
     
-    // Initialize FileUploadManager
-    let fileUploadManager;
-    
     // Store post files data from server
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize file upload manager
-        fileUploadManager = new FileUploadManager();
+        // Initialize file upload manager (use global instance)
+        if (typeof fileUploadManager === 'undefined') {
+            fileUploadManager = new FileUploadManager();
+        }
         console.log('File upload manager initialized');
         
         // This will be populated when files are loaded from server
@@ -1350,24 +1284,80 @@
 let topicsChart = null;
 let groupsChart = null;
 let activityChart = null;
+let chartsInitialized = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, checking for analytics tab...');
     
-    // Check if analytics tab is active
+    // Initialize analytics if on analytics tab
+    initializeAnalyticsOnLoad();
+    
+    // Add a backup mechanism with a longer delay to ensure everything is loaded
+    setTimeout(() => {
+        const analyticsTab = document.getElementById('analytics');
+        if (analyticsTab && analyticsTab.classList.contains('active')) {
+            console.log('Backup: Analytics tab is active, initializing charts...');
+            initializeAnalyticsCharts();
+        }
+    }, 1000);
+    
+    // Also add a backup mechanism to initialize analytics when the tab becomes visible
     const analyticsTab = document.getElementById('analytics');
-    if (analyticsTab && analyticsTab.classList.contains('active')) {
+    if (analyticsTab) {
+        // Use Intersection Observer to detect when analytics tab becomes visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.target.classList.contains('active')) {
+                    console.log('Analytics tab became visible, initializing charts...');
+                    setTimeout(initializeAnalyticsCharts, 100);
+                } else if (!entry.isIntersecting) {
+                    // Reset flag when leaving analytics tab
+                    chartsInitialized = false;
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        observer.observe(analyticsTab);
+    }
+});
+
+// Function to initialize analytics charts when page loads
+function initializeAnalyticsOnLoad() {
+    // Check if we're on analytics tab by looking at the active tab element
+    const analyticsTab = document.getElementById('analytics');
+    const isAnalyticsActive = analyticsTab && analyticsTab.classList.contains('active');
+    
+    console.log('Checking analytics tab:', {
+        analyticsTab: analyticsTab,
+        isActive: isAnalyticsActive,
+        urlParams: new URLSearchParams(window.location.search).get('tab')
+    });
+    
+    if (isAnalyticsActive) {
         console.log('Analytics tab is active, initializing charts...');
         setTimeout(initializeAnalyticsCharts, 500);
     }
-});
+}
 
 function initializeAnalyticsCharts() {
     console.log('Initializing analytics charts...');
     
+    // Check if charts are already initialized
+    if (chartsInitialized) {
+        console.log('Charts already initialized, skipping...');
+        return;
+    }
+    
     // Check if Chart.js is loaded
     if (typeof Chart === 'undefined') {
         console.error('Chart.js is not loaded!');
+        return;
+    }
+    
+    // Check if we're actually on the analytics tab
+    const analyticsTab = document.getElementById('analytics');
+    if (!analyticsTab || !analyticsTab.classList.contains('active')) {
+        console.log('Not on analytics tab, skipping chart initialization');
         return;
     }
     
@@ -1381,6 +1371,10 @@ function initializeAnalyticsCharts() {
     loadTopicsData();
     loadGroupsData();
     loadActivityData();
+    
+    // Mark as initialized
+    chartsInitialized = true;
+    console.log('Analytics charts initialized successfully!');
 }
 
 function setDefaultDateRanges() {
@@ -1469,23 +1463,13 @@ async function loadTopicsData() {
     if (datePicker) datePicker.classList.add('updating');
     
     try {
-        // Try to get data from API first
+        // Get data from API
         const response = await fetch(`/api/analytics/topics?startDate=${startDate}&endDate=${endDate}`);
         if (response.ok) {
             const data = await response.json();
             updateTopicsChart(data.topicsData || []);
         } else {
-            // Fallback to server-side data
-            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
-            const topicsData = serverAnalyticsData.topicsData || [];
-            
-            // Fallback data
-            if (topicsData.length === 0) {
-                topicsData.push({name: "#hoc_nhom", count: 3});
-                topicsData.push({name: "#du_an", count: 2});
-            }
-            
-            updateTopicsChart(topicsData);
+            throw new Error('Failed to fetch topics data');
         }
     } catch (error) {
         console.error('Error loading topics data:', error);
@@ -1586,23 +1570,13 @@ async function loadGroupsData() {
     if (datePicker) datePicker.classList.add('updating');
     
     try {
-        // Try to get data from API first
+        // Get data from API
         const response = await fetch(`/api/analytics/groups?startDate=${startDate}&endDate=${endDate}`);
         if (response.ok) {
             const data = await response.json();
             updateGroupsChart(data.groupsData || []);
         } else {
-            // Fallback to server-side data
-            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
-            const groupsData = serverAnalyticsData.groupsData || [];
-            
-            // Fallback data
-            if (groupsData.length === 0) {
-                groupsData.push({name: "Nhóm A", activity: 5});
-                groupsData.push({name: "Nhóm B", activity: 3});
-            }
-            
-            updateGroupsChart(groupsData);
+            throw new Error('Failed to fetch groups data');
         }
     } catch (error) {
         console.error('Error loading groups data:', error);
@@ -1720,36 +1694,13 @@ async function loadActivityData() {
     if (datePicker) datePicker.classList.add('updating');
     
     try {
-        // Try to get data from API first
+        // Get data from API
         const response = await fetch(`/api/analytics/activity?startDate=${startDate}&endDate=${endDate}`);
         if (response.ok) {
             const data = await response.json();
             updateActivityChart(data.timelineData || []);
         } else {
-            // Fallback to server-side data
-            const serverAnalyticsData = /*[[${analyticsData}]]*/ {};
-            const timelineData = serverAnalyticsData.timelineData || [];
-            
-            // Fallback data with realistic activity (daily)
-            if (timelineData.length === 0) {
-                const today = new Date();
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(today.getDate() - i);
-                    const dayLabel = `${date.getDate()}/${date.getMonth() + 1}`;
-                    
-                    timelineData.push({
-                        week: dayLabel,
-                        weekRange: date.toISOString().split('T')[0],
-                        posts: Math.floor(Math.random() * 5) + 1,
-                        likes: Math.floor(Math.random() * 20) + 5,
-                        comments: Math.floor(Math.random() * 15) + 3,
-                        shares: Math.floor(Math.random() * 8) + 1
-                    });
-                }
-            }
-            
-            updateActivityChart(timelineData);
+            throw new Error('Failed to fetch activity data');
         }
     } catch (error) {
         console.error('Error loading activity data:', error);

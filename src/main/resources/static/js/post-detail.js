@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Đảm bảo PostInteractions được khởi tạo và load like status
+    let retryCount = 0;
+    const maxRetries = 20; // Maximum 1 second wait (20 * 50ms)
+    
     const initializePostInteractions = () => {
         if (window.postInteractions) {
             // Load like status cho post này
@@ -20,8 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (likeButton) {
                 window.postInteractions.loadLikeStatus(likeButton);
             }
-        } else {
+        } else if (retryCount < maxRetries) {
+            retryCount++;
             setTimeout(initializePostInteractions, 50);
+        } else {
+            console.warn('PostInteractions not available after maximum retries');
         }
     };
 
@@ -41,14 +47,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const hash = window.location.hash;
     if (hash?.startsWith('#comment-')) {
         const commentId = hash.replace('#comment-', '');
+        let scrollRetryCount = 0;
+        const maxScrollRetries = 10; // Maximum 5 seconds (10 * 500ms)
+        
         const checkAndScroll = () => {
             const el = document.querySelector(`[data-comment-id="${commentId}"]`);
             if (el) {
                 el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 el.style.backgroundColor = '#fff3cd';
                 setTimeout(() => el.style.backgroundColor = '', 2000);
-            } else {
+            } else if (scrollRetryCount < maxScrollRetries) {
+                scrollRetryCount++;
                 setTimeout(checkAndScroll, 500);
+            } else {
+                console.warn('Comment element not found after maximum retries');
             }
         };
         setTimeout(checkAndScroll, 1500);

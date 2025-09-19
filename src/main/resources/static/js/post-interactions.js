@@ -7,12 +7,15 @@ class PostInteractions {
     constructor() {
         this.commentPages = new Map(); // Lưu trạng thái phân trang comment
         this.loadedComments = new Set(); // Track which posts have comments loaded
+        this.likeStatusLoaded = false; // Flag to prevent multiple loads
         this.init();
     }
     
     init() {
         this.bindEvents();
-        this.loadInitialLikeStatus();
+        if (!this.likeStatusLoaded) {
+            this.loadInitialLikeStatus();
+        }
     }
     
     bindEvents() {
@@ -35,18 +38,24 @@ class PostInteractions {
         button.dataset.loading = 'true';
         
         try {
+            console.log('Attempting to like post:', postId);
             const response = await authenticatedFetch(`/api/posts/${postId}/like`, { method: 'POST' });
+            
+            console.log('Response status:', response.status);
             
             if (response.ok) {
                 const result = await response.json();
+                console.log('Like result:', result);
                 this.updateLikeUI(button, result.isLiked, result.likeCount);
                 this.showToast(result.message, 'success');
             } else {
                 const error = await response.json().catch(() => ({ message: 'Có lỗi xảy ra' }));
-                this.showToast(error.message || 'Không thể thích bài viết', 'error');
+                console.error('Like error:', error);
+                this.showToast(error.message || `Không thể thích bài viết (${response.status})`, 'error');
             }
         } catch (error) {
-            this.showToast('Không thể kết nối đến máy chủ', 'error');
+            console.error('Like request failed:', error);
+            this.showToast('Không thể kết nối đến máy chủ: ' + error.message, 'error');
         } finally {
             button.dataset.loading = 'false';
         }
@@ -56,6 +65,8 @@ class PostInteractions {
         const icon = button.querySelector('i');
         const likeText = button.querySelector('.like-text');
 
+        console.log('Updating like UI:', { isLiked, likeCount, button: button });
+
         if (icon) {
             // Remove all classes first
             icon.classList.remove('fa-solid', 'fa-regular', 'text-primary');
@@ -63,8 +74,10 @@ class PostInteractions {
             // Add appropriate classes
             if (isLiked) {
                 icon.classList.add('fa-solid', 'text-primary');
+                console.log('Set icon to liked state');
             } else {
                 icon.classList.add('fa-regular');
+                console.log('Set icon to unliked state');
             }
         }
 
@@ -79,9 +92,15 @@ class PostInteractions {
         }
 
         button.setAttribute('data-liked', isLiked);
+        console.log('Updated data-liked attribute to:', isLiked);
     }
     
     async loadInitialLikeStatus() {
+        if (this.likeStatusLoaded) {
+            return; // Already loaded
+        }
+        
+        console.log('Loading initial like status...');
         // Load like status for all posts
         const likeButtons = document.querySelectorAll('.like-btn');
         
@@ -91,19 +110,36 @@ class PostInteractions {
                 await this.loadLikeStatus(button);
             }
         }
+        
+        this.likeStatusLoaded = true;
+        console.log('Initial like status loaded');
     }
     
     async loadLikeStatus(button) {
         const postId = button.getAttribute('data-post-id');
+        
+        // Prevent multiple requests for the same post
+        if (button.dataset.loading === 'true') {
+            return;
+        }
+        
+        button.dataset.loading = 'true';
+        
         try {
+            console.log('Loading like status for post:', postId);
             const response = await authenticatedFetch(`/api/posts/${postId}/like-status`);
             
             if (response.ok) {
                 const result = await response.json();
+                console.log('Like status loaded:', result);
                 this.updateLikeUI(button, result.isLiked, result.likeCount);
+            } else {
+                console.error('Failed to load like status:', response.status);
             }
         } catch (error) {
-            // Silent fail for like status loading
+            console.error('Error loading like status:', error);
+        } finally {
+            button.dataset.loading = 'false';
         }
     }
     
@@ -994,6 +1030,9 @@ window.handleCommentKeyPress = (event) => window.postInteractions?.handleComment
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     if (!window.postInteractions) {
+        console.log('Initializing PostInteractions...');
         window.postInteractions = new PostInteractions();
+    } else {
+        console.log('PostInteractions already initialized');
     }
 });

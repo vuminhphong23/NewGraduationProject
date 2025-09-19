@@ -41,7 +41,9 @@ class WebSocketManager {
                 return;
             }
 
-            const wsUrl = `ws://${window.location.host}/ws/notifications?recipientId=${this.currentUserId}`;
+            // Use WSS for HTTPS, WS for HTTP
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/notifications?recipientId=${this.currentUserId}`;
             
             this.websocket = new WebSocket(wsUrl);
             

@@ -372,6 +372,9 @@ public class PostServiceImpl implements PostService {
     // Like functionality
     @Override
     public boolean toggleLike(Long postId, Long userId) {
+        System.out.println("=== TOGGLE LIKE DEBUG ===");
+        System.out.println("PostId: " + postId + ", UserId: " + userId);
+        
         Post post = postDao.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
 
@@ -379,20 +382,30 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         boolean wasLiked = likeService.isPostLikedByUser(postId, userId);
+        System.out.println("Was liked before toggle: " + wasLiked);
+        
         if (wasLiked) {
+            System.out.println("Calling unlikePost...");
             likeService.unlikePost(postId, userId);
         } else {
+            System.out.println("Calling likePost...");
             likeService.likePost(postId, userId);
             // Gửi notification khi like bài viết (chỉ khi chưa like trước đó)
             if (!post.getUser().getId().equals(userId)) { // Không gửi notification cho chính mình
                 notificationService.createPostLikeNotification(postId, post.getUser().getId(), userId);
             }
         }
+        
         // always recompute from DB to avoid drift
         Long freshCount = likeService.getPostLikeCount(postId);
         post.setLikeCount(freshCount);
         postDao.save(post);
-        return !wasLiked;
+        
+        boolean newState = !wasLiked;
+        System.out.println("New like state: " + newState + ", Like count: " + freshCount);
+        System.out.println("=== END TOGGLE LIKE DEBUG ===");
+        
+        return newState;
     }
 
     @Override
@@ -543,15 +556,11 @@ public class PostServiceImpl implements PostService {
         Post sharedPost = new Post();
         sharedPost.setTitle(originalPost.getTitle() != null ? originalPost.getTitle() : "Bài viết");
         
-        // Tạo nội dung chia sẻ với format đẹp
-        StringBuilder sharedContent = new StringBuilder();
-        if (message != null && !message.trim().isEmpty()) {
-            sharedContent.append(message).append("\n");
-        }
-        // Thêm originalPostId để detect shared post
-        sharedContent.append("ORIGINAL_POST_ID:").append(originalPost.getId());
+        // Set content chỉ là message của người chia sẻ
+        sharedPost.setContent(message != null ? message : "");
         
-        sharedPost.setContent(sharedContent.toString());
+        // Set originalPostId để detect shared post
+        sharedPost.setOriginalPostId(originalPost.getId());
         sharedPost.setUser(user);
         sharedPost.setPrivacy(PostPrivacy.valueOf(privacy)); // Use privacy setting from request
         sharedPost.setStatus(PostStatus.APPROVED);
@@ -663,42 +672,16 @@ public class PostServiceImpl implements PostService {
         dto.setStatus(post.getStatus());
         dto.setPrivacy(post.getPrivacy());
         
-        // Check if this is a shared post by looking for originalPostId in content
-        // Pattern: "ORIGINAL_POST_ID:123" trong content
-        if (post.getContent() != null && post.getContent().contains("ORIGINAL_POST_ID:")) {
+        // Check if this is a shared post using originalPostId field
+        if (post.getOriginalPostId() != null) {
             // This is a shared post, create originalPost info
             Map<String, Object> originalPostInfo = new HashMap<>();
             
-            // Parse thông tin từ content
-            String content = post.getContent();
-            String[] lines = content.split("\n");
+            // Get originalPostId from field
+            Long originalPostId = post.getOriginalPostId();
             
-            // Lấy originalPostId từ content
-            Long originalPostId = null;
-            String shareMessage = "";
-            
-            for (String line : lines) {
-                if (line.contains("ORIGINAL_POST_ID:")) {
-                    String[] parts = line.split("ORIGINAL_POST_ID:");
-                    if (parts.length > 1) {
-                        try {
-                            originalPostId = Long.parseLong(parts[1].trim());
-                        } catch (NumberFormatException e) {
-                            // Ignore
-                        }
-                    }
-                } else if (!line.trim().isEmpty() && !line.contains("ORIGINAL_POST_ID:")) {
-                    // Phần còn lại là message của người chia sẻ
-                    if (shareMessage.isEmpty()) {
-                        shareMessage = line.trim();
-                    }
-                }
-            }
-            
-            // Set message của người chia sẻ vào content chính
-            if (!shareMessage.isEmpty()) {
-                dto.setContent(shareMessage);
-            }
+            // Content is already the share message, no need to parse
+            // dto.setContent() is already set above
             
             // Tìm bài viết gốc bằng originalPostId
             if (originalPostId != null) {

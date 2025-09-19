@@ -71,4 +71,8 @@ public class Post {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Document> documents = new ArrayList<>();
+
+    // For shared posts - reference to original post
+    @Column(name = "original_post_id")
+    private Long originalPostId;
 }

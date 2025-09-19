@@ -245,9 +245,9 @@ public interface PostDao extends JpaRepository<Post, Long>, JpaSpecificationExec
     List<Post> findByTitleAndUserIdNot(@Param("title") String title, @Param("userId") Long userId);
     
     // Count shares by user (posts that are shares of other posts)
-    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.content LIKE '%ORIGINAL_POST_ID:%'")
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.originalPostId IS NOT NULL")
     Long countSharesByUserId(@Param("userId") Long userId);
     
-    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.content LIKE '%ORIGINAL_POST_ID:%' AND p.createdAt >= :startDate AND p.createdAt <= :endDate")
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.originalPostId IS NOT NULL AND p.createdAt >= :startDate AND p.createdAt <= :endDate")
     Long countSharesByUserIdAndDateRange(@Param("userId") Long userId, @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }
