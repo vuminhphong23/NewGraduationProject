@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 
 import GraduationProject.forumikaa.dto.ChatMessageDto;
 import GraduationProject.forumikaa.dto.ChatRoomDto;

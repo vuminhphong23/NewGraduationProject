@@ -62,6 +62,9 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String profileInfo;
 
+    @Column(name = "online_status", nullable = false)
+    private boolean isOnline = false;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

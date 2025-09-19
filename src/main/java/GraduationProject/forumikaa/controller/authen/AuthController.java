@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.authen;
 
 import GraduationProject.forumikaa.dto.LoginRequest;
 import GraduationProject.forumikaa.dto.LoginResponse;
@@ -64,8 +64,13 @@ public class AuthController {
                 .map(a -> a.getAuthority())
                 .toList();
         
+        // Lấy userId từ User entity
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
         Map<String, Object> payload = new HashMap<>();
         payload.put("username", username);
+        payload.put("userId", user.getId());
         payload.put("roles", roles);
 
         
@@ -90,14 +95,28 @@ public class AuthController {
         // Lấy thông tin user từ database
         User user = userService.findById(userId).orElse(null);
 
+        // Xử lý UserProfile có thể null hoặc LazyInitializationException
+        String avatar = null;
+        String socialLinks = null;
+        try {
+            if (user.getUserProfile() != null) {
+                avatar = user.getUserProfile().getAvatar();
+                socialLinks = user.getUserProfile().getSocialLinks();
+            }
+        } catch (Exception e) {
+            // LazyInitializationException hoặc lỗi khác
+            avatar = null;
+            socialLinks = null;
+        }
+        
         UserBasicDto userInfoResponse = new UserBasicDto(
                 user.getId(),
                 user.getUsername(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
-                user.getUserProfile().getAvatar(),
-                user.getUserProfile().getSocialLinks()
+                avatar,
+                socialLinks
         );
 
         return ResponseEntity.ok(userInfoResponse);

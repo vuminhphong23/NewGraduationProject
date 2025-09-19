@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 
 import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.dto.PostResponse;
@@ -286,7 +286,6 @@ public class PostController {
                 "message", "Đã chia sẻ bài viết thành công"
             ));
         } catch (Exception e) {
-            System.err.println("❌ Error sharing post: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Không thể chia sẻ bài viết", "message", e.getMessage()));

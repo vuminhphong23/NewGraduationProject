@@ -922,9 +922,23 @@ class SimpleChatManager {
         const searchInput = document.getElementById('messageSearchInput');
         
         if (searchBar && searchInput) {
-            if (searchBar.style.display === 'none') {
+            if (searchBar.style.display === 'none' || searchBar.style.display === '') {
+                // Show search bar with smooth animation
                 searchBar.style.display = 'flex';
-                searchInput.focus();
+                searchBar.style.opacity = '0';
+                searchBar.style.transform = 'translateY(-10px)';
+                
+                // Trigger reflow
+                searchBar.offsetHeight;
+                
+                // Animate in
+                searchBar.style.opacity = '1';
+                searchBar.style.transform = 'translateY(0)';
+                
+                // Focus input after animation
+                setTimeout(() => {
+                    searchInput.focus();
+                }, 100);
             } else {
                 this.closeSearchBar();
             }
@@ -934,10 +948,18 @@ class SimpleChatManager {
     closeSearchBar() {
         const searchBar = document.getElementById('chatSearchBar');
         const searchInput = document.getElementById('messageSearchInput');
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('messageSearchResults');
         
         if (searchBar) {
-            searchBar.style.display = 'none';
+            // Use CSS transition for smooth closing
+            searchBar.style.opacity = '0';
+            searchBar.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                searchBar.style.display = 'none';
+                searchBar.style.opacity = '1';
+                searchBar.style.transform = 'translateY(0)';
+            }, 300);
         }
         if (searchInput) {
             searchInput.value = '';
@@ -965,10 +987,15 @@ class SimpleChatManager {
     }
 
     displaySearchResults(results, query) {
-        const searchResults = document.getElementById('searchResults');
-        if (!searchResults) return;
+        console.log('displaySearchResults called with:', results.length, 'results');
+        const searchResults = document.getElementById('messageSearchResults');
+        if (!searchResults) {
+            console.log('messageSearchResults element not found!');
+            return;
+        }
 
         if (results.length === 0) {
+            console.log('No results found, showing no results message');
             searchResults.innerHTML = '<div class="no-search-results">Không tìm thấy tin nhắn nào</div>';
             return;
         }
@@ -998,13 +1025,13 @@ class SimpleChatManager {
                 const messageId = item.dataset.messageId;
                 console.log('Clicked search result for message ID:', messageId);
                 
-                // Close search bar first
-                this.closeSearchBar();
+                // Scroll to message first
+                this.scrollToMessage(messageId);
                 
-                // Then scroll to message
+                // Then close search bar after a short delay
                 setTimeout(() => {
-                    this.scrollToMessage(messageId);
-                }, 100);
+                    this.closeSearchBar();
+                }, 300);
             });
         });
     }
@@ -1017,7 +1044,7 @@ class SimpleChatManager {
     }
 
     clearSearchResults() {
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('messageSearchResults');
         if (searchResults) {
             searchResults.innerHTML = '';
         }
@@ -1032,11 +1059,24 @@ class SimpleChatManager {
         if (messageElement) {
             console.log('Found message element:', messageElement);
             
-            // Scroll đến message
-            messageElement.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center',
-                inline: 'nearest'
+            // Get chat messages container
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            // Calculate position to scroll to (center of the message)
+            const messageRect = messageElement.getBoundingClientRect();
+            const chatRect = chatMessages.getBoundingClientRect();
+            const messageTop = messageElement.offsetTop;
+            const messageHeight = messageElement.offsetHeight;
+            const chatHeight = chatMessages.clientHeight;
+            
+            // Calculate scroll position to center the message
+            const scrollTop = messageTop - (chatHeight / 2) + (messageHeight / 2);
+            
+            // Smooth scroll to the calculated position
+            chatMessages.scrollTo({
+                top: Math.max(0, scrollTop),
+                behavior: 'smooth'
             });
             
             // Add highlight effect using CSS class
@@ -1054,11 +1094,18 @@ class SimpleChatManager {
             setTimeout(() => {
                 const retryElement = document.querySelector(`.chat-messages [data-message-id="${messageId}"]`);
                 if (retryElement) {
-                    retryElement.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center',
-                        inline: 'nearest'
-                    });
+                    const chatMessages = document.getElementById('chatMessages');
+                    if (chatMessages) {
+                        const messageTop = retryElement.offsetTop;
+                        const messageHeight = retryElement.offsetHeight;
+                        const chatHeight = chatMessages.clientHeight;
+                        const scrollTop = messageTop - (chatHeight / 2) + (messageHeight / 2);
+                        
+                        chatMessages.scrollTo({
+                            top: Math.max(0, scrollTop),
+                            behavior: 'smooth'
+                        });
+                    }
                     
                     // Add highlight effect using CSS class
                     retryElement.classList.add('highlighted');
@@ -1659,7 +1706,7 @@ class SimpleChatManager {
                     // Hiển thị gợi ý khi gõ 1 ký tự
                     this.showSearchSuggestions(query);
                 } else if (query.length === 0) {
-                    this.clearSearchResults();
+                    this.clearUserSearchResults();
                 }
             });
             
@@ -1694,7 +1741,7 @@ class SimpleChatManager {
                 searchInput.value = '';
                 searchInput.focus();
             }
-            this.clearSearchResults();
+            this.clearUserSearchResults();
             this.clearSelectedUsers();
         }
     }
@@ -1716,7 +1763,7 @@ class SimpleChatManager {
         const normalizedQuery = query.toLowerCase().trim();
         
         if (normalizedQuery.length < 2) {
-            this.clearSearchResults();
+            this.clearUserSearchResults();
             return;
         }
         
@@ -1972,11 +2019,19 @@ class SimpleChatManager {
         });
     }
     
-    // Xóa kết quả tìm kiếm
+    // Xóa kết quả tìm kiếm tin nhắn
     clearSearchResults() {
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('messageSearchResults');
         if (searchResults) {
             searchResults.innerHTML = '';
+        }
+    }
+    
+    // Xóa kết quả tìm kiếm người dùng
+    clearUserSearchResults() {
+        const userSearchResults = document.getElementById('userSearchResults');
+        if (userSearchResults) {
+            userSearchResults.innerHTML = '';
         }
     }
     
@@ -2262,7 +2317,7 @@ class SimpleChatManager {
     
     // Hiển thị lịch sử tìm kiếm gần đây
     showRecentSearches() {
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('userSearchResults');
         if (!searchResults) return;
         
         // Load từ localStorage
@@ -2315,7 +2370,7 @@ class SimpleChatManager {
     
     // Hiển thị gợi ý tìm kiếm
     showSearchSuggestions(query) {
-        const searchResults = document.getElementById('searchResults');
+        const searchResults = document.getElementById('userSearchResults');
         if (!searchResults) return;
         
         // Tạo gợi ý từ lịch sử tìm kiếm

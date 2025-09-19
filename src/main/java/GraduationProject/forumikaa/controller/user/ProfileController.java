@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 import GraduationProject.forumikaa.dto.*;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.UserProfile;

@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 
 import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.entity.Friendship;
@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,17 +27,19 @@ public class UserSearchController {
     @Autowired private SecurityUtil securityUtil;
 
     @GetMapping("/search")
+    @Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> search(
             @RequestParam(name = "q", required = false) String keyword
     ) {
-        Long currentUserId = securityUtil.getCurrentUserId();
-        
-        System.out.println("🔍 UserSearchController.search() - Keyword: " + keyword + ", CurrentUserId: " + currentUserId);
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            if (currentUserId == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "User not authenticated"));
+            }
 
         Specification<User> spec = (root, query, cb) -> cb.conjunction();
         if (keyword != null && !keyword.trim().isEmpty()) {
             String like = "%" + keyword.trim() + "%";
-            System.out.println("🔍 UserSearchController.search() - Searching with LIKE: " + like);
             spec = spec.and((root, query, cb) -> cb.or(
                     cb.like(cb.lower(root.get("username")), like.toLowerCase()),
                     cb.like(cb.lower(root.get("email")), like.toLowerCase()),
@@ -50,16 +53,9 @@ public class UserSearchController {
         spec = spec.and((root, query, cb) -> cb.notEqual(root.get("id"), currentUserId));
 
         List<User> result = userDao.findAll(spec);
-        System.out.println("🔍 UserSearchController.search() - Found " + result.size() + " users total");
-        
-        // Debug: In ra tất cả users để kiểm tra
-        for (User u : result) {
-            System.out.println("🔍 User: " + u.getUsername() + " | " + u.getFirstName() + " " + u.getLastName() + " | " + u.getEmail());
-        }
 
         List<Map<String, Object>> users = result.stream().map(u -> {
-            System.out.println("🔍 UserSearchController.search() - Processing user: " + u.getUsername() + " (ID: " + u.getId() + ", FirstName: " + u.getFirstName() + ", LastName: " + u.getLastName() + ")");
-            
+
             Optional<Friendship> fs = friendshipService.getFriendshipBetween(currentUserId, u.getId());
             String friendshipStatus = fs.map(f -> f.getStatus().name()).orElse("NONE");
             Long requesterId = fs.map(f -> f.getUser().getId()).orElse(null);
@@ -68,26 +64,42 @@ public class UserSearchController {
             m.put("username", u.getUsername());
             m.put("firstName", u.getFirstName());
             m.put("lastName", u.getLastName());
+            m.put("email", u.getEmail());
             m.put("friendshipStatus", friendshipStatus);
             m.put("requestedByMe", requesterId != null && requesterId.equals(currentUserId));
             
-            // Lấy avatar từ UserProfile
+            // Lấy avatar từ UserProfile - xử lý LazyInitializationException
             String avatar = null;
-            if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null) {
-                avatar = u.getUserProfile().getAvatar();
+            try {
+                if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null && !u.getUserProfile().getAvatar().trim().isEmpty()) {
+                    avatar = u.getUserProfile().getAvatar();
+                } else {
+                    // Sử dụng avatar mặc định
+                    avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+                }
+            } catch (Exception e) {
+                // LazyInitializationException hoặc lỗi khác - sử dụng avatar mặc định
+                System.err.println("Error accessing UserProfile for user " + u.getUsername() + ": " + e.getMessage());
+                avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
             }
             m.put("avatar", avatar);
             
             return m;
         }).collect(Collectors.toList());
 
-        return ResponseEntity.ok(Map.of(
-                "totalElements", users.size(),
-                "items", users
-        ));
+            return ResponseEntity.ok(Map.of(
+                    "totalElements", users.size(),
+                    "items", users
+            ));
+        } catch (Exception e) {
+            System.err.println("Error in UserSearchController.search(): " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Internal server error", "message", e.getMessage()));
+        }
     }
 
     @GetMapping("/suggested")
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getSuggestedUsers(
             @RequestParam(defaultValue = "5") int limit
     ) {
@@ -114,24 +126,23 @@ public class UserSearchController {
             userMap.put("fullName", (u.getFirstName() != null ? u.getFirstName() : "") + 
                                (u.getLastName() != null ? " " + u.getLastName() : "").trim());
             
-            // Lấy avatar từ UserProfile
+            // Lấy avatar từ UserProfile - xử lý LazyInitializationException
             String avatar = null;
-            if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null && !u.getUserProfile().getAvatar().trim().isEmpty()) {
-                avatar = u.getUserProfile().getAvatar();
-                System.out.println("User " + u.getUsername() + " has avatar: " + avatar);
-            } else {
-                System.out.println("User " + u.getUsername() + " has no avatar or empty avatar");
+            try {
+                if (u.getUserProfile() != null && u.getUserProfile().getAvatar() != null && !u.getUserProfile().getAvatar().trim().isEmpty()) {
+                    avatar = u.getUserProfile().getAvatar();
+                    System.out.println("User " + u.getUsername() + " has avatar: " + avatar);
+                } else {
+                    System.out.println("User " + u.getUsername() + " has no avatar or empty avatar");
+                    // Sử dụng avatar mặc định từ Pixabay
+                    avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+                }
+            } catch (Exception e) {
+                System.out.println("Error accessing UserProfile for user " + u.getUsername() + ": " + e.getMessage());
                 // Sử dụng avatar mặc định từ Pixabay
                 avatar = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
             }
             userMap.put("avatar", avatar);
-            
-            // Lấy thông tin khoa từ profileInfo
-            String department = "Chưa cập nhật";
-            if (u.getProfileInfo() != null && !u.getProfileInfo().trim().isEmpty()) {
-                department = u.getProfileInfo();
-            }
-            userMap.put("department", department);
             
             // Đếm số bạn chung (có thể implement sau)
             int mutualFriends = 0; // TODO: implement mutual friends count

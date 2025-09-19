@@ -35,15 +35,8 @@ public class SecurityUtil {
     }
 
     public Long getCurrentUserId() {
-        try {
-            User user = getCurrentUser();
-            System.out.println("SecurityUtil.getCurrentUserId() - User ID: " + user.getId());
-            return user.getId();
-        } catch (Exception e) {
-            System.err.println("SecurityUtil.getCurrentUserId() - Error: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
+        User user = getCurrentUser();
+        return user.getId();
     }
 
     public User getAdminUser() {

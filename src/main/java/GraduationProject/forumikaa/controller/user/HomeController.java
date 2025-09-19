@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 import GraduationProject.forumikaa.dto.PostResponse;
 import GraduationProject.forumikaa.dto.GroupMemberDto;
 import GraduationProject.forumikaa.entity.Topic;

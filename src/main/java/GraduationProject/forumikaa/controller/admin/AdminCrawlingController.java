@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.admin;
 
 import GraduationProject.forumikaa.dto.ApiResponse;
 import GraduationProject.forumikaa.dto.CrawlingConfigRequest;

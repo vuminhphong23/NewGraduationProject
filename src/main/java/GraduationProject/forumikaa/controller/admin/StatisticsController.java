@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.admin;
 
 import GraduationProject.forumikaa.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.authen;
 
 import GraduationProject.forumikaa.dto.UserRegisterRequest;
 import GraduationProject.forumikaa.entity.Role;

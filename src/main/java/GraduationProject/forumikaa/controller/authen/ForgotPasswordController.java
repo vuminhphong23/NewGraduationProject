@@ -1,4 +1,4 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.authen;
 
 import GraduationProject.forumikaa.service.PasswordResetService;
 import org.springframework.beans.factory.annotation.Autowired;

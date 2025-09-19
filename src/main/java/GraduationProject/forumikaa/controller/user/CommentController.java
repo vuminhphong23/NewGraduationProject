@@ -1,7 +1,6 @@
-package GraduationProject.forumikaa.controller;
+package GraduationProject.forumikaa.controller.user;
 
 import GraduationProject.forumikaa.entity.Comment;
-import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.service.CommentService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
