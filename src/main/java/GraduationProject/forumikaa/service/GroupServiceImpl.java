@@ -8,20 +8,16 @@ import GraduationProject.forumikaa.dao.TopicDao;
 import GraduationProject.forumikaa.dao.PostDao;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
 import GraduationProject.forumikaa.entity.Document;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserProfile;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
-import GraduationProject.forumikaa.exception.UnauthorizedException;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,13 +53,13 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional
-    public UserGroup save(UserGroup group) {
+    public Group save(Group group) {
         return groupDao.save(group);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<UserGroup> findById(Long id) {
+    public Optional<Group> findById(Long id) {
         return groupDao.findById(id);
     }
 
@@ -77,20 +71,20 @@ public class GroupServiceImpl implements GroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserGroup> findAll() {
+    public List<Group> findAll() {
         return groupDao.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserGroup> findPaginated(String keyword, String status, String privacy, Pageable pageable) {
+    public Page<Group> findPaginated(String keyword, String status, String privacy, Pageable pageable) {
         return groupDao.findPaginated(keyword, status, privacy, pageable);
     }
 
     @Override
     @Transactional
     public void addMember(Long groupId, Long userId, String role) {
-        UserGroup group = groupDao.findById(groupId)
+        Group group = groupDao.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
         
         User user = userDao.findById(userId)
@@ -124,7 +118,7 @@ public class GroupServiceImpl implements GroupService {
         groupMemberDao.deleteByGroupIdAndUserId(groupId, userId);
         
         // Update member count in group entity
-        UserGroup group = groupDao.findById(groupId)
+        Group group = groupDao.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
         Long newMemberCount = groupMemberDao.countByGroupId(groupId);
         group.setMemberCount(newMemberCount);
@@ -173,7 +167,7 @@ public class GroupServiceImpl implements GroupService {
     @Transactional(readOnly = true)
     public Long getMemberCount(Long groupId) {
         // First try to get from entity field
-        Optional<UserGroup> groupOpt = groupDao.findById(groupId);
+        Optional<Group> groupOpt = groupDao.findById(groupId);
         if (groupOpt.isPresent() && groupOpt.get().getMemberCount() != null) {
             return groupOpt.get().getMemberCount();
         }
@@ -187,8 +181,8 @@ public class GroupServiceImpl implements GroupService {
      */
     @Transactional
     public void syncAllMemberCounts() {
-        List<UserGroup> allGroups = groupDao.findAll();
-        for (UserGroup group : allGroups) {
+        List<Group> allGroups = groupDao.findAll();
+        for (Group group : allGroups) {
             Long actualCount = groupMemberDao.countByGroupId(group.getId());
             group.setMemberCount(actualCount);
             groupDao.save(group);
@@ -332,7 +326,7 @@ public class GroupServiceImpl implements GroupService {
     }
     
     @Override
-    public Page<UserGroup> findGroupsForExplore(String keyword, String category, Pageable pageable) {
+    public Page<Group> findGroupsForExplore(String keyword, String category, Pageable pageable) {
         if ("all".equals(category)) {
             return groupDao.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(keyword, keyword, pageable);
         } else {

@@ -12,7 +12,7 @@ import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.Comment;
 import GraduationProject.forumikaa.entity.Document;
 import GraduationProject.forumikaa.exception.ResourceNotFoundException;
@@ -77,7 +77,7 @@ public class PostServiceImpl implements PostService {
         
         // Set group if groupId is provided
         if (request.getGroupId() != null) {
-            UserGroup group = groupDao.findById(request.getGroupId())
+            Group group = groupDao.findById(request.getGroupId())
                     .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
             post.setGroup(group);
         }
@@ -136,7 +136,7 @@ public class PostServiceImpl implements PostService {
         
         // Update group if groupId is provided
         if (request.getGroupId() != null) {
-            UserGroup group = groupDao.findById(request.getGroupId())
+            Group group = groupDao.findById(request.getGroupId())
                     .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
             post.setGroup(group);
         }

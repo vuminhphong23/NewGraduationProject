@@ -3,7 +3,7 @@ package GraduationProject.forumikaa.controller.admin;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.PostStatus;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -231,7 +231,7 @@ public class PostManagementController {
                                           @RequestParam(required = false, defaultValue = "") String status) {
         try {
             // Lấy thông tin nhóm
-            UserGroup group = groupService.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm"));
+            Group group = groupService.findById(groupId).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm"));
 
             // Tạo PageRequest
             PageRequest pageRequest = PageRequest.of(page - 1, size);

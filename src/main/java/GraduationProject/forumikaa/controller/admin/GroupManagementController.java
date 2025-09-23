@@ -3,7 +3,7 @@ package GraduationProject.forumikaa.controller.admin;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.UserService;
 import GraduationProject.forumikaa.util.SecurityUtil;
@@ -55,10 +55,10 @@ public class GroupManagementController {
         PageRequest pageRequest = PageRequest.of(page - 1, size);
 
         // Lấy danh sách nhóm với phân trang và filter
-        Page<UserGroup> groupPage = groupService.findPaginated(keyword, null, null, pageRequest);
+        Page<Group> groupPage = groupService.findPaginated(keyword, null, null, pageRequest);
 
         // Tính số thành viên cho mỗi nhóm
-        for (UserGroup group : groupPage.getContent()) {
+        for (Group group : groupPage.getContent()) {
             Long memberCount = groupService.getMemberCount(group.getId());
             group.setMemberCount(memberCount != null ? memberCount : 0L);
         }
@@ -84,7 +84,7 @@ public class GroupManagementController {
     @GetMapping("/admin/groups/edit/{id}")
     public String editGroupForm(@PathVariable Long id, Model model) {
         try {
-            UserGroup group = groupService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm với id " + id));
+            Group group = groupService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm với id " + id));
             model.addAttribute("group", group);
             model.addAttribute("allRoles", GroupMemberRole.values());
             return "admin/group-form";
@@ -94,7 +94,7 @@ public class GroupManagementController {
     }
 
     @PostMapping("/admin/groups/save")
-    public String saveGroup(@ModelAttribute("group") @Valid UserGroup group, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+    public String saveGroup(@ModelAttribute("group") @Valid Group group, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         model.addAttribute("allRoles", GroupMemberRole.values());
 
         if (bindingResult.hasErrors()) {
@@ -113,13 +113,13 @@ public class GroupManagementController {
 
     @GetMapping("/admin/groups/add")
     public String addGroupForm(Model model) {
-        model.addAttribute("group", new UserGroup());
+        model.addAttribute("group", new Group());
         model.addAttribute("allRoles", GroupMemberRole.values());
         return "admin/group-form";
     }
 
     @PostMapping("/admin/groups/create")
-    public String createGroup(@ModelAttribute("group") UserGroup group,
+    public String createGroup(@ModelAttribute("group") Group group,
                               BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         model.addAttribute("allRoles", GroupMemberRole.values());
 
@@ -144,7 +144,7 @@ public class GroupManagementController {
 
             // Save group
             System.out.println("DEBUG: Saving group: " + group.getName());
-            UserGroup savedGroup = groupService.save(group);
+            Group savedGroup = groupService.save(group);
             System.out.println("DEBUG: Group saved with ID: " + savedGroup.getId());
 
             // Add admin as member
@@ -207,7 +207,7 @@ public class GroupManagementController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getGroupStats() {
         try {
-            List<UserGroup> allGroups = groupService.findAll();
+            List<Group> allGroups = groupService.findAll();
             long totalGroups = allGroups.size();
             long totalMembers = allGroups.stream()
                     .mapToLong(group -> groupService.getMemberCount(group.getId()))
@@ -238,7 +238,7 @@ public class GroupManagementController {
             }
 
             // Create group with admin as creator
-            UserGroup group = new UserGroup();
+            Group group = new Group();
             group.setName(name);
             group.setDescription(description);
 
@@ -252,7 +252,7 @@ public class GroupManagementController {
                 group.setAvatar(avatar.trim());
             }
 
-            UserGroup savedGroup = groupService.save(group);
+            Group savedGroup = groupService.save(group);
             // Add admin as member
             try {
                 System.out.println("DEBUG: Adding admin as member to group: " + savedGroup.getName());

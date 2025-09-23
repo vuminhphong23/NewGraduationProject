@@ -4,7 +4,7 @@ import GraduationProject.forumikaa.dto.PostRequest;
 import GraduationProject.forumikaa.entity.CrawlingConfig;
 import GraduationProject.forumikaa.entity.PostPrivacy;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -155,7 +155,7 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
                 // Tạo post cho mỗi group đã chọn
                 for (Long groupId : groupIds) {
                     try {
-                        UserGroup group = groupService.findById(groupId).orElse(null);
+                        Group group = groupService.findById(groupId).orElse(null);
                         if (group != null) {
                             // Check if admin is member of group
                             boolean isMember = groupService.isGroupMember(groupId, adminUser.getId());
@@ -210,7 +210,7 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
      * Tạo post cho một group cụ thể
      */
     @Override
-    public void createPostForGroup(User adminUser, UserGroup group, String title, String content, String topicName) {
+    public void createPostForGroup(User adminUser, Group group, String title, String content, String topicName) {
         PostRequest request = new PostRequest();
         request.setTitle(title);
         request.setContent(content);

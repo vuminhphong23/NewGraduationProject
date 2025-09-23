@@ -1,7 +1,7 @@
 package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.entity.Post;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.GroupMember;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -173,12 +173,12 @@ public class StatisticsServiceImpl implements StatisticsService {
             
             // Get recent group activities
             if (activityType.equals("all") || activityType.equals("groups")) {
-                List<UserGroup> recentGroups = groupService.findAll().stream()
+                List<Group> recentGroups = groupService.findAll().stream()
                         .sorted((g1, g2) -> g2.getCreatedAt().compareTo(g1.getCreatedAt()))
                         .limit(limit)
                         .collect(Collectors.toList());
                 
-                for (UserGroup group : recentGroups) {
+                for (Group group : recentGroups) {
                     Map<String, Object> activity = new HashMap<>();
                     activity.put("type", "group");
                     activity.put("id", group.getId());
@@ -338,8 +338,8 @@ public class StatisticsServiceImpl implements StatisticsService {
             List<GroupMember> allJoins = new ArrayList<>();
             
             // Get all groups and their members
-            List<UserGroup> allGroups = groupService.findAll();
-            for (UserGroup group : allGroups) {
+            List<Group> allGroups = groupService.findAll();
+            for (Group group : allGroups) {
                 List<GroupMember> members = groupService.getGroupMembers(group.getId());
                 allJoins.addAll(members);
             }

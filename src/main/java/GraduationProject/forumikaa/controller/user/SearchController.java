@@ -2,7 +2,7 @@ package GraduationProject.forumikaa.controller.user;
 
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.service.SearchService;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.util.SecurityUtil;
@@ -80,8 +80,8 @@ public class SearchController {
             }
             
             if ("all".equals(category) || "groups".equals(category)) {
-                List<UserGroup> groups = searchService.searchGroups(q, pageable);
-                for (UserGroup group : groups) {
+                List<Group> groups = searchService.searchGroups(q, pageable);
+                for (Group group : groups) {
                     Map<String, Object> result = new HashMap<>();
                     result.put("type", "group");
                     result.put("id", group.getId());
@@ -124,7 +124,7 @@ public class SearchController {
             
             List<Post> posts = new ArrayList<>();
             List<User> users = new ArrayList<>();
-            List<UserGroup> groups = new ArrayList<>();
+            List<Group> groups = new ArrayList<>();
             
             // Search based on category
             Pageable pageable = PageRequest.of(0, 20);
@@ -153,7 +153,7 @@ public class SearchController {
             try {
                 currentUserId = securityUtil.getCurrentUserId();
                 if (currentUserId != null && !groups.isEmpty()) {
-                    for (UserGroup group : groups) {
+                    for (Group group : groups) {
                         boolean isMember = groupService.isGroupMember(group.getId(), currentUserId);
                         groupMembership.put(group.getId(), isMember);
                     }

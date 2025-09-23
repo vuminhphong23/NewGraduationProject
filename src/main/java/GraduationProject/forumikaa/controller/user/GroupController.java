@@ -1,6 +1,6 @@
 package GraduationProject.forumikaa.controller.user;
 
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.dto.GroupMemberDto;
@@ -51,7 +51,7 @@ public class GroupController {
             Pageable pageable = PageRequest.of(page, 12);
             
             // Get groups with filters
-            Page<UserGroup> groupsPage = groupService.findGroupsForExplore(keyword, category, pageable);
+            Page<Group> groupsPage = groupService.findGroupsForExplore(keyword, category, pageable);
             
             // Get user's joined groups
             List<Long> joinedGroupIds = groupService.getUserJoinedGroupIds(currentUserId);
@@ -84,12 +84,12 @@ public class GroupController {
                              @RequestParam(defaultValue = "posts") String tab,
                              @RequestParam(defaultValue = "0") int page,
                              Model model) {
-        Optional<UserGroup> groupOpt = groupService.findById(groupId);
+        Optional<Group> groupOpt = groupService.findById(groupId);
         if (groupOpt.isEmpty()) {
             return "error/404";
         }
         
-        UserGroup group = groupOpt.get();
+        Group group = groupOpt.get();
         
         // Get member count (now stored in entity)
         Long memberCount = group.getMemberCount() != null ? group.getMemberCount() : groupService.getMemberCount(groupId);

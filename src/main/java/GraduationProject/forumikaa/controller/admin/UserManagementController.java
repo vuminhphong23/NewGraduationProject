@@ -1,16 +1,10 @@
 package GraduationProject.forumikaa.controller.admin;
 
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.entity.PostPrivacy;
-import GraduationProject.forumikaa.entity.UserGroup;
-import GraduationProject.forumikaa.entity.GroupMember;
-import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.service.RoleService;
 import GraduationProject.forumikaa.service.UserService;
-import GraduationProject.forumikaa.service.PostService;
-import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.StatisticsService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
@@ -19,9 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +21,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Controller
 public class UserManagementController {

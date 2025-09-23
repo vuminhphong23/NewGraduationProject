@@ -1,6 +1,6 @@
 package GraduationProject.forumikaa.service;
 
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.dto.FileUploadResponse;
@@ -9,18 +9,17 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface GroupService {
     
     // Basic CRUD operations
-    UserGroup save(UserGroup group);
-    Optional<UserGroup> findById(Long id);
+    Group save(Group group);
+    Optional<Group> findById(Long id);
     void deleteById(Long id);
-    List<UserGroup> findAll();
+    List<Group> findAll();
     
     // Admin management methods
-    Page<UserGroup> findPaginated(String keyword, String status, String privacy, Pageable pageable);
+    Page<Group> findPaginated(String keyword, String status, String privacy, Pageable pageable);
     
     // Member management
     void addMember(Long groupId, Long userId, String role);
@@ -51,7 +50,7 @@ public interface GroupService {
     List<Topic> getPopularTopicsInGroup(Long groupId, int limit);
     
     // Explore groups methods
-    Page<UserGroup> findGroupsForExplore(String keyword, String category, Pageable pageable);
+    Page<Group> findGroupsForExplore(String keyword, String category, Pageable pageable);
     List<Long> getUserJoinedGroupIds(Long userId);
     List<Topic> getPopularTopics(int limit);
     Long getTotalGroupCount();

@@ -1,6 +1,6 @@
 package GraduationProject.forumikaa.dao;
 
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,14 +9,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificationExecutor<UserGroup> {
+public interface GroupDao extends JpaRepository<Group, Long>, JpaSpecificationExecutor<Group> {
 
     // Admin pagination with filters
     @Query("""
-        SELECT DISTINCT g FROM UserGroup g
+        SELECT DISTINCT g FROM Group g
         LEFT JOIN FETCH g.createdBy u
         LEFT JOIN FETCH u.userProfile
         WHERE (:keyword IS NULL OR :keyword = '' OR 
@@ -25,14 +23,14 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
                LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')))
         ORDER BY g.createdAt DESC
     """)
-    Page<UserGroup> findPaginated(@Param("keyword") String keyword, 
-                                 @Param("status") String status, 
-                                 @Param("privacy") String privacy, 
-                                 Pageable pageable);
+    Page<Group> findPaginated(@Param("keyword") String keyword,
+                              @Param("status") String status,
+                              @Param("privacy") String privacy,
+                              Pageable pageable);
     
     // Explore groups methods
     @Query("""
-        SELECT DISTINCT g FROM UserGroup g
+        SELECT DISTINCT g FROM Group g
         LEFT JOIN FETCH g.createdBy u
         LEFT JOIN FETCH u.userProfile
         WHERE (:keyword IS NULL OR :keyword = '' OR 
@@ -40,13 +38,13 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
                LOWER(g.description) LIKE LOWER(CONCAT('%', :keyword, '%')))
         ORDER BY g.createdAt DESC
     """)
-    Page<UserGroup> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+    Page<Group> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
         @Param("keyword") String keyword1, 
         @Param("keyword") String keyword2, 
         Pageable pageable);
     
     @Query("""
-        SELECT DISTINCT g FROM UserGroup g
+        SELECT DISTINCT g FROM Group g
         LEFT JOIN FETCH g.createdBy u
         LEFT JOIN FETCH u.userProfile
         LEFT JOIN g.topics t
@@ -56,7 +54,7 @@ public interface GroupDao extends JpaRepository<UserGroup, Long>, JpaSpecificati
         AND (:category IS NULL OR :category = '' OR LOWER(t.name) LIKE LOWER(CONCAT('%', :category, '%')))
         ORDER BY g.createdAt DESC
     """)
-    Page<UserGroup> findGroupsWithKeywordAndCategory(
+    Page<Group> findGroupsWithKeywordAndCategory(
         @Param("keyword") String keyword, 
         @Param("category") String category, 
         Pageable pageable);

@@ -1,8 +1,6 @@
 package GraduationProject.forumikaa.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,7 +13,7 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 @Table(name = "groups")
-public class UserGroup {
+public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -5,7 +5,7 @@ import GraduationProject.forumikaa.dao.UserDao;
 import GraduationProject.forumikaa.dao.GroupDao;
 import GraduationProject.forumikaa.entity.Post;
 import GraduationProject.forumikaa.entity.User;
-import GraduationProject.forumikaa.entity.UserGroup;
+import GraduationProject.forumikaa.entity.Group;
 import GraduationProject.forumikaa.entity.PostStatus;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,9 +102,9 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public List<UserGroup> searchGroups(String query, Pageable pageable) {
+    public List<Group> searchGroups(String query, Pageable pageable) {
         try {
-            Specification<UserGroup> spec = (root, criteriaQuery, criteriaBuilder) -> {
+            Specification<Group> spec = (root, criteriaQuery, criteriaBuilder) -> {
                 List<Predicate> predicates = new ArrayList<>();
                 
                 // Search in name and description
