@@ -64,13 +64,8 @@ public class AuthController {
                 .map(a -> a.getAuthority())
                 .toList();
         
-        // Lấy userId từ User entity
-        User user = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
         Map<String, Object> payload = new HashMap<>();
         payload.put("username", username);
-        payload.put("userId", user.getId());
         payload.put("roles", roles);
 
         

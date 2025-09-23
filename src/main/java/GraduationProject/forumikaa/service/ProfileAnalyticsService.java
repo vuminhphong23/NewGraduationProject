@@ -31,3 +31,5 @@ public interface ProfileAnalyticsService {
      */
     Map<String, Object> getActivityAnalytics(Long userId, String startDate, String endDate);
 }
+
+

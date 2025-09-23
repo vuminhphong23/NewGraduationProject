@@ -21,10 +21,6 @@ import java.util.Set;
 @ComponentScan(basePackages = {
     "GraduationProject.forumikaa",
     "GraduationProject.forumikaa.patterns",
-    "GraduationProject.forumikaa.patterns.adapter",
-    "GraduationProject.forumikaa.patterns.singleton",
-    "GraduationProject.forumikaa.patterns.proxy",
-    "GraduationProject.forumikaa.patterns.decorator"
 })
 public class ForumikaaApplication {
 

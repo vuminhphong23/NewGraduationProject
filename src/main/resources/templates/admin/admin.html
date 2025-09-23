@@ -511,7 +511,7 @@
         if (canvas) canvas.style.display = 'none';
         
         try {
-            const response = await fetch(`/api/statistics/posts?startDate=${startDate}&endDate=${endDate}`);
+            const response = await fetch(`/admin/statistics/posts?startDate=${startDate}&endDate=${endDate}`);
             const data = await response.json();
             
             if (data.error) {
@@ -669,7 +669,7 @@
         if (canvas) canvas.style.display = 'none';
         
         try {
-            const response = await fetch(`/api/statistics/posts/distribution-by-groups?startDate=${startDate}&endDate=${endDate}`);
+            const response = await fetch(`/admin/statistics/posts/distribution-by-groups?startDate=${startDate}&endDate=${endDate}`);
             const data = await response.json();
             
             if (data.error) {
@@ -811,7 +811,7 @@
         activityContainer.style.display = 'none';
         
         try {
-            const response = await fetch(`/api/statistics/activities/recent?activityType=${activityType}&limit=${limit}`);
+            const response = await fetch(`/admin/statistics/activities/recent?activityType=${activityType}&limit=${limit}`);
             const activities = await response.json();
             
             if (activities.error) {
