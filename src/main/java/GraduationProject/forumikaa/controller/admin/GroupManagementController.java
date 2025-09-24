@@ -4,8 +4,10 @@ import GraduationProject.forumikaa.entity.GroupMember;
 import GraduationProject.forumikaa.entity.GroupMemberRole;
 import GraduationProject.forumikaa.entity.User;
 import GraduationProject.forumikaa.entity.Group;
+import GraduationProject.forumikaa.entity.Topic;
 import GraduationProject.forumikaa.service.GroupService;
 import GraduationProject.forumikaa.service.UserService;
+import GraduationProject.forumikaa.service.TopicService;
 import GraduationProject.forumikaa.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,13 @@ public class GroupManagementController {
         this.securityUtil = securityUtil;
     }
 
+    private TopicService topicService;
+
+    @Autowired
+    public void setTopicService(TopicService topicService) {
+        this.topicService = topicService;
+    }
+
     @GetMapping("/admin/groups")
     public String groupManagementPage(Model model,
                                       @RequestParam(defaultValue = "1") int page,
@@ -57,10 +66,13 @@ public class GroupManagementController {
         // Lấy danh sách nhóm với phân trang và filter
         Page<Group> groupPage = groupService.findPaginated(keyword, null, null, pageRequest);
 
-        // Tính số thành viên cho mỗi nhóm
+        // Tính số thành viên cho mỗi nhóm và load topics
         for (Group group : groupPage.getContent()) {
             Long memberCount = groupService.getMemberCount(group.getId());
             group.setMemberCount(memberCount != null ? memberCount : 0L);
+            
+            // Load topics for display - topics will be accessed in template
+            // The template will handle displaying the main topic
         }
 
         model.addAttribute("groupPage", groupPage);
@@ -85,7 +97,23 @@ public class GroupManagementController {
     public String editGroupForm(@PathVariable Long id, Model model) {
         try {
             Group group = groupService.findById(id).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhóm với id " + id));
+            
+            // Force load createdBy to avoid lazy loading issues
+            if (group.getCreatedBy() != null) {
+                System.out.println("DEBUG: Group created by: " + group.getCreatedBy().getUsername());
+            } else {
+                System.out.println("DEBUG: Group createdBy is null");
+            }
+            
+            // Load topics for the group
+            String currentMainTopic = "";
+            if (group.getTopics() != null && !group.getTopics().isEmpty()) {
+                // Get the first topic as main topic
+                currentMainTopic = group.getTopics().iterator().next().getName();
+            }
+            
             model.addAttribute("group", group);
+            model.addAttribute("currentMainTopic", currentMainTopic);
             model.addAttribute("allRoles", GroupMemberRole.values());
             return "admin/group-form";
         } catch (Exception e) {
@@ -94,7 +122,9 @@ public class GroupManagementController {
     }
 
     @PostMapping("/admin/groups/save")
-    public String saveGroup(@ModelAttribute("group") @Valid Group group, BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
+    public String saveGroup(@ModelAttribute("group") @Valid Group group, 
+                           @RequestParam(required = false) String mainTopic,
+                           BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         model.addAttribute("allRoles", GroupMemberRole.values());
 
         if (bindingResult.hasErrors()) {
@@ -102,7 +132,39 @@ public class GroupManagementController {
         }
 
         try {
-            groupService.save(group);
+            // Get the original group to preserve createdBy
+            Group originalGroup = groupService.findById(group.getId()).orElse(null);
+            if (originalGroup != null && originalGroup.getCreatedBy() != null) {
+                // Preserve the original createdBy
+                group.setCreatedBy(originalGroup.getCreatedBy());
+                System.out.println("DEBUG: Preserved createdBy: " + originalGroup.getCreatedBy().getUsername());
+            }
+            
+            // Save group first
+            Group savedGroup = groupService.save(group);
+            
+            // Process main topic if provided
+            if (mainTopic != null && !mainTopic.trim().isEmpty()) {
+                try {
+                    Long currentUserId = securityUtil.getCurrentUserId();
+                    User currentUser = userService.findById(currentUserId).orElse(null);
+                    
+                    if (currentUser != null) {
+                        // Clear existing topics first
+                        savedGroup.getTopics().clear();
+                        
+                        // Add new topic
+                        Topic topic = topicService.findOrCreateTopic(mainTopic.trim(), currentUser);
+                        savedGroup.getTopics().add(topic);
+                        groupService.save(savedGroup);
+                        System.out.println("DEBUG: Updated main topic for group: " + topic.getName());
+                    }
+                } catch (Exception e) {
+                    System.err.println("DEBUG: Error updating main topic: " + e.getMessage());
+                    // Don't fail the group update if topic processing fails
+                }
+            }
+            
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật nhóm thành công.");
             return "redirect:/admin/groups";
         } catch (Exception e) {
@@ -120,6 +182,7 @@ public class GroupManagementController {
 
     @PostMapping("/admin/groups/create")
     public String createGroup(@ModelAttribute("group") Group group,
+                              @RequestParam(required = false) String mainTopic,
                               BindingResult bindingResult, RedirectAttributes redirectAttributes, Model model) {
         model.addAttribute("allRoles", GroupMemberRole.values());
 
@@ -140,12 +203,23 @@ public class GroupManagementController {
                 group.setCreatedBy(adminUser);
             }
 
-            // Topics will be handled by entity relationship only
-
-            // Save group
+            // Save group first
             System.out.println("DEBUG: Saving group: " + group.getName());
             Group savedGroup = groupService.save(group);
             System.out.println("DEBUG: Group saved with ID: " + savedGroup.getId());
+            
+            // Process main topic if provided
+            if (mainTopic != null && !mainTopic.trim().isEmpty()) {
+                try {
+                    Topic topic = topicService.findOrCreateTopic(mainTopic.trim(), adminUser);
+                    savedGroup.getTopics().add(topic);
+                    groupService.save(savedGroup);
+                    System.out.println("DEBUG: Added main topic to group: " + topic.getName());
+                } catch (Exception e) {
+                    System.err.println("DEBUG: Error adding main topic: " + e.getMessage());
+                    // Don't fail the group creation if topic processing fails
+                }
+            }
 
             // Add admin as member
             try {
@@ -229,6 +303,7 @@ public class GroupManagementController {
     public String createGroupSimple(@RequestParam String name,
                                     @RequestParam String description,
                                     @RequestParam(required = false) String avatar,
+                                    @RequestParam(required = false) String mainTopic,
                                     RedirectAttributes redirectAttributes) {
         try {
             Long currentUserId = securityUtil.getCurrentUserId();
@@ -253,6 +328,20 @@ public class GroupManagementController {
             }
 
             Group savedGroup = groupService.save(group);
+            
+            // Process main topic if provided
+            if (mainTopic != null && !mainTopic.trim().isEmpty()) {
+                try {
+                    Topic topic = topicService.findOrCreateTopic(mainTopic.trim(), adminUser);
+                    savedGroup.getTopics().add(topic);
+                    groupService.save(savedGroup);
+                    System.out.println("DEBUG: Added main topic to group: " + topic.getName());
+                } catch (Exception e) {
+                    System.err.println("DEBUG: Error adding main topic: " + e.getMessage());
+                    // Don't fail the group creation if topic processing fails
+                }
+            }
+            
             // Add admin as member
             try {
                 System.out.println("DEBUG: Adding admin as member to group: " + savedGroup.getName());

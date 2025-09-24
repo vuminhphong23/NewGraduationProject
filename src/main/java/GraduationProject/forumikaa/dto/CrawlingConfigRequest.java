@@ -17,8 +17,7 @@ public class CrawlingConfigRequest {
     @NotBlank(message = "URL không được để trống")
     private String baseUrl;
     
-    @NotBlank(message = "Topic name không được để trống")
-    private String topicName;
+    private String topicName; // Will be set automatically from selected group
     
     @NotNull(message = "Max posts không được để trống")
     @Min(value = 1, message = "Max posts phải lớn hơn 0")

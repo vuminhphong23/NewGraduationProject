@@ -54,15 +54,15 @@ public class RecommendationController {
     }
     
     /**
-     * Gợi ý crawled content dựa trên mối quan tâm cá nhân
+     * Tab 1: Cho riêng bạn - Phân tích điểm dựa trên topic quan tâm và tương tác
      */
-    @GetMapping("/crawled-content")
-    public ResponseEntity<List<PostResponse>> getRecommendedCrawledContent(
+    @GetMapping("/personalized")
+    public ResponseEntity<List<PostResponse>> getPersonalizedContent(
             @RequestParam(defaultValue = "20") Integer limit) {
         try {
             Long currentUserId = securityUtil.getCurrentUserId();
             List<PostResponse> recommendations = crawledContentService
-                    .getRecommendedCrawledContent(currentUserId, limit);
+                    .getPersonalizedContent(currentUserId, limit);
             
             return ResponseEntity.ok(recommendations);
         } catch (Exception e) {
@@ -71,15 +71,15 @@ public class RecommendationController {
     }
     
     /**
-     * Gợi ý crawled content trending
+     * Tab 2: Được nhiều người quan tâm - Sắp xếp theo điểm Like(1) + Comment(2) + Share(3)
      */
-    @GetMapping("/crawled-content/trending")
-    public ResponseEntity<List<PostResponse>> getTrendingCrawledContent(
+    @GetMapping("/trending")
+    public ResponseEntity<List<PostResponse>> getTrendingContent(
             @RequestParam(defaultValue = "20") Integer limit) {
         try {
             Long currentUserId = securityUtil.getCurrentUserId();
             List<PostResponse> recommendations = crawledContentService
-                    .getTrendingCrawledContent(currentUserId, limit);
+                    .getTrendingContent(currentUserId, limit);
             
             return ResponseEntity.ok(recommendations);
         } catch (Exception e) {
@@ -88,16 +88,33 @@ public class RecommendationController {
     }
     
     /**
-     * Gợi ý crawled content theo mối quan tâm cụ thể
+     * Lấy bài viết được nhiều người quan tâm với phân trang
      */
-    @GetMapping("/crawled-content/interest/{interest}")
-    public ResponseEntity<List<PostResponse>> getCrawledContentByInterest(
-            @PathVariable String interest,
-            @RequestParam(defaultValue = "20") Integer limit) {
+    @GetMapping("/popular")
+    public ResponseEntity<List<PostResponse>> getPopularPosts(
+            @RequestParam(defaultValue = "10") Integer limit,
+            @RequestParam(defaultValue = "0") Integer offset) {
         try {
             Long currentUserId = securityUtil.getCurrentUserId();
             List<PostResponse> recommendations = crawledContentService
-                    .getCrawledContentByInterest(currentUserId, interest, limit);
+                    .getPopularPosts(currentUserId, limit, offset);
+            
+            return ResponseEntity.ok(recommendations);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    /**
+     * Tab 3: Gợi ý nhóm - Nhóm liên quan topic quan tâm và có nhiều bạn chung
+     */
+    @GetMapping("/groups")
+    public ResponseEntity<List<GroupRecommendationResponse>> getGroupRecommendations(
+            @RequestParam(defaultValue = "20") Integer limit) {
+        try {
+            Long currentUserId = securityUtil.getCurrentUserId();
+            List<GroupRecommendationResponse> recommendations = recommendationService
+                    .recommendGroups(currentUserId, limit);
             
             return ResponseEntity.ok(recommendations);
         } catch (Exception e) {

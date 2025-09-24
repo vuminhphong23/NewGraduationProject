@@ -328,8 +328,23 @@
                         </label>
                         <textarea class="form-control" id="description" th:field="*{description}" rows="4" 
                                   placeholder="Mô tả chi tiết về nhóm học tập, mục tiêu, nội dung..."></textarea>
-                        <div class="form-text">Mô tả chi tiết sẽ giúp thành viên hiểu rõ về nhóm</div>
+                        <div class="form-text"><i class="bi bi-info-circle me-1"></i> Mô tả chi tiết sẽ giúp thành viên hiểu rõ về nhóm</div>
                         <span th:if="${#fields.hasErrors('description')}" class="text-danger small" th:errors="*{description}"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="mainTopic" class="form-label">
+                            <i class="bi bi-hash me-2"></i>Chủ đề chính cho các bài viết trong nhóm
+                        </label>
+                        <input type="text" class="form-control" id="mainTopic" name="mainTopic" 
+                               th:value="${currentMainTopic != null ? currentMainTopic : ''}"
+                               placeholder="Ví dụ: tiếng anh, toán học, lập trình..." 
+                               maxlength="20" required>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Chủ đề chính giúp hệ thống gợi ý nhóm phù hợp. Tối đa 20 ký tự.
+                        </div>
+
                     </div>
 
 

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -21,24 +22,25 @@ public class RecommendationServiceImpl implements RecommendationService {
     @Autowired private LikeDao likeDao;
     @Autowired private CommentDao commentDao;
     @Autowired private FriendshipDao friendshipDao;
+    @Autowired private GroupDao groupDao;
+    @Autowired private GroupMemberDao groupMemberDao;
 
 
     @Override
     public List<UserRecommendationResponse> recommendUsers(Long userId, Integer limit) {
         List<UserRecommendationResponse> recommendations = new ArrayList<>();
         
-        // Gợi ý dựa trên mối quan tâm và tương tác chung (40%)
-        recommendations.addAll(recommendUsersByInterests(userId, limit * 2 / 5));
+        // Gợi ý dựa trên mối quan tâm chung
+        recommendations.addAll(recommendUsersByInterests(userId, limit));
         
-        // Gợi ý dựa trên bạn bè chung (30%)
-        recommendations.addAll(recommendUsersByMutualFriends(userId, limit * 3 / 10));
+        // Gợi ý dựa trên bạn bè chung
+        recommendations.addAll(recommendUsersByMutualFriends(userId, limit));
         
-        // Gợi ý dựa trên tương tác gần đây (30%)
-        recommendations.addAll(recommendUsersByRecentInteractions(userId, limit * 3 / 10));
+        // Gợi ý dựa trên tương tác gần đây
+        recommendations.addAll(recommendUsersByRecentInteractions(userId, limit));
         
         return recommendations.stream()
                 .distinct()
-                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -61,9 +63,6 @@ public class RecommendationServiceImpl implements RecommendationService {
             if (!friendIds.contains(user.getId())) {
                 int mutualFriendsCount = countMutualFriends(userId, user.getId());
                 if (mutualFriendsCount > 0) {
-                    // Chỉ dựa trên số lượng bạn chung
-                    double score = mutualFriendsCount * 1.0; // Trọng số 100% cho bạn chung
-                    
                     String reason = mutualFriendsCount + " bạn chung";
                     
                     recommendations.add(UserRecommendationResponse.builder()
@@ -73,7 +72,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                             .lastName(user.getLastName())
                             .userAvatar(getUserAvatar(user))
                             .createdAt(user.getCreatedAt())
-                            .score(score)
                             .reason(reason)
                             .mutualFriendsCount(mutualFriendsCount)
                             .recommendationType("MUTUAL_FRIENDS_BASED")
@@ -84,7 +82,6 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         System.out.println("Mutual friends-based user recommendations: " + recommendations.size());
         return recommendations.stream()
-                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -129,25 +126,18 @@ public class RecommendationServiceImpl implements RecommendationService {
                 // Tính tương tác chung (cùng like/comment trên posts không phải của chính mình)
                 int commonInteractions = countCommonInteractionsOnOthersPosts(userId, user.getId());
                 
-                // Tính điểm tổng hợp
-                double score = 0.0;
+                // Đơn giản hóa logic gợi ý
                 String reason = "";
                 
                 if (!commonTopics.isEmpty() && commonInteractions > 0) {
-                    // Có cả mối quan tâm chung và tương tác chung
-                    score = (commonTopics.size() * 1.0) + (commonInteractions * 0.8);
                     reason = "Cùng quan tâm: " + commonTopics.size() + " topics, tương tác chung: " + commonInteractions + " posts";
                 } else if (!commonTopics.isEmpty()) {
-                    // Chỉ có mối quan tâm chung
-                    score = commonTopics.size() * 1.0;
                     reason = "Cùng quan tâm: " + commonTopics.size() + " topics";
                 } else if (commonInteractions > 0) {
-                    // Chỉ có tương tác chung
-                    score = commonInteractions * 0.8;
                     reason = "Tương tác chung: " + commonInteractions + " posts";
                 }
                 
-                if (score > 0) {
+                if (!reason.isEmpty()) {
                     recommendations.add(UserRecommendationResponse.builder()
                             .userId(user.getId())
                             .username(user.getUsername())
@@ -155,7 +145,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                             .lastName(user.getLastName())
                             .userAvatar(getUserAvatar(user))
                             .createdAt(user.getCreatedAt())
-                            .score(score)
                             .reason(reason)
                             .commonTopics(commonTopics)
                             .recommendationType("INTEREST_BASED")
@@ -166,7 +155,6 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         System.out.println("Interest-based user recommendations: " + recommendations.size());
         return recommendations.stream()
-                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -327,8 +315,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                 int recentInteractions = countRecentInteractions(userId, user.getId());
                 
                 if (recentInteractions > 0) {
-                    double score = recentInteractions * 1.0; // Trọng số 100% cho tương tác gần đây
-                    
                     String reason = "Quan tâm đến bạn: " + recentInteractions + " lần";
                     
                     recommendations.add(UserRecommendationResponse.builder()
@@ -338,7 +324,6 @@ public class RecommendationServiceImpl implements RecommendationService {
                             .lastName(user.getLastName())
                             .userAvatar(getUserAvatar(user))
                             .createdAt(user.getCreatedAt())
-                            .score(score)
                             .reason(reason)
                             .recommendationType("RECENT_INTERACTIONS_BASED")
                             .build());
@@ -348,7 +333,6 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         System.out.println("Recent interactions-based user recommendations: " + recommendations.size());
         return recommendations.stream()
-                .sorted((a, b) -> Double.compare(b.getScore(), a.getScore()))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
@@ -408,4 +392,242 @@ public class RecommendationServiceImpl implements RecommendationService {
             return 0;
         }
     }
+    
+    @Override
+    public List<GroupRecommendationResponse> recommendGroups(Long userId, Integer limit) {
+        List<GroupRecommendationResponse> recommendations = new ArrayList<>();
+        
+        try {
+            // Lấy tất cả groups từ database
+            List<Group> allGroups = groupDao.findAll();
+            
+            // Lấy danh sách bạn bè của user
+            Set<Long> friendIds = getFriendIds(userId);
+            
+            for (Group group : allGroups) {
+                // Kiểm tra user đã tham gia group chưa
+                if (isUserInGroup(userId, group.getId())) {
+                    continue;
+                }
+                
+                // Kiểm tra điều kiện khớp
+                if (isGroupRelevant(userId, group, friendIds)) {
+                    GroupRecommendationResponse response = GroupRecommendationResponse.builder()
+                            .id(group.getId())
+                            .name(group.getName())
+                            .description(group.getDescription())
+                            .avatar(group.getAvatar())
+                            .createdAt(group.getCreatedAt())
+                            .memberCount(getGroupMemberCount(group.getId()))
+                            .commonFriendsCount((int) getMutualFriendsInGroup(userId, group.getId(), friendIds))
+                            .topics(getGroupTopics(group))
+                            // Không cần tính điểm
+                            .reason(getRelevanceReason(userId, group))
+                            .recommendationType(getRecommendationType(userId, group, friendIds))
+                            .isJoined(false)
+                            .build();
+                    
+                    recommendations.add(response);
+                }
+            }
+            
+            return recommendations.stream()
+                    .limit(limit)
+                    .collect(Collectors.toList());
+                    
+        } catch (Exception e) {
+            System.err.println("Error in recommendGroups: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    
+    /**
+     * Kiểm tra group có khớp điều kiện gợi ý không
+     */
+    private boolean isGroupRelevant(Long userId, Group group, Set<Long> friendIds) {
+        try {
+            // 1. Có topics chung với user
+            if (hasCommonTopics(userId, group)) {
+                return true;
+            }
+            
+            // 2. Có bạn bè chung trong group
+            long mutualFriends = getMutualFriendsInGroup(userId, group.getId(), friendIds);
+            if (mutualFriends > 0) {
+                return true;
+            }
+            
+            // 3. Group có nhiều thành viên (phổ biến)
+            long memberCount = getGroupMemberCount(group.getId());
+            if (memberCount > 20) {
+                return true;
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error checking group relevance: " + e.getMessage());
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Lấy danh sách bạn bè của user
+     */
+    private Set<Long> getFriendIds(Long userId) {
+        try {
+            List<User> friends = friendshipDao.findFriendsOf(userId);
+            return friends.stream()
+                    .map(User::getId)
+                    .collect(Collectors.toSet());
+        } catch (Exception e) {
+            System.err.println("Error getting friend IDs: " + e.getMessage());
+            return new HashSet<>();
+        }
+    }
+    
+    /**
+     * Lấy topics của group
+     */
+    private List<String> getGroupTopics(Group group) {
+        try {
+            return group.getTopics().stream()
+                    .map(Topic::getName)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.err.println("Error getting group topics: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    
+    /**
+     * Xác định loại recommendation
+     */
+    private String getRecommendationType(Long userId, Group group, Set<Long> friendIds) {
+        boolean hasCommonTopics = hasCommonTopics(userId, group);
+        long mutualFriends = getMutualFriendsInGroup(userId, group.getId(), friendIds);
+        
+        if (hasCommonTopics && mutualFriends > 0) {
+            return "INTEREST_BASED";
+        } else if (mutualFriends > 0) {
+            return "MUTUAL_FRIENDS";
+        } else if (hasCommonTopics) {
+            return "INTEREST_BASED";
+        } else {
+            return "POPULAR";
+        }
+    }
+    
+    /**
+     * Lấy topics từ các bài viết mà user đã like/comment/share
+     */
+    private Set<String> getUserInteractionTopics(Long userId) {
+        Set<String> topics = new HashSet<>();
+        
+        // Topics từ posts đã like
+        topics.addAll(likeDao.findByUserIdAndLikeableType(userId, LikeableType.POST).stream()
+                .flatMap(like -> {
+                    Post post = postDao.findById(like.getLikeableId()).orElse(null);
+                    return post != null ? post.getTopics().stream() : Stream.empty();
+                })
+                .map(Topic::getName)
+                .collect(Collectors.toSet()));
+        
+        // Topics từ posts đã comment
+        topics.addAll(commentDao.findByUserId(userId).stream()
+                .flatMap(comment -> comment.getPost().getTopics().stream())
+                .map(Topic::getName)
+                .collect(Collectors.toSet()));
+        
+        // Topics từ posts đã share (shared posts có originalPostId)
+        topics.addAll(postDao.findByUserId(userId).stream()
+                .filter(post -> post.getOriginalPostId() != null) // Chỉ lấy shared posts
+                .flatMap(sharedPost -> {
+                    // Lấy topics từ original post
+                    Post originalPost = postDao.findById(sharedPost.getOriginalPostId()).orElse(null);
+                    return originalPost != null ? originalPost.getTopics().stream() : Stream.empty();
+                })
+                .map(Topic::getName)
+                .collect(Collectors.toSet()));
+        
+        return topics;
+    }
+    
+    /**
+     * Kiểm tra user đã tham gia group chưa
+     */
+    private boolean isUserInGroup(Long userId, Long groupId) {
+        return groupMemberDao.existsByGroupIdAndUserId(groupId, userId);
+    }
+    
+    /**
+     * Lấy số lượng thành viên của group
+     */
+    private long getGroupMemberCount(Long groupId) {
+        return groupMemberDao.countByGroupId(groupId);
+    }
+    
+    
+    /**
+     * Đếm số bạn bè chung trong group
+     */
+    private long getMutualFriendsInGroup(Long userId, Long groupId, Set<Long> friendIds) {
+        // Lấy tất cả members của group
+        List<GroupMember> groupMembers = groupMemberDao.findByGroupId(groupId);
+        
+        // Đếm số bạn bè trong group
+        return groupMembers.stream()
+                .mapToLong(member -> friendIds.contains(member.getUser().getId()) ? 1 : 0)
+                .sum();
+    }
+    
+    
+    /**
+     * Kiểm tra có topics chung không
+     */
+    private boolean hasCommonTopics(Long userId, Group group) {
+        // Lấy topics của user
+        Set<String> userTopics = getUserInterests(userId);
+        userTopics.addAll(getUserInteractionTopics(userId));
+        
+        // Lấy topics của group
+        Set<String> groupTopics = group.getTopics().stream()
+                .map(Topic::getName)
+                .collect(Collectors.toSet());
+        
+        // Kiểm tra có topics chung không
+        return userTopics.stream().anyMatch(groupTopics::contains);
+    }
+    
+    /**
+     * Kiểm tra có bạn bè trong group không
+     */
+    private boolean hasFriendsInGroup(Long userId, Long groupId) {
+        // Lấy danh sách bạn bè
+        List<User> friends = friendshipDao.findFriendsOfWithProfile(userId);
+        Set<Long> friendIds = friends.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+        
+        // Kiểm tra có bạn bè trong group không
+        return getMutualFriendsInGroup(userId, groupId, friendIds) > 0;
+    }
+    
+    /**
+     * Lấy lý do gợi ý
+     */
+    private String getRelevanceReason(Long userId, Group group) {
+        if (hasCommonTopics(userId, group)) {
+            return "Cùng quan tâm";
+        }
+        if (hasFriendsInGroup(userId, group.getId())) {
+            return "Có bạn bè trong nhóm";
+        }
+        if (getGroupMemberCount(group.getId()) > 10) {
+            return "Nhóm phổ biến";
+        }
+        return "Được gợi ý";
+    }
+    
 }

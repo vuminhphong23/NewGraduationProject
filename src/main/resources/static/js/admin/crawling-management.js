@@ -170,6 +170,26 @@ function updateSelectedDisplay() {
             selectedGroupsDiv.appendChild(badge);
         }
     });
+    
+    // Update topic display
+    updateTopicDisplay();
+}
+
+// Update topic display based on selected groups
+function updateTopicDisplay() {
+    const topicDisplay = document.getElementById('selectedTopicDisplay');
+    if (selectedGroupIds.length === 0) {
+        topicDisplay.innerHTML = '<span class="text-muted">Chủ đề sẽ được lấy từ nhóm được chọn</span>';
+        return;
+    }
+    
+    // Get the first selected group's topic
+    const firstGroup = groups.find(g => g.id === selectedGroupIds[0]);
+    if (firstGroup && firstGroup.topic) {
+        topicDisplay.innerHTML = `<span class="text-success"><i class="fa fa-hashtag"></i> ${firstGroup.topic}</span>`;
+    } else {
+        topicDisplay.innerHTML = '<span class="text-warning"><i class="fa fa-exclamation-triangle"></i> Nhóm chưa có chủ đề</span>';
+    }
 }
 
 // Update combobox selected text
@@ -379,7 +399,6 @@ function fillConfigForm(config) {
     document.getElementById('configName').value = config.name || '';
     document.getElementById('configDescription').value = config.description || '';
     document.getElementById('configBaseUrl').value = config.baseUrl || '';
-    document.getElementById('configTopicName').value = config.topicName || '';
     document.getElementById('configMaxPosts').value = config.maxPosts || 10;
     document.getElementById('configEnabled').checked = config.enabled || false;
     
@@ -403,7 +422,6 @@ async function saveConfig() {
             name: document.getElementById('configName').value,
             description: document.getElementById('configDescription').value,
             baseUrl: document.getElementById('configBaseUrl').value,
-            topicName: document.getElementById('configTopicName').value,
             maxPosts: parseInt(document.getElementById('configMaxPosts').value),
             enabled: document.getElementById('configEnabled').checked,
             groupIds: selectedGroupIds

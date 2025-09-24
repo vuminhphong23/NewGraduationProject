@@ -371,14 +371,16 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="configTopicName" class="form-label">Tên chủ đề *</label>
-                                    <input type="text" class="form-control" id="configTopicName" required placeholder="Giáo dục">
+                                    <label for="configMaxPosts" class="form-label">Số bài viết tối đa</label>
+                                    <input type="number" class="form-control" id="configMaxPosts" min="1" max="100" value="10">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="configMaxPosts" class="form-label">Số bài viết tối đa</label>
-                                    <input type="number" class="form-control" id="configMaxPosts" min="1" max="100" value="10">
+                                    <label class="form-label">Chủ đề lọc</label>
+                                    <div class="form-control-plaintext" id="selectedTopicDisplay">
+                                        <span class="text-muted">Chủ đề sẽ được lấy từ nhóm được chọn</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -423,11 +425,9 @@
                             <i class="fas fa-robot me-2"></i>
                             <strong>Crawling thông minh tự động:</strong><br>
                             • Tự động phát hiện và trích xuất tiêu đề, nội dung, liên kết từ website<br>
-                            • Lọc dữ liệu rác và nội dung spam<br>
-                            • Kiểm tra tiêu đề phải liên quan đến tên chủ đề<br>
-                            • Chỉ lưu bài viết có chất lượng cao<br>
-                            • <strong>Tự động tạo bài viết trong các nhóm đã chọn</strong><br>
-                            • Chạy tự động mỗi 5 phút
+                            • Lọc dữ liệu rác, nội dung spam không liên quan<br>
+                            • Chỉ lấy bài viết có chất lượng cao<br>
+                            • Tự động tạo bài viết trong các nhóm đã chọn<br>
                         </div>
 
                         <div class="form-check">

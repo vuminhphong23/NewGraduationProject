@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/user/layout.css">
+    <link rel="stylesheet" href="/css/shared-post.css">
     <script src="/js/smart-search-global.js"></script>
 </head>
 <body>
@@ -43,12 +44,12 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" data-bs-toggle="tab" href="#trending" onclick="loadTrendingContent()">
-                        <i class="fa fa-fire me-1"></i> Nhiều người quan tâm
+                        <i class="fa fa-fire me-1"></i> Được nhiều người quan tâm
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#interests" onclick="loadInterestsContent()">
-                        <i class="fa fa-heart me-1"></i> Theo chủ đề
+                    <a class="nav-link" data-bs-toggle="tab" href="#groups" onclick="loadGroupsContent()">
+                        <i class="fa fa-users me-1"></i> Gợi ý nhóm
                     </a>
                 </li>
             </ul>
@@ -61,15 +62,15 @@
                         <div class="card-header bg-white border-0">
                             <h6 class="mb-0 fw-bold">
                                 <i class="fa fa-magic text-primary me-2"></i>
-                                AI-Powered Content for You
+                                Dành riêng cho bạn
                             </h6>
-                            <small class="text-muted">Nội dung được gợi ý dựa trên mối quan tâm cá nhân</small>
+                            <small class="text-muted">Phân tích điểm dựa trên chủ đề quan tâm và tương tác của bạn</small>
                         </div>
                         <div class="card-body">
                             <div id="personalizedContent" class="posts-container">
                                 <div class="text-center text-muted">
                                     <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
-                                    <p>Đang tải nội dung gợi ý...</p>
+                                    <p>Đang phân tích mối quan tâm của bạn...</p>
                                 </div>
                             </div>
                         </div>
@@ -82,53 +83,36 @@
                         <div class="card-header bg-white border-0">
                             <h6 class="mb-0 fw-bold">
                                 <i class="fa fa-fire text-danger me-2"></i>
-                                Trending Content
+                                Được nhiều người quan tâm
                             </h6>
-                            <small class="text-muted">Nội dung đang hot và được quan tâm nhiều</small>
+                            <small class="text-muted">Bài viết hot nhất theo điểm: Like(1) + Comment(2) + Share(3)</small>
                         </div>
                         <div class="card-body">
                             <div id="trendingContent" class="posts-container">
                                 <div class="text-center text-muted">
                                     <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
-                                    <p>Đang tải nội dung trending...</p>
+                                    <p>Đang tính toán ...</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- By Interests -->
-                <div class="tab-pane fade" id="interests">
+                <!-- Groups Recommendations -->
+                <div class="tab-pane fade" id="groups">
                     <div class="card mb-4 border-0 shadow-sm">
                         <div class="card-header bg-white border-0">
                             <h6 class="mb-0 fw-bold">
-                                <i class="fa fa-heart text-danger me-2"></i>
-                                Content by Your Interests
+                                <i class="fa fa-users text-success me-2"></i>
+                                Gợi ý nhóm
                             </h6>
-                            <small class="text-muted">Nội dung theo từng chủ đề bạn quan tâm</small>
+                            <small class="text-muted">Nhóm liên quan đến topic quan tâm và có nhiều bạn chung</small>
                         </div>
                         <div class="card-body">
-                            <div class="interests-filter mb-3">
-                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="technology" onclick="loadContentByInterest('technology')">
-                                    <i class="fa fa-laptop-code me-1"></i> Technology
-                                </button>
-                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="education" onclick="loadContentByInterest('education')">
-                                    <i class="fa fa-graduation-cap me-1"></i> Education
-                                </button>
-                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="science" onclick="loadContentByInterest('science')">
-                                    <i class="fa fa-flask me-1"></i> Science
-                                </button>
-                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="art" onclick="loadContentByInterest('art')">
-                                    <i class="fa fa-palette me-1"></i> Art
-                                </button>
-                                <button class="btn btn-outline-primary me-2 mb-2 interest-btn" data-interest="sports" onclick="loadContentByInterest('sports')">
-                                    <i class="fa fa-futbol me-1"></i> Sports
-                                </button>
-                            </div>
-                            <div id="interestsContent" class="posts-container">
+                            <div id="groupsContent" class="groups-container">
                                 <div class="text-center text-muted">
-                                    <i class="fa fa-hand-pointer fa-2x mb-3"></i>
-                                    <p>Chọn một chủ đề để xem nội dung gợi ý</p>
+                                    <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
+                                    <p>Đang tìm nhóm phù hợp với bạn...</p>
                                 </div>
                             </div>
                         </div>
@@ -365,5 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Include recommendations JavaScript -->
 <script src="/js/recommendations.js"></script>
+<script src="/js/source-links-processor.js"></script>
 </body>
 </html>

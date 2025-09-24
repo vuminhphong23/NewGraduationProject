@@ -888,6 +888,11 @@ class SimpleChatManager {
             if (chatMain) chatMain.classList.add('with-files-sidebar');
             if (filesIcon) filesIcon.className = 'fas fa-folder-open';
         }
+        
+        // Also update chatFilesManager if available
+        if (window.chatFilesManager) {
+            window.chatFilesManager.setCurrentRoom(this.currentRoomId);
+        }
     }
 
     toggleFileManagement() {
@@ -914,6 +919,11 @@ class SimpleChatManager {
             }
         } else {
             console.error('ChatFileManagement not initialized');
+        }
+        
+        // Also update chatFilesManager if available
+        if (window.chatFilesManager) {
+            window.chatFilesManager.setCurrentRoom(this.currentRoomId);
         }
     }
 

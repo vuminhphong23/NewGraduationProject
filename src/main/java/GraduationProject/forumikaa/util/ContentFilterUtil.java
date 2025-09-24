@@ -3,38 +3,16 @@ package GraduationProject.forumikaa.util;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
-import java.util.regex.Pattern;
 
 @Component
 public class ContentFilterUtil {
-    // Các từ khóa spam/không mong muốn
-    private static final Set<String> SPAM_KEYWORDS = Set.of(
-            "advertisement", "ads", "sponsored", "promotion", "sale", "discount",
-            "click here", "buy now", "order now", "free shipping", "limited time",
-            "ad", "banner", "popup", "newsletter", "subscribe", "unsubscribe",
-            "cookie", "privacy policy", "terms of service", "contact us",
-            "about us", "home", "menu", "navigation", "footer", "header",
-            "login", "register", "sign up", "sign in", "logout", "profile",
-            "search", "filter", "sort", "category", "tag", "archive",
-            "copyright", "all rights reserved", "powered by", "designed by"
+    // Các từ không phù hợp cần lọc
+    private static final Set<String> INAPPROPRIATE_KEYWORDS = Set.of(
+            "đéo", "đéo biết", "đéo hiểu", "đéo quan tâm",
+            "chó", "chó má", "chó đẻ", "chó chết", "chó cái",
+            "thằng chó", "con chó", "đồ chó"
     );
 
-    // Các từ khóa chất lượng thấp
-    private static final Set<String> LOW_QUALITY_KEYWORDS = Set.of(
-            "click", "read more", "more", "continue", "next", "previous",
-            "back", "top", "bottom", "here", "this", "that", "these", "those",
-            "link", "url", "http", "www", "com", "org", "net", "edu",
-            "page", "section", "part", "chapter", "item", "entry", "post"
-    );
-
-    // Pattern cho URL
-    private static final Pattern URL_PATTERN = Pattern.compile("https?://[\\w\\-._~:/?#\\[\\]@!$&'()*+,;=%]+");
-
-    // Pattern cho email
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b");
-
-    // Pattern cho số điện thoại
-    private static final Pattern PHONE_PATTERN = Pattern.compile("\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b");
 
     /**
      * Kiểm tra xem title có liên quan đến topic không
@@ -42,25 +20,15 @@ public class ContentFilterUtil {
     public boolean isTitleRelevantToTopic(String title, String topicName) {
         if (title == null || topicName == null) return false;
 
-        String lowerTitle = title.toLowerCase();
-        String lowerTopic = topicName.toLowerCase();
-
-        // Kiểm tra topic name có trong title không
-        if (lowerTitle.contains(lowerTopic)) {
-            return true;
-        }
-
-        // Kiểm tra các từ khóa liên quan đến topic
-        String[] topicWords = lowerTopic.split("\\s+");
-        int relevantWords = 0;
-        for (String word : topicWords) {
-            if (word.length() > 2 && lowerTitle.contains(word)) {
-                relevantWords++;
-            }
-        }
-
-        // Nếu có ít nhất 50% từ khóa topic trong title
-        return relevantWords >= Math.ceil(topicWords.length * 0.5);
+        // Xóa dấu _ và chuyển về lowercase
+        String normalizedTopic = topicName.toLowerCase().replace("_", " ");
+        String normalizedTitle = title.toLowerCase();
+        
+        // So sánh không phân biệt dấu
+        String topicNoAccents = removeVietnameseAccents(normalizedTopic);
+        String titleNoAccents = removeVietnameseAccents(normalizedTitle);
+        
+        return titleNoAccents.contains(topicNoAccents);
     }
 
     /**
@@ -77,32 +45,15 @@ public class ContentFilterUtil {
         // Kiểm tra độ dài tối đa
         if (lowerTitle.length() > 200) return false;
 
-        // Kiểm tra spam keywords
-        for (String spam : SPAM_KEYWORDS) {
-            if (lowerTitle.contains(spam)) {
+        // Kiểm tra từ không phù hợp (không phân biệt dấu)
+        String titleNoAccents = removeVietnameseAccents(lowerTitle);
+        for (String inappropriate : INAPPROPRIATE_KEYWORDS) {
+            String inappropriateNoAccents = removeVietnameseAccents(inappropriate);
+            if (titleNoAccents.contains(inappropriateNoAccents)) {
                 return false;
             }
         }
 
-        // Kiểm tra quá nhiều từ khóa chất lượng thấp
-        int lowQualityCount = 0;
-        for (String lowQuality : LOW_QUALITY_KEYWORDS) {
-            if (lowerTitle.contains(lowQuality)) {
-                lowQualityCount++;
-            }
-        }
-
-        // Nếu có quá nhiều từ khóa chất lượng thấp
-        if (lowQualityCount > 3) return false;
-
-        // Kiểm tra có chứa URL không
-        if (URL_PATTERN.matcher(title).find()) return false;
-
-        // Kiểm tra có chứa email không
-        if (EMAIL_PATTERN.matcher(title).find()) return false;
-
-        // Kiểm tra có chứa số điện thoại không
-        if (PHONE_PATTERN.matcher(title).find()) return false;
 
         // Kiểm tra có quá nhiều ký tự đặc biệt
         long specialCharCount = title.chars().filter(ch -> !Character.isLetterOrDigit(ch) && !Character.isWhitespace(ch)).count();
@@ -125,54 +76,19 @@ public class ContentFilterUtil {
         // Kiểm tra độ dài tối đa
         if (lowerContent.length() > 5000) return false;
 
-        // Kiểm tra spam keywords
-        for (String spam : SPAM_KEYWORDS) {
-            if (lowerContent.contains(spam)) {
+        // Kiểm tra từ không phù hợp (không phân biệt dấu)
+        String contentNoAccents = removeVietnameseAccents(lowerContent);
+        for (String inappropriate : INAPPROPRIATE_KEYWORDS) {
+            String inappropriateNoAccents = removeVietnameseAccents(inappropriate);
+            if (contentNoAccents.contains(inappropriateNoAccents)) {
                 return false;
             }
         }
 
-        // Kiểm tra có quá nhiều URL
-        long urlCount = URL_PATTERN.matcher(content).results().count();
-        if (urlCount > 5) return false;
-
-        // Kiểm tra có quá nhiều email
-        long emailCount = EMAIL_PATTERN.matcher(content).results().count();
-        if (emailCount > 3) return false;
-
-        // Kiểm tra có quá nhiều số điện thoại
-        long phoneCount = PHONE_PATTERN.matcher(content).results().count();
-        if (phoneCount > 2) return false;
 
         return true;
     }
 
-    /**
-     * Kiểm tra chất lượng link
-     */
-    public boolean isLinkQuality(String link) {
-        if (link == null || link.trim().isEmpty()) return false;
-
-        // Kiểm tra có phải URL hợp lệ không
-        if (!URL_PATTERN.matcher(link).find()) return false;
-
-        // Kiểm tra không phải link nội bộ không cần thiết
-        String lowerLink = link.toLowerCase();
-        if (lowerLink.contains("#") || lowerLink.contains("javascript:") ||
-                lowerLink.contains("mailto:") || lowerLink.contains("tel:")) {
-            return false;
-        }
-
-        // Kiểm tra không phải link đến file không cần thiết
-        if (lowerLink.endsWith(".pdf") || lowerLink.endsWith(".doc") ||
-                lowerLink.endsWith(".docx") || lowerLink.endsWith(".xls") ||
-                lowerLink.endsWith(".xlsx") || lowerLink.endsWith(".ppt") ||
-                lowerLink.endsWith(".pptx")) {
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Tính điểm chất lượng tổng thể
@@ -193,8 +109,8 @@ public class ContentFilterUtil {
             score += 30;
         }
 
-        // Link quality (20 điểm)
-        if (isLinkQuality(link)) {
+        // Link quality (20 điểm) - chỉ cần có link
+        if (link != null && !link.trim().isEmpty()) {
             score += 20;
         }
 
@@ -211,28 +127,58 @@ public class ContentFilterUtil {
      * Kiểm tra xem article có đủ chất lượng để lưu không
      */
     public boolean isArticleAcceptable(String title, String content, String link, String topicName) {
+        System.out.println("🔍 DEBUG: Checking article: " + title);
+        System.out.println("🔍 DEBUG: Topic: " + topicName);
+        
         // Phải có title và title phải liên quan đến topic
-        if (title == null || !isTitleRelevantToTopic(title, topicName)) {
+        boolean isRelevant = isTitleRelevantToTopic(title, topicName);
+        System.out.println("🔍 DEBUG: Title relevant to topic: " + isRelevant);
+        if (title == null || !isRelevant) {
             return false;
         }
 
         // Title phải có chất lượng
-        if (!isTitleQuality(title)) {
+        boolean isTitleGood = isTitleQuality(title);
+        System.out.println("🔍 DEBUG: Title quality: " + isTitleGood);
+        if (!isTitleGood) {
             return false;
         }
 
         // Content phải có chất lượng (nếu có)
-        if (content != null && !isContentQuality(content)) {
-            return false;
-        }
-
-        // Link phải có chất lượng (nếu có)
-        if (link != null && !isLinkQuality(link)) {
-            return false;
+        if (content != null) {
+            boolean isContentGood = isContentQuality(content);
+            System.out.println("🔍 DEBUG: Content quality: " + isContentGood);
+            if (!isContentGood) {
+                return false;
+            }
         }
 
         // Tính điểm tổng thể, phải >= 60/100
         int score = calculateQualityScore(title, content, link, topicName);
-        return score >= 60;
+        System.out.println("🔍 DEBUG: Quality score: " + score + "/100");
+        boolean isAcceptable = score >= 60;
+        System.out.println("🔍 DEBUG: Final acceptable: " + isAcceptable);
+        return isAcceptable;
+    }
+    
+    /**
+     * Xóa dấu tiếng Việt
+     */
+    private String removeVietnameseAccents(String text) {
+        if (text == null) return "";
+        
+        return text.replace("à", "a").replace("á", "a").replace("ạ", "a").replace("ả", "a").replace("ã", "a")
+                  .replace("â", "a").replace("ầ", "a").replace("ấ", "a").replace("ậ", "a").replace("ẩ", "a").replace("ẫ", "a")
+                  .replace("ă", "a").replace("ằ", "a").replace("ắ", "a").replace("ặ", "a").replace("ẳ", "a").replace("ẵ", "a")
+                  .replace("è", "e").replace("é", "e").replace("ẹ", "e").replace("ẻ", "e").replace("ẽ", "e")
+                  .replace("ê", "e").replace("ề", "e").replace("ế", "e").replace("ệ", "e").replace("ể", "e").replace("ễ", "e")
+                  .replace("ì", "i").replace("í", "i").replace("ị", "i").replace("ỉ", "i").replace("ĩ", "i")
+                  .replace("ò", "o").replace("ó", "o").replace("ọ", "o").replace("ỏ", "o").replace("õ", "o")
+                  .replace("ô", "o").replace("ồ", "o").replace("ố", "o").replace("ộ", "o").replace("ổ", "o").replace("ỗ", "o")
+                  .replace("ơ", "o").replace("ờ", "o").replace("ớ", "o").replace("ợ", "o").replace("ở", "o").replace("ỡ", "o")
+                  .replace("ù", "u").replace("ú", "u").replace("ụ", "u").replace("ủ", "u").replace("ũ", "u")
+                  .replace("ư", "u").replace("ừ", "u").replace("ứ", "u").replace("ự", "u").replace("ử", "u").replace("ữ", "u")
+                  .replace("ỳ", "y").replace("ý", "y").replace("ỵ", "y").replace("ỷ", "y").replace("ỹ", "y")
+                  .replace("đ", "d");
     }
 }

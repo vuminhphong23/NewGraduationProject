@@ -88,9 +88,7 @@
                                         </div>
                                     </div>
                                     <!-- Crawled content indicator -->
-                                    <span th:if="${post.isCrawledContent}" class="badge bg-info text-white">
-                                        🤖 AI Content
-                                    </span>
+
                                     <!-- Recommendation score -->
                                     <span th:if="${post.recommendationScore != null}" class="badge bg-success text-white">
                                         Score: <span th:text="${#numbers.formatDecimal(post.recommendationScore, 1, 1)}">0.0</span>
@@ -327,6 +325,7 @@
     <script src="/js/gallery-manager.js"></script>
     <script src="/js/gallery-optimizer.js"></script>
     <script src="/js/group-indicator.js"></script>
+    <script src="/js/source-links-processor.js"></script>
     <script src="/js/post-detail.js"></script>
 
 <!-- Lightbox Modal for Images -->

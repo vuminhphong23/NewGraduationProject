@@ -53,8 +53,7 @@
                     <!-- Original Post Content -->
                     <div class="original-post-content">
                         <h6 class="mb-2 fw-bold" th:text="${post.originalPost['title']}">Tiêu đề bài viết gốc</h6>
-                        <p class="mb-2 text-muted " style="white-space: pre-wrap;"
-                           th:text="${post.originalPost['content']}">Nội dung bài viết gốc...</p>
+                        <div class="mb-2 text-muted" th:utext="${post.originalPost['content']}">Nội dung bài viết gốc...</div>
                         
                         <!-- Original Post Documents -->
                         <div th:if="${post.originalPost['documents'] != null and !post.originalPost['documents'].isEmpty()}" class="mt-2">
@@ -97,7 +96,7 @@
     <div th:if="${post.originalPost == null}">
         <h5 class="card-title mb-2" th:if="${post.title != null && !#strings.isEmpty(post.title)}"
             th:text="${post.title}">Tiêu đề bài viết</h5>
-        <p class="card-text" style="white-space: pre-wrap;"
-           th:text="${post.content}">Nội dung bài viết...</p>
+        <div class="card-text" th:utext="${post.content}">Nội dung bài viết...</div>
     </div>
+    
 </div>

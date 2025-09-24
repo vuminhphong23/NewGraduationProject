@@ -39,11 +39,14 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
     public CrawlingConfigResponse createConfig(CrawlingConfigRequest request, Long userId) {
         User adminUser = securityUtil.getAdminUser();
         
+        // Get topic from selected group
+        String topicName = getTopicFromSelectedGroups(request.getGroupIds());
+        
         CrawlingConfig config = new CrawlingConfig();
         config.setName(request.getName());
         config.setDescription(request.getDescription());
         config.setBaseUrl(request.getBaseUrl());
-        config.setTopicName(request.getTopicName());
+        config.setTopicName(topicName);
         config.setMaxPosts(request.getMaxPosts());
         config.setEnabled(request.getEnabled());
         config.setStatus("ACTIVE");
@@ -72,10 +75,13 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
         CrawlingConfig config = crawlingConfigDao.findById(configId)
                 .orElseThrow(() -> new RuntimeException("Config not found"));
         
+        // Get topic from selected group
+        String topicName = getTopicFromSelectedGroups(request.getGroupIds());
+        
         config.setName(request.getName());
         config.setDescription(request.getDescription());
         config.setBaseUrl(request.getBaseUrl());
-        config.setTopicName(request.getTopicName());
+        config.setTopicName(topicName);
         config.setMaxPosts(request.getMaxPosts());
         config.setEnabled(request.getEnabled());
         
@@ -208,9 +214,52 @@ public class CrawlingConfigServiceImpl implements CrawlingConfigService {
                 groupData.put("id", group.getId());
                 groupData.put("name", group.getName());
                 groupData.put("description", group.getDescription());
+                
+                // Add topic information
+                if (group.getTopics() != null && !group.getTopics().isEmpty()) {
+                    groupData.put("topic", group.getTopics().iterator().next().getName());
+                } else {
+                    groupData.put("topic", null);
+                }
+                
                 return groupData;
             })
             .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Lấy topic từ group được chọn
+     */
+    private String getTopicFromSelectedGroups(List<Long> groupIds) {
+        if (groupIds == null || groupIds.isEmpty()) {
+            System.out.println("DEBUG: No groups selected, using default topic 'general'");
+            return "general"; // Default topic if no groups selected
+        }
+        
+        // Get the first group's topic
+        Long firstGroupId = groupIds.get(0);
+        System.out.println("DEBUG: Getting topic from group ID: " + firstGroupId);
+        
+        try {
+            return groupService.findById(firstGroupId)
+                    .map(group -> {
+                        System.out.println("DEBUG: Found group: " + group.getName());
+                        System.out.println("DEBUG: Group topics size: " + (group.getTopics() != null ? group.getTopics().size() : 0));
+                        
+                        if (group.getTopics() != null && !group.getTopics().isEmpty()) {
+                            String topicName = group.getTopics().iterator().next().getName();
+                            System.out.println("DEBUG: Using topic: " + topicName);
+                            return topicName;
+                        }
+                        System.out.println("DEBUG: Group has no topics, using default 'general'");
+                        return "general";
+                    })
+                    .orElse("general");
+        } catch (Exception e) {
+            System.err.println("Error getting topic from group: " + e.getMessage());
+            e.printStackTrace();
+            return "general";
+        }
     }
 
     private CrawlingConfigResponse convertToResponse(CrawlingConfig config) {

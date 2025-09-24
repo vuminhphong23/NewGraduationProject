@@ -1,6 +1,7 @@
 package GraduationProject.forumikaa.service;
 
 import GraduationProject.forumikaa.dto.UserRecommendationResponse;
+import GraduationProject.forumikaa.dto.GroupRecommendationResponse;
 
 import java.util.List;
 
@@ -25,4 +26,9 @@ public interface RecommendationService {
      * Gợi ý người dùng dựa trên tương tác gần đây
      */
     List<UserRecommendationResponse> recommendUsersByRecentInteractions(Long userId, Integer limit);
+    
+    /**
+     * Tab 3: Gợi ý nhóm - Nhóm liên quan topic quan tâm và có nhiều bạn chung
+     */
+    List<GroupRecommendationResponse> recommendGroups(Long userId, Integer limit);
 }

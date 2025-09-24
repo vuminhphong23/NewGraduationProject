@@ -191,7 +191,12 @@
                                          class="group-avatar me-3" alt="group avatar">
                                     <div class="d-flex flex-column">
                                         <div class="group-name fw-bold" th:text="${group.name}" title="${group.name}"></div>
-                                        <div class="text-muted small">ID: <span th:text="${group.id}"></span></div>
+                                        <div class="text-muted small" th:if="${group.topics != null && !group.topics.isEmpty()}">
+                                            <i class="bi bi-hash me-1"></i>Chủ đề: <span th:text="${group.topics.iterator().next().name}"></span>
+                                        </div>
+                                        <div class="text-muted small" th:if="${group.topics == null || group.topics.isEmpty()}">
+                                            <i class="bi bi-hash me-1"></i>Chưa có chủ đề
+                                        </div>
                                     </div>
                                 </div>
                             </td>

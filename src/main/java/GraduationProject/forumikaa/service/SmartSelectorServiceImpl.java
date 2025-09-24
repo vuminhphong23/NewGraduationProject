@@ -18,7 +18,7 @@ public class SmartSelectorServiceImpl implements SmartSelectorService {
     // Các selector phổ biến cho title
     private static final String[] TITLE_SELECTORS = {
             "h1", "h2", "h3", "h4", "h5", "h6",
-            ".title", ".headline", ".post-title", ".article-title",
+            ".title", "title-news", ".headline", ".post-title", ".article-title",
             ".entry-title", ".news-title", ".item-title",
             "a[title]", ".title a", "h1 a", "h2 a", "h3 a",
             ".card-title", ".content-title", ".main-title",
@@ -66,10 +66,14 @@ public class SmartSelectorServiceImpl implements SmartSelectorService {
     public List<Map<String, String>> extractArticles(Document doc, int maxArticles, String topicName) {
         List<Map<String, String>> articles = new ArrayList<>();
         
+        System.out.println("🔍 DEBUG: Starting article extraction with topic: " + topicName);
+        
         // Tìm container chứa các bài viết
         Elements containers = findArticleContainers(doc);
+        System.out.println("🔍 DEBUG: Found " + containers.size() + " containers");
         
         int count = 0;
+        int processedCount = 0;
         for (Element container : containers) {
             if (count >= maxArticles) break;
             
@@ -78,24 +82,34 @@ public class SmartSelectorServiceImpl implements SmartSelectorService {
             String content = article.get("content");
             String link = article.get("link");
             
+            processedCount++;
+            System.out.println("🔍 DEBUG: Processing article " + processedCount + ": " + title);
+            
             // Kiểm tra chất lượng và relevance với topic
             if (title != null && !title.trim().isEmpty()) {
                 if (topicName != null) {
                     // Có topic filter - kiểm tra relevance và quality
-                    if (contentFilterUtil.isArticleAcceptable(title, content, link, topicName)) {
+                    boolean isAcceptable = contentFilterUtil.isArticleAcceptable(title, content, link, topicName);
+                    System.out.println("🔍 DEBUG: Article acceptable: " + isAcceptable);
+                    if (isAcceptable) {
                         articles.add(article);
                         count++;
+                        System.out.println("✅ DEBUG: Added article: " + title);
                     }
                 } else {
                     // Không có topic filter - chỉ kiểm tra quality cơ bản
                     if (contentFilterUtil.isTitleQuality(title)) {
                         articles.add(article);
                         count++;
+                        System.out.println("✅ DEBUG: Added article: " + title);
                     }
                 }
+            } else {
+                System.out.println("❌ DEBUG: Article has no title");
             }
         }
         
+        System.out.println("🔍 DEBUG: Final result: " + articles.size() + " articles extracted");
         return articles;
     }
     

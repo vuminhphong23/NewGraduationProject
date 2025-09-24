@@ -138,14 +138,16 @@ public class DynamicCrawlingServiceImpl implements DynamicCrawlingService {
             // Tạo topic từ config
             topicService.findOrCreateTopic(config.getTopicName(), adminUser);
             
-            // Tạo content đơn giản chỉ với 3 thông tin cần thiết
+            // Tạo content với nguồn được format đẹp
             StringBuilder postContent = new StringBuilder();
             if (content != null && !content.trim().isEmpty()) {
                 postContent.append(content);
             }
             
+            // Thêm nguồn với format đẹp hơn
             if (link != null && !link.trim().isEmpty()) {
-                postContent.append("\n\n🔗 **Nguồn:** ").append(link);
+                postContent.append("\n \n");
+                postContent.append(link);
             }
             
             // Parse groupIds từ config

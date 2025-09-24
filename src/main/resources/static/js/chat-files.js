@@ -71,9 +71,14 @@ class ChatFilesManager {
         const fileInput = document.getElementById('fileInput');
 
         if (attachFileBtn) {
-            attachFileBtn.addEventListener('click', () => {
+            console.log('ChatFilesManager: Attach file button found, setting up click handler');
+            attachFileBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('ChatFilesManager: Attach file button clicked');
                 this.showUploadModal();
             });
+        } else {
+            console.log('ChatFilesManager: Attach file button not found');
         }
 
         if (uploadFilesBtn) {
@@ -84,8 +89,11 @@ class ChatFilesManager {
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => {
+                console.log('ChatFilesManager: File input changed, files:', e.target.files.length);
                 this.handleFileSelect(e.target.files);
             });
+        } else {
+            console.log('ChatFilesManager: File input not found');
         }
 
         // Upload modal
@@ -447,18 +455,24 @@ class ChatFilesManager {
 
         const modal = document.getElementById('fileUploadModal');
         if (modal) {
+            modal.style.display = 'flex';
             modal.classList.add('show');
             this.selectedFiles = [];
             this.updateUploadPreview();
+            console.log('ChatFilesManager: Upload modal shown');
+        } else {
+            console.error('ChatFilesManager: Upload modal not found');
         }
     }
 
     hideUploadModal() {
         const modal = document.getElementById('fileUploadModal');
         if (modal) {
+            modal.style.display = 'none';
             modal.classList.remove('show');
             this.selectedFiles = [];
             this.updateUploadPreview();
+            console.log('ChatFilesManager: Upload modal hidden');
         }
     }
 
@@ -711,21 +725,29 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('ChatFilesManager: DOM loaded, initializing...');
     try {
         chatFilesManager = new ChatFilesManager();
+        window.chatFilesManager = chatFilesManager; // Make it globally available
         console.log('ChatFilesManager: Successfully initialized');
-        console.log('chatFilesManager.downloadFile:', chatFilesManager.downloadFile);
         
-        // Integrate with existing chat manager
-        if (window.chatManager) {
-            console.log('ChatFilesManager: Integrating with existing chat manager');
-            // Override selectRoom method to update files manager
-            const originalSelectRoom = window.chatManager.selectRoom;
-            window.chatManager.selectRoom = function(roomId) {
-                originalSelectRoom.call(this, roomId);
-                chatFilesManager.setCurrentRoom(roomId);
-            };
-        } else {
-            console.log('ChatFilesManager: No existing chat manager found');
-        }
+        // Wait for chat manager to be ready
+        const checkChatManager = () => {
+            if (window.chatManager) {
+                console.log('ChatFilesManager: Integrating with existing chat manager');
+                // Override selectRoom method to update files manager
+                const originalSelectRoom = window.chatManager.selectRoom;
+                window.chatManager.selectRoom = function(roomId) {
+                    originalSelectRoom.call(this, roomId);
+                    if (chatFilesManager) {
+                        chatFilesManager.setCurrentRoom(roomId);
+                    }
+                };
+            } else {
+                // Retry after a short delay, but limit attempts
+                setTimeout(checkChatManager, 100);
+            }
+        };
+        
+        // Start checking after a short delay to ensure other scripts are loaded
+        setTimeout(checkChatManager, 200);
     } catch (error) {
         console.error('ChatFilesManager: Error during initialization:', error);
     }
